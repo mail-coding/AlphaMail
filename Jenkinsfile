@@ -13,8 +13,7 @@ pipeline {
       }
     }
 
-    stage('Build & Deploy with Docker Co
-    mpose') {
+    stage('Build & Deploy with Docker Compose') {
       steps {
 
         echo '🔐 Jenkins에서 환경 변수 주입 확인 중...'
