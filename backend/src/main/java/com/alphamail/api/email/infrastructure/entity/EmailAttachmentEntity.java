@@ -24,7 +24,7 @@ public class EmailAttachmentEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
+	private Integer emailAttachmentId;
 
 	@JoinColumn(name = "user_id")
 	@ManyToOne(fetch = FetchType.LAZY)
