@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Typography } from '@/shared/components/atoms/Typography';
 import { Product } from '../../../types/product';
 
@@ -18,7 +18,6 @@ interface ProductDetailForm {
 }
 
 export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({ product, onBack }) => {
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [formData, setFormData] = useState<ProductDetailForm>({
     name: '',
     quantity: '',
@@ -43,16 +42,6 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({ pr
     }
   }, [product]);
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setSelectedImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -60,12 +49,6 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({ pr
       ...prev,
       [name]: value
     }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // TODO: API 연동 후 데이터 전송 구현
-    console.log('Form submitted:', { ...formData, image: selectedImage });
   };
 
   return (
@@ -84,7 +67,7 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({ pr
         )}
       </div>
       
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form className="space-y-6">
         <div className="grid grid-cols-2 gap-6">
 
           {/* 상품 정보 입력 섹션 */}
