@@ -13,6 +13,15 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
+# AWS SES 설정
+aws:
+  region: ap-northeast-2  # 선택한 AWS 리전
+  ses:
+    access-key: ${YOUR_ACCESS_KEY}
+    secret-key: ${YOUR_SECRET_KEY}
+    domain: alphamail.my  # 도메인만 설정
+    system-sender: "AlphaMail System <noreply@alphamail.my>"  # 시스템용 이메일
+
 decorator:
   datasource:
     p6spy:
