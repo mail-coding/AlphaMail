@@ -15,6 +15,7 @@ import { useSidebarStore } from './shared/stores/useSidebarStore';
 const HeaderContent = () => {
   const location = useLocation();
   const path = location.pathname;
+  const { activeItem } = useSidebarStore();
 
   // 경로에 따라 다른 헤더 내용 반환
   if (path === '/') {
@@ -38,7 +39,7 @@ const HeaderContent = () => {
   } else if (path === '/work') {
     return (
       <Typography variant="titleLarge">
-        work
+        {activeItem || 'work'}
       </Typography>
     );
   }
