@@ -19,7 +19,6 @@ interface ProductDetailForm {
 
 export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({ product, onBack }) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState<ProductDetailForm>({
     name: '',
     quantity: '',
@@ -87,30 +86,6 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({ pr
       
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-2 gap-6">
-          {/* 이미지 업로드 섹션 */}
-          <div className="flex flex-col items-center space-y-4">
-            <div 
-              className="w-full h-64 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-blue-500"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              {selectedImage ? (
-                <img src={selectedImage} alt="Selected product" className="max-h-full max-w-full object-contain" />
-              ) : (
-                <div className="text-center">
-                  <Typography variant="titleSmall" color="text-gray-500">
-                    클릭하여 이미지 업로드
-                  </Typography>
-                </div>
-              )}
-            </div>
-            <input
-              type="file"
-              ref={fileInputRef}
-              className="hidden"
-              accept="image/*"
-              onChange={handleImageUpload}
-            />
-          </div>
 
           {/* 상품 정보 입력 섹션 */}
           <div className="space-y-4">
@@ -205,7 +180,7 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({ pr
             type="submit"
             className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
           >
-            {product ? '수정' : '저장'}
+            {product ? '수정' : '등록'}
           </button>
         </div>
       </form>
