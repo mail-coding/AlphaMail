@@ -3,6 +3,7 @@ package com.alphamail.api.erp.application.usecase.product;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.alphamail.api.erp.domain.entity.Product;
 import com.alphamail.api.erp.domain.repository.ProductRepository;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class RegistProductUseCase {
 
 	private final ProductRepository productRepository;

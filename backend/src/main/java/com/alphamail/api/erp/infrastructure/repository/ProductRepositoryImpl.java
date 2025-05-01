@@ -32,4 +32,16 @@ public class ProductRepositoryImpl implements ProductRepository {
 
 		return productMapper.toDomain(savedProductEntity);
 	}
+
+	@Override
+	public Optional<Product> findById(Integer productId) {
+		return productJpaRepository
+			.findById(productId)
+			.map(productMapper::toDomain);
+	}
+
+	@Override
+	public void delete(Integer productId) {
+		productJpaRepository.deleteById(productId);
+	}
 }
