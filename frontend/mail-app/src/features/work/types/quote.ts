@@ -43,4 +43,30 @@ export interface QuoteResponse {
   contents: Quote[];
   total_count: number;
   page_count: number;
+}
+
+export interface CreateQuoteRequest {
+  client_name: string;
+  business_no: string;
+  representative: string;
+  business_type: string;
+  business_category: string;
+  manager: string;
+  client_manager: string;
+  client_contact: string;
+  payment_condition: string;
+  delivery_date: string;
+  address: string;
+  products: Omit<QuoteProduct, 'id'>[];
+}
+
+export interface UpdateQuoteRequest extends Partial<CreateQuoteRequest> {
+  id: number;
+}
+
+export interface QuoteQueryParams {
+  page?: number;
+  size?: number;
+  search?: string;
+  sort?: string;
 } 

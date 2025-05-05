@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { QuoteDetail, QuoteProduct } from '../../../types/quote';
+import { QuoteDetail, QuoteProduct, CreateQuoteRequest, UpdateQuoteRequest } from '../../../types/quote';
 import { QuoteBasicInfoForm } from '../organisms/quoteBasicInfoForm';
 import { QuoteProductTable } from '../organisms/quoteProductTable';
+import { useQuote } from '../../../hooks/useQuote';
 
 interface QuoteDetailTemplateProps {
   quote?: QuoteDetail;
   onBack: () => void;
-  onSave: (quote: QuoteDetail) => void;
+  onSave: () => void;
 }
 
 export const QuoteDetailTemplate: React.FC<QuoteDetailTemplateProps> = ({
@@ -14,6 +15,7 @@ export const QuoteDetailTemplate: React.FC<QuoteDetailTemplateProps> = ({
   onBack,
   onSave,
 }) => {
+  const { handleCreateQuote, handleUpdateQuote } = useQuote();
   const [formData, setFormData] = useState<QuoteDetail>(
     quote || {
       quote_no: '',
@@ -98,16 +100,35 @@ export const QuoteDetailTemplate: React.FC<QuoteDetailTemplateProps> = ({
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
+    try {
+      if (quote) {
+        // Update existing quote
+        const updateData: UpdateQuoteRequest = {
+          id: Number(quote.quote_no),
+          ...formData,
+        };
+        await handleUpdateQuote(updateData);
+      } else {
+        // Create new quote
+        const createData: CreateQuoteRequest = {
+          ...formData,
+        };
+        await handleCreateQuote(createData);
+      }
+      onSave();
+    } catch (error) {
+      console.error('Failed to save quote:', error);
+      alert('견적서 저장에 실패했습니다.');
+    }
   };
 
   return (
     <div className="p-4">
       <div className="mb-4 flex justify-between items-center">
         <h2 className="text-2xl font-bold">
-          {quote ? '견적서 상세' : '견적서 등록'}
+          {quote ? '견적서 수정' : '견적서 등록'}
         </h2>
         <button
           onClick={onBack}
@@ -142,7 +163,7 @@ export const QuoteDetailTemplate: React.FC<QuoteDetailTemplateProps> = ({
             type="submit"
             className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
           >
-            저장
+            {quote ? '수정' : '저장'}
           </button>
         </div>
       </form>

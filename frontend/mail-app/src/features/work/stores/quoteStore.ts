@@ -1,43 +1,137 @@
 import { create } from 'zustand';
-import { Quote } from '../types/quote';
+import { quoteService } from '../services/quoteService';
+import { Quote, QuoteDetail, QuoteQueryParams, CreateQuoteRequest, UpdateQuoteRequest } from '../types/quote';
 
 interface QuoteState {
-  // 검색 관련 상태
+  quotes: Quote[];
+  selectedQuote: QuoteDetail | null;
+  totalCount: number;
+  pageCount: number;
+  isLoading: boolean;
+  error: string | null;
   keyword: string;
-  setKeyword: (keyword: string) => void;
-  
-  // 선택된 견적서 관련 상태
-  selectedQuote: Quote | null;
-  setSelectedQuote: (quote: Quote | null) => void;
-  
-  // 선택된 견적서 ID 목록
   selectedQuoteIds: Set<number>;
-  setSelectedQuoteIds: (ids: Set<number>) => void;
-  toggleQuoteSelection: (id: number) => void;
-  
-  // 페이지네이션 관련 상태
   currentPage: number;
   pageSize: number;
+  sortOption: number;
+  fetchQuotes: (params?: QuoteQueryParams) => Promise<void>;
+  fetchQuoteById: (id: number) => Promise<void>;
+  createQuote: (data: CreateQuoteRequest) => Promise<void>;
+  updateQuote: (data: UpdateQuoteRequest) => Promise<void>;
+  deleteQuote: (id: number) => Promise<void>;
+  clearError: () => void;
+  setKeyword: (keyword: string) => void;
+  setSelectedQuote: (quote: QuoteDetail | null) => void;
+  setSelectedQuoteIds: (ids: Set<number>) => void;
+  toggleQuoteSelection: (id: number) => void;
   setCurrentPage: (page: number) => void;
   setPageSize: (size: number) => void;
-  
-  // 정렬 관련 상태
-  sortOption: number;
   setSortOption: (option: number) => void;
 }
 
 export const useQuoteStore = create<QuoteState>((set) => ({
-  // 검색 관련 상태
-  keyword: '',
-  setKeyword: (keyword) => set({ keyword }),
-  
-  // 선택된 견적서 관련 상태
+  quotes: [],
   selectedQuote: null,
-  setSelectedQuote: (quote) => set({ selectedQuote: quote }),
-  
-  // 선택된 견적서 ID 목록
+  totalCount: 0,
+  pageCount: 0,
+  isLoading: false,
+  error: null,
+  keyword: '',
   selectedQuoteIds: new Set(),
+  currentPage: 1,
+  pageSize: 10,
+  sortOption: 0,
+
+  fetchQuotes: async (params) => {
+    try {
+      set({ isLoading: true, error: null });
+      const response = await quoteService.getQuotes(params);
+      set({
+        quotes: response.contents,
+        totalCount: response.total_count,
+        pageCount: response.page_count,
+      });
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : 'Failed to fetch quotes' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  fetchQuoteById: async (id) => {
+    try {
+      set({ isLoading: true, error: null });
+      const quote = await quoteService.getQuoteById(id);
+      set({ selectedQuote: quote });
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : 'Failed to fetch quote' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  createQuote: async (data) => {
+    try {
+      set({ isLoading: true, error: null });
+      await quoteService.createQuote(data);
+      // Refresh quotes list after creation
+      const response = await quoteService.getQuotes();
+      set({
+        quotes: response.contents,
+        totalCount: response.total_count,
+        pageCount: response.page_count,
+      });
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : 'Failed to create quote' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  updateQuote: async (data) => {
+    try {
+      set({ isLoading: true, error: null });
+      await quoteService.updateQuote(data);
+      // Refresh quotes list after update
+      const response = await quoteService.getQuotes();
+      set({
+        quotes: response.contents,
+        totalCount: response.total_count,
+        pageCount: response.page_count,
+      });
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : 'Failed to update quote' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  deleteQuote: async (id) => {
+    try {
+      set({ isLoading: true, error: null });
+      await quoteService.deleteQuote(id);
+      // Refresh quotes list after deletion
+      const response = await quoteService.getQuotes();
+      set({
+        quotes: response.contents,
+        totalCount: response.total_count,
+        pageCount: response.page_count,
+      });
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : 'Failed to delete quote' });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  clearError: () => set({ error: null }),
+
+  setKeyword: (keyword) => set({ keyword }),
+
+  setSelectedQuote: (quote) => set({ selectedQuote: quote }),
+
   setSelectedQuoteIds: (ids) => set({ selectedQuoteIds: ids }),
+
   toggleQuoteSelection: (id) => 
     set((state) => {
       const newSet = new Set(state.selectedQuoteIds);
@@ -48,14 +142,10 @@ export const useQuoteStore = create<QuoteState>((set) => ({
       }
       return { selectedQuoteIds: newSet };
     }),
-  
-  // 페이지네이션 관련 상태
-  currentPage: 1,
-  pageSize: 10,
+
   setCurrentPage: (page) => set({ currentPage: page }),
+
   setPageSize: (size) => set({ pageSize: size }),
-  
-  // 정렬 관련 상태
-  sortOption: 0,
+
   setSortOption: (option) => set({ sortOption: option }),
 })); 

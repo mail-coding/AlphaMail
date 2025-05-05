@@ -38,9 +38,7 @@ const WorkPage = () => {
     setShowQuoteDetail(true);
   };
 
-  const handleQuoteSave = (quote: QuoteDetail) => {
-    // TODO: API 호출로 견적서 저장
-    console.log('견적서 저장:', quote);
+  const handleQuoteSave = () => {
     setShowQuoteDetail(false);
     setSelectedQuote(null);
   };
