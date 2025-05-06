@@ -46,6 +46,8 @@ class RAGEngine:
             text_to_summarize = email_content
             if attachment_content.strip():
                 text_to_summarize += f"\n{attachment_content}"
+            
+            print("[요약할 텍스트]",text_to_summarize)
 
             prompt = f"{text_to_summarize}"
 

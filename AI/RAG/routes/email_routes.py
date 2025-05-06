@@ -186,3 +186,35 @@ def write_email():
         print(f"[ERROR] Error in /writeemail: {str(e)}")
         traceback.print_exc()
         return jsonify({'status': 'error', 'message': str(e)}), 500
+    
+@email_bp.route('/debug/attachment-preview', methods=['POST'])
+def debug_attachment_preview():
+    from services.email_processor import EmailProcessor
+    try:
+        uploaded_file = request.files.get("file")
+        if not uploaded_file:
+            return jsonify({"status": "error", "message": "No file provided"}), 400
+
+        filename = secure_filename(uploaded_file.filename)
+        content = uploaded_file.read()
+        ext = filename.split('.')[-1].lower()
+
+        if ext == "pdf":
+            text = EmailProcessor.extract_text_from_pdf(content)
+        elif ext in ["xls", "xlsx"]:
+            text = EmailProcessor.extract_text_from_excel(content)
+        else:
+            return jsonify({"status": "error", "message": f"Unsupported file type: {ext}"}), 400
+
+        text = EmailProcessor.clean_text(text)
+        return jsonify({
+            "status": "success",
+            "filename": filename,
+            "text_preview": text[:1000],  # 최대 1000자 미리보기
+            "text_length": len(text)
+        })
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"status": "error", "message": str(e)}), 500

@@ -25,10 +25,30 @@ class EmailProcessor:
     def extract_text_from_excel(excel_content: bytes) -> str:
         try:
             excel_file = io.BytesIO(excel_content)
-            all_dfs = pd.read_excel(excel_file, sheet_name=None)
-            text = "\n\n".join(f"Sheet: {k}\n{v.to_string()}" for k, v in all_dfs.items())
-            print(f"[DEBUG] Extracted {len(text)} characters from Excel file")
-            return text
+            all_dfs = pd.read_excel(excel_file, sheet_name=None, header=None)  # 헤더 자동 추론 방지
+
+            cleaned_texts = []
+
+            for sheet_name, df in all_dfs.items():
+                # Drop unnamed columns (e.g., NaN or default named)
+                df = df.dropna(how='all', axis=1)  # 전체 NaN 컬럼 제거
+                df = df.loc[:, ~df.columns.astype(str).str.contains("Unnamed", case=False)]
+
+                # Drop completely empty rows
+                df = df.dropna(how='all')
+
+                # Only include sheet if it has meaningful data
+                if df.shape[0] == 0 or df.shape[1] == 0:
+                    continue
+
+                # Convert dataframe to string
+                sheet_text = f"Sheet: {sheet_name}\n{df.to_string(index=False)}"
+                cleaned_texts.append(sheet_text)
+
+            final_text = "\n\n".join(cleaned_texts)
+            print(f"[DEBUG] Extracted {len(final_text)} characters from Excel file (cleaned)")
+            return final_text
+
         except Exception as e:
             print(f"[ERROR] Excel extraction error: {e}")
             traceback.print_exc()
