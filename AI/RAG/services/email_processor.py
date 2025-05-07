@@ -8,6 +8,8 @@ import pandas as pd
 import PyPDF2
 
 class EmailProcessor:
+
+    # pdf에서 텍스트 추출
     @staticmethod
     def extract_text_from_pdf(pdf_content: bytes) -> str:
         try:
@@ -21,6 +23,7 @@ class EmailProcessor:
             traceback.print_exc()
             return ""
 
+    # 엑셀에서 텍스트 추출
     @staticmethod
     def extract_text_from_excel(excel_content: bytes) -> str:
         try:
@@ -54,21 +57,17 @@ class EmailProcessor:
             traceback.print_exc()
             return ""
 
+    # 이메일 내용 메타 데이터/ 내용 구분 및 파싱
+    ## 실제 들어오는 이메일 유형에 따라 아래 변경하기
     @staticmethod
     def parse_email_content(email_content: str) -> dict:
         try:
-            # Ensure the email content is properly decoded
-            if isinstance(email_content, bytes):
-                email_content = email_content.decode('utf-8', errors='replace')
 
-            print("[유니코드 제대로 됐을까]" + email_content)                
-            # 추가 (유니코드 이스케이프 되어 있을 경우 처리)
-            # try:
-            #     if '\\u' in d:
-            #         d = bytes(d, 'utf-8').decode('unicode_escape')
-            # except Exception as e:
-            #     print(f"[WARNING] Failed to decode unicode_escape: {e}")
-                
+            # 이메일 한글로 인코딩
+            if isinstance(email_content, bytes):
+                email_content = email_content.decode('utf-8', errors='replace')         
+        
+            # meta 데이터 추출
             msg = message_from_string(email_content, policy=email.policy.default)
             metadata = {
                 "subject": msg.get("Subject", ""),
@@ -79,7 +78,9 @@ class EmailProcessor:
             
             # Print metadata for debugging
             print(f"[DEBUG] Email metadata: {metadata}")
-            
+
+
+            # 메일 바디 내용 추출
             body = ""
             if msg.is_multipart():
                 for part in msg.iter_parts():
@@ -89,7 +90,7 @@ class EmailProcessor:
                 if msg.get_content_type() == "text/plain":
                     body = msg.get_content()
                     
-            # If body is still empty, try to get content regardless of type
+            # 바디가 비어있을 경우 첫번째 content 가져오기
             if not body:
                 print("[WARNING] No text/plain content found, trying to extract content directly")
                 try:
@@ -101,17 +102,17 @@ class EmailProcessor:
                 except Exception as inner_e:
                     print(f"[ERROR] Failed to extract body content: {inner_e}")
                     
-            # If email parsing failed, use the raw content as fallback
+            # 바디가 비어있을 경우 원본 저장
             if not body.strip() and email_content.strip():
                 print("[WARNING] Email body is empty, using raw content as fallback")
                 body = email_content
                 
-            # Fallback if still empty
+            # 바디가 비어있을 경우 주제 저장
             if not body.strip():
                 print("[WARNING] Email body is empty, using subject as fallback")
                 body = f"Subject: {metadata['subject']}"
                 
-            # Clean the body before returning
+            # 바디 유니코드 디코딩 처리
             body = EmailProcessor.clean_text(body)
                 
             print(f"[DEBUG] Email body length: {len(body)}")
@@ -120,20 +121,18 @@ class EmailProcessor:
         except Exception as e:
             print(f"[ERROR] Email parsing error: {e}")
             traceback.print_exc()
-            # Return raw content as fallback if parsing fails
+            # 메타 데이터 / body 별로 전달
             return {
                 "metadata": {"subject": "", "from": "", "to": "", "date": ""}, 
                 "body": EmailProcessor.clean_text(email_content)
             }
     
+    # 텍스트 깔끔하게 정리
     @staticmethod
     def clean_text(text: str) -> str:
         if not text:
             return ""
             
-        # 이미 bytes인 경우 처리
-        if isinstance(text, bytes):
-            text = text.decode('utf-8', errors='replace')
             
         # 유니코드 이스케이프로 보이는 문자열이면 디코딩 시도
         try:
@@ -141,7 +140,8 @@ class EmailProcessor:
                 text = text.encode('latin1').decode('unicode_escape')
         except Exception as e:
             print(f"[WARNING] Failed to decode unicode_escape: {e}")
-            
+        
+        # 텍스트 정리 (\\ 제거, 줄바꿈 정리 )
         cleaned = re.sub(r'\\', '', text).replace('\r\n', '\n').strip()
         print(f"[DEBUG] Cleaned text length: {len(cleaned)}")
         print(f"[DEBUG] Sample cleaned text: {cleaned[:100]}...")

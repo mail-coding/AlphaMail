@@ -6,7 +6,7 @@ from transformers import AutoTokenizer
 from services.email_processor import EmailProcessor
 import json
 
-# ✅ 한국어 특화 KURE 모델
+
 embedding_model = SentenceTransformer('nlpai-lab/KURE-v1')
 embedding_function = embedding_functions.SentenceTransformerEmbeddingFunction(
     model_name='nlpai-lab/KURE-v1'

@@ -2,7 +2,6 @@ from transformers import PreTrainedTokenizerFast, BartForConditionalGeneration, 
 import torch
 from services.vector_db import VectorDBHandler
 
-# ✅ LLaMA 기반 한국어 특화 모델 로딩
 device = 0 if torch.cuda.is_available() else -1
 tokenizer = PreTrainedTokenizerFast.from_pretrained("digit82/kobart-summarization")
 model = BartForConditionalGeneration.from_pretrained("digit82/kobart-summarization")
