@@ -69,7 +69,7 @@ const toolSystemMessages = {
 
 
   const transport = new SSEClientTransport(new URL("http://localhost:8080/sse"));
-  const client = new Client({ name: "math-client", version: "1.0.0" });
+  const client = new Client({ name: "AlphamailClient", version: "1.0.0" });
   
   let agent = null;
   
@@ -77,7 +77,7 @@ const toolSystemMessages = {
     if (agent) return agent;
   
     await client.connect(transport);
-    const tools = await loadMcpTools("math", client, {
+    const tools = await loadMcpTools("AlphamailServer", client, {
       throwOnLoadError: true,
       prefixToolNameWithServerName: false,
       additionalToolNamePrefix: "",
