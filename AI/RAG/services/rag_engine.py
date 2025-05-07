@@ -11,6 +11,8 @@ class RAGEngine:
     @staticmethod
     def generate_email_summary(thread_id):
         try:
+
+            # 벡터 db에서 스레드 id로 검색해서 가져옴
             docs = VectorDBHandler.retrieve_thread_data(thread_id)
             print("[doc-debug22]", docs)
 
@@ -18,6 +20,7 @@ class RAGEngine:
                 print(f"[WARNING] No documents found for thread {thread_id}")
                 return "No email content found to summarize."
 
+            # email이냐, 첨부파일이냐에 따라서 다르게 처리(이후 코드 진행 상황에 따라서 다르게 처리)
             email_docs = [d for d in docs if d["metadata"].get("doc_type") == "email"]
             attachment_docs = [d for d in docs if d["metadata"].get("doc_type") == "attachment"]
 
@@ -41,7 +44,7 @@ class RAGEngine:
                 tokens = tokenizer.tokenize(attachment_content)[:max_length // 2]
                 attachment_content = tokenizer.convert_tokens_to_string(tokens)
 
-            # ✅ T5-style prompt
+        
             text_to_summarize = email_content
             if attachment_content.strip():
                 text_to_summarize += f"\n{attachment_content}"

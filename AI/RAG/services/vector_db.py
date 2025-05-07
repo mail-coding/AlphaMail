@@ -90,34 +90,32 @@ class VectorDBHandler:
                     traceback.print_exc()
 
     # 데이터 검색
+    ## query가 현재 없기 때문에 query 관련 코드는 다 삭제해도 될듯(2차 mvp 확인)
     @staticmethod
     def retrieve_thread_data(thread_id, query=None, top_k=10):
         try:
-            # Query the vector database for documents
+
+            # 쿼리에 따른 분기 처리 이후 상황에 따라 삭제
             if query:
                 res = collection.query(query_texts=[query], where={"thread_id": thread_id}, n_results=top_k)
             else:
                 res = collection.get(where={"thread_id": thread_id})
 
-            # Process the results
             documents = []
             if res and 'documents' in res:
                 docs = res['documents'][0] if query else res['documents']
                 metas = res['metadatas'][0] if query else res['metadatas']
                 
-                # Print debug info
                 print(f"[DEBUG] Retrieved {len(docs)} documents for thread {thread_id}")
                 
-                # Process each document and its metadata
+
                 for d, m in zip(docs, metas):
-                    # Ensure the document content is properly decoded
+            
                     if isinstance(d, bytes):
                         d = d.decode('utf-8', errors='replace')
                     
-                    # Add the document to the list
                     documents.append({"content": d, "metadata": m})
                     
-                    # Debug output to verify document content
                     try:
                         print(f"[DEBUG] Document sample: {d[:50]}")
                     except Exception as e:

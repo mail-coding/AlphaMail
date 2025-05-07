@@ -72,11 +72,7 @@ async def summarize_mail(request: Request):
 
         print(f"[INFO] Generating summary for thread_id: {thread_id}")
 
-        docs = VectorDBHandler.retrieve_thread_data(thread_id)
-        if not docs:
-            raise HTTPException(status_code=404, detail="No data found for thread ID")
 
-        print("[doc-debug22]", json.dumps(docs, ensure_ascii=False, indent=2))
         summary = RAGEngine.generate_email_summary(thread_id)
         if not summary or summary.isspace():
             raise HTTPException(status_code=500, detail="Failed to generate summary. Summary is empty.")
