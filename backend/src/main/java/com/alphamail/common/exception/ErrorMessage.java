@@ -39,6 +39,9 @@ public enum ErrorMessage {
 	MEMBER_NOT_FOUND("요청한 사용자를 찾을 수 없습니다"),
 	S3AMAZON_NOT_FOUND("S3에 해당 리소스를 찾을 수 없습니다."),
 
+	//409
+	EMAIL_ALREADY_EXISTS("이미 등록된 이메일입니다."),
+
 	// 500 Internal Server Error 관련 오류
 	INTERNAL_SERVER_ERROR("서버 내부 오류가 발생했습니다"),
 	DATABASE_ERROR("데이터베이스 오류가 발생했습니다"),
