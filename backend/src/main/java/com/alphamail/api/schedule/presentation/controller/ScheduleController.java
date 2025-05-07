@@ -61,8 +61,9 @@ public class ScheduleController {
 	}
 
 	@GetMapping
-	public ResponseEntity<ScheduleListResponse> getAllSchedules(@RequestParam LocalDate startDate,
-		@RequestParam LocalDate endDate,
+	public ResponseEntity<ScheduleListResponse> getAllSchedules(
+		@RequestParam(required = false) LocalDate startDate,
+		@RequestParam(required = false) LocalDate endDate,
 		@RequestParam(required = false) String keyword,
 		@RequestParam(defaultValue = "0") int page,
 		@RequestParam(defaultValue = "10") int size,

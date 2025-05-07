@@ -1,5 +1,6 @@
 package com.alphamail.api.schedule.domain.entity;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.alphamail.api.schedule.presentation.dto.CreateScheduleRequest;
@@ -27,6 +28,9 @@ public class Schedule {
 
 
 	public static Schedule create(CreateScheduleRequest request, Integer userId) {
+		validateTime(request.startTime(), request.endTime());
+		validateFutureLimit(request.startTime(), request.endTime());
+
 		return Schedule.builder()
 			.userId(userId)
 			.name(request.name())
@@ -55,6 +59,7 @@ public class Schedule {
 		LocalDateTime newEndTime = endTime != null ? endTime : this.endTime;
 
 		validateTime(newStartTime, newEndTime);
+		validateFutureLimit(newStartTime, newEndTime);
 
 		return Schedule.builder()
 			.scheduleId(this.scheduleId)
@@ -71,6 +76,15 @@ public class Schedule {
 	private static void validateTime(LocalDateTime startTime, LocalDateTime endTime) {
 		if (startTime.isAfter(endTime)) {
 			throw new BadRequestException(ErrorMessage.SCHEDULE_TIME_INVALID);
+		}
+	}
+
+	private static void validateFutureLimit(LocalDateTime startTime, LocalDateTime endTime) {
+		LocalDate maxFutureDate = LocalDate.now().plusYears(20);
+
+		if (startTime.toLocalDate().isAfter(maxFutureDate) ||
+			endTime.toLocalDate().isAfter(maxFutureDate)) {
+			throw new BadRequestException(ErrorMessage.SCHEDULE_DATE_TOO_FAR);
 		}
 	}
 

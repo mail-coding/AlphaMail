@@ -54,4 +54,10 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
 			.map(scheduleMapper::toDomain);
 	}
 
+	@Override
+	public Page<Schedule> findByKeyword(String keyword, Integer userId, Pageable pageable) {
+		return jpaRepository.findByKeyword(keyword, userId, pageable)
+			.map(scheduleMapper::toDomain);
+	}
+
 }

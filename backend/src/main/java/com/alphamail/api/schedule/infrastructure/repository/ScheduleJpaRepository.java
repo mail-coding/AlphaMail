@@ -18,7 +18,7 @@ public interface ScheduleJpaRepository extends JpaRepository<ScheduleEntity, Int
 
 	@Query("SELECT s FROM ScheduleEntity s WHERE s.user.userId = :userId "
 		+ "AND NOT (DATE(s.endTime) < :startDate OR DATE(s.startTime) > :endDate) "
-		+ "AND (s.name LIKE %:keyword% OR s.description LIKE %:keyword%)")
+		+ "AND s.name LIKE %:keyword%")
 	Page<ScheduleEntity> findByPeriodAndKeyword(@Param("startDate") LocalDate startDate,
 												@Param("endDate") LocalDate endDate,
 												@Param("keyword") String keyword,
@@ -29,4 +29,9 @@ public interface ScheduleJpaRepository extends JpaRepository<ScheduleEntity, Int
 	Page<ScheduleEntity> findByPeriod(@Param("startDate") LocalDate startDate,
 									@Param("endDate") LocalDate endDate,
 									@Param("userId") Integer userId, Pageable pageable);
+
+	@Query("SELECT s FROM ScheduleEntity s WHERE s.user.userId = :userId "
+		+ "AND s.name LIKE %:keyword%")
+	Page<ScheduleEntity> findByKeyword(@Param("keyword")String keyword,
+									@Param("userId")Integer userId, Pageable pageable);
 }

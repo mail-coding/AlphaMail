@@ -23,4 +23,6 @@ public interface ScheduleRepository {
 
 	Page<Schedule> findByPeriod(LocalDate startDate, LocalDate endDate, Integer userId,
 		Pageable pageable);
+
+	Page<Schedule> findByKeyword(String keyword, Integer userId, Pageable effectivePageable);
 }
