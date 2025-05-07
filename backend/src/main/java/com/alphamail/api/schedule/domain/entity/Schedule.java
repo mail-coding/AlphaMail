@@ -82,8 +82,8 @@ public class Schedule {
 	private static void validateFutureLimit(LocalDateTime startTime, LocalDateTime endTime) {
 		LocalDate maxFutureDate = LocalDate.now().plusYears(20);
 
-		if (startTime.toLocalDate().isAfter(maxFutureDate) ||
-			endTime.toLocalDate().isAfter(maxFutureDate)) {
+		if (startTime.toLocalDate().isAfter(maxFutureDate)
+			|| endTime.toLocalDate().isAfter(maxFutureDate)) {
 			throw new BadRequestException(ErrorMessage.SCHEDULE_DATE_TOO_FAR);
 		}
 	}

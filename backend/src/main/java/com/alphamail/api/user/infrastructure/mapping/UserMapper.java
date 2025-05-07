@@ -4,10 +4,10 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 
-import com.alphamail.common.mapper.EntityReferenceFinder;
 import com.alphamail.api.user.domain.entity.User;
 import com.alphamail.api.user.domain.valueobject.UserId;
 import com.alphamail.api.user.infrastructure.entity.UserEntity;
+import com.alphamail.common.mapper.EntityReferenceFinder;
 
 @Mapper(componentModel = "spring", uses = {EntityReferenceFinder.class})
 public interface UserMapper {
