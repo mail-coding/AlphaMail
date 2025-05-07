@@ -3,10 +3,9 @@ from sentence_transformers import SentenceTransformer
 from chromadb.utils import embedding_functions
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from transformers import AutoTokenizer
-from services.email_processor import EmailProcessor
-import json
 
 
+# 한국어 특화 임베딩 모델
 embedding_model = SentenceTransformer('nlpai-lab/KURE-v1')
 embedding_function = embedding_functions.SentenceTransformerEmbeddingFunction(
     model_name='nlpai-lab/KURE-v1'
@@ -17,47 +16,46 @@ tokenizer = AutoTokenizer.from_pretrained('nlpai-lab/KURE-v1')
 client = chromadb.PersistentClient(path="./db")
 collection = client.get_or_create_collection("email_collection", embedding_function=embedding_function)
 
+# 토큰화 기준 -> 맥락을 읽을때 영향을 끼침
 splitter = RecursiveCharacterTextSplitter(
     chunk_size=256,
-    chunk_overlap=32,
+    chunk_overlap=64,
     length_function=lambda x: len(tokenizer.tokenize(x))
 )
 
+# DB벡터에 메일 내용 저장
 class VectorDBHandler:
     @staticmethod
     def store_email_data(thread_id, email_data, attachments):
-        # Verify that the email text is properly decoded
+    
+        # 메타데이터 제외한 body만 담음
         email_text = email_data["body"]
-        
-        # Debug output to check encoding
         try:
             print(f"[DEBUG] Email text sample (before splitting): {email_text[:100]}")
         except Exception as e:
             print(f"[ERROR] Error printing email text: {str(e)}")
         
-        # Split the email text into chunks
         email_chunks = splitter.split_text(email_text)
         print(f"[DEBUG] Split email into {len(email_chunks)} chunks")
         
-        # Store each chunk in the vector database
+        # 메일 바디&메타데이터 저장
         for i, chunk in enumerate(email_chunks):
-            # Debug output to verify chunk content
             try:
                 print(f"[DEBUG] Chunk {i} sample: {chunk[:50]}")
             except Exception as e:
                 print(f"[ERROR] Error printing chunk: {str(e)}")
                 
-            # Store the chunk with metadata
             try:
                 collection.add(
                     documents=[chunk],
                     metadatas=[{
                         "thread_id": thread_id,
                         "doc_type": "email",
-                        "chunk_index": i,
-                        "total_chunks": len(email_chunks),
+                        # "chunk_index": i,
+                        # "total_chunks": len(email_chunks),
                         **email_data["metadata"]
                     }],
+                    # chunk 별로 고유한 id 있어야함
                     ids=[f"{thread_id}_email_{i}"]
                 )
                 print(f"[DEBUG] Successfully stored email chunk {i}")
@@ -66,7 +64,7 @@ class VectorDBHandler:
                 import traceback
                 traceback.print_exc()
 
-        # Store attachment data
+        # 첨부파일 저장
         for idx, att in enumerate(attachments):
             chunks = splitter.split_text(att["text_content"])
             print(f"[DEBUG] Split attachment {att['filename']} into {len(chunks)} chunks")
@@ -91,6 +89,7 @@ class VectorDBHandler:
                     import traceback
                     traceback.print_exc()
 
+    # 데이터 검색
     @staticmethod
     def retrieve_thread_data(thread_id, query=None, top_k=10):
         try:

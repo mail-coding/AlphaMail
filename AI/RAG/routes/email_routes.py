@@ -37,10 +37,10 @@ async def send_mail(
         for file in attachments:
             filename = file.filename
             content = await file.read()
-            base64_content = base64.b64encode(content).decode("utf-8")
+            # base64_content = base64.b64encode(content).decode("utf-8")
             attachments_data.append({
                 "filename": filename,
-                "content": base64_content
+                "content": content
             })
             print(f"[DEBUG] Processed attachment: {filename}")
 

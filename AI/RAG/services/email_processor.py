@@ -133,7 +133,6 @@ class EmailProcessor:
         if not text:
             return ""
             
-            
         # 유니코드 이스케이프로 보이는 문자열이면 디코딩 시도
         try:
             if re.search(r'u[0-9a-fA-F]{4}', text):  # e.g., uc548
@@ -148,13 +147,17 @@ class EmailProcessor:
         return cleaned
 
 
+    # 첨부파일 처리
     @staticmethod
     def process_attachments(attachments):
         processed = []
+
         for idx, att in enumerate(attachments):
             try:
                 print(f"[DEBUG] Processing attachment {idx+1}: {att['filename']}")
-                content = base64.b64decode(att["content"])
+                # content = base64.b64decode(att["content"])
+
+                content = att["content"]
                 ext = att["filename"].split(".")[-1].lower() if "." in att["filename"] else ""
                 
                 text = ""

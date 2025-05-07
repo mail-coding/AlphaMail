@@ -132,6 +132,6 @@ const toolSystemMessages = {
     allowedTools: allowedToolNames,
   });
 
-  console.log("✅ MCP Agent initialized.");
+  console.log("MCP Agent initialized.");
   return agent;
 }
