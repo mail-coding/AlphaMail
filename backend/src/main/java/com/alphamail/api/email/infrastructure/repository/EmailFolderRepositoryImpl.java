@@ -54,6 +54,25 @@ public class EmailFolderRepositoryImpl implements EmailFolderRepository {
 	}
 
 	@Override
+	public EmailFolder save(EmailFolder emailFolder) {
+		EmailFolderEntity savedEntity = emailFolderJpaRepository.save(emailFolderMapper.toEntity(emailFolder));
+		return emailFolderMapper.toDomain(savedEntity);
+	}
+
+	@Override
+	public List<EmailFolder> saveAll(List<EmailFolder> emailFolders) {
+		List<EmailFolderEntity> entities = emailFolders.stream()
+			.map(emailFolderMapper::toEntity)
+			.collect(Collectors.toList());
+
+		List<EmailFolderEntity> savedEntities = emailFolderJpaRepository.saveAll(entities);
+
+		return savedEntities.stream()
+			.map(emailFolderMapper::toDomain)
+			.collect(Collectors.toList());
+	}
+
+	@Override
 	public EmailFolder findById(Integer folderId) {
 		EmailFolderEntity folderEntity = emailFolderJpaRepository.findById(folderId).orElse(null);
 

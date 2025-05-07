@@ -14,6 +14,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.alphamail.common.exception.BadRequestException;
+import com.alphamail.common.exception.DuplicateResourceException;
 import com.alphamail.common.exception.ErrorMessage;
 import com.alphamail.common.exception.ForbiddenException;
 import com.alphamail.common.exception.InternalServerException;
@@ -101,6 +102,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 				ex.getMessage()
 			));
 
+	}
+
+	@ExceptionHandler(DuplicateResourceException.class)
+	public ResponseEntity<FailResponse> handleDuplicateResourceException(DuplicateResourceException ex) {
+		log.debug("리소스 중복: {} ({})", ex.getMessage(), ex.getErrorMessage().name());
+
+		return ResponseEntity
+			.status(ex.getStatus())
+			.body(FailResponse.fail(
+				ex.getMessage()
+			));
 	}
 
 	@ExceptionHandler(InternalServerException.class)

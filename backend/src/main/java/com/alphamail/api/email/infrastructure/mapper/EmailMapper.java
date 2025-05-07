@@ -2,10 +2,10 @@ package com.alphamail.api.email.infrastructure.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.Named;
 
 import com.alphamail.api.email.domain.entity.Email;
 import com.alphamail.api.email.infrastructure.entity.EmailEntity;
+import com.alphamail.common.mapper.EntityReferenceFinder;
 
 @Mapper(componentModel = "spring", uses = {EntityReferenceFinder.class})
 public interface EmailMapper {

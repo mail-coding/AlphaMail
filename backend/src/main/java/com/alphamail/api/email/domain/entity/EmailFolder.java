@@ -14,4 +14,11 @@ public class EmailFolder {
 	private Integer userId;
 	private String emailFolderName;
 
+	public static EmailFolder createDefault(Integer userId, String folderName) {
+		return EmailFolder.builder()
+			.userId(userId)
+			.emailFolderName(folderName)
+			.build();
+
+	}
 }

@@ -17,4 +17,9 @@ public interface EmailFolderRepository {
 	List<EmailFolder> findAllByUserId(Integer userId);
 
 	EmailFolder findByUserIdAndFolderName(Integer userId, String folderName);
+
+	EmailFolder save(EmailFolder emailFolder);
+
+	List<EmailFolder> saveAll(List<EmailFolder> emailFolders);
+
 }
