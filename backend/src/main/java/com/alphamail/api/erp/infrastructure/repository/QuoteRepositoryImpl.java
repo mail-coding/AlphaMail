@@ -1,5 +1,6 @@
 package com.alphamail.api.erp.infrastructure.repository;
 
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
@@ -17,6 +18,12 @@ public class QuoteRepositoryImpl implements QuoteRepository {
 
 	private final QuoteJpaRepository quoteJpaRepository;
 	private final QuoteMapper quoteMapper;
+
+	@Override
+	public Optional<Quote> findById(Integer quoteId) {
+		return quoteJpaRepository.findById(quoteId)
+			.map(quoteMapper::toDomain);
+	}
 
 	@Override
 	public Quote save(Quote quote) {
