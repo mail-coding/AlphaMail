@@ -5,6 +5,7 @@ export interface Product {
   stock: number;
   inboundPrice: number;
   outboundPrice: number;
+  image?: string;
   isSelected?: boolean;
 }
 
@@ -14,9 +15,9 @@ export interface ProductSearchParams {
 
 export interface ProductListResponse {
   contents: Product[];
-  total_count: number;
-  page_count: number;
-  current_page: number;
+  totalCount: number;
+  pageCount: number;
+  currentPage: number;
 }
 
 export interface CreateProductRequest {

@@ -20,6 +20,8 @@ export const productService = {
         ...(params?.sort && { sort: params.sort })
       }
     });
+    console.log('productService - 파라미터:', params);
+    console.log('productService - API 응답:', response.data);
     return response.data;
   },
 
@@ -31,13 +33,33 @@ export const productService = {
 
   // 상품 생성
   createProduct: async (product: CreateProductRequest) => {
-    const response = await api.post<Product>('/api/erp/products', product);
+    const requestData = {
+      companyId: product.companyId,
+      name: product.name,
+      standard: product.standard,
+      stock: product.stock,
+      inboundPrice: product.inboundPrice,
+      outboundPrice: product.outboundPrice,
+      image: product.image
+    };
+    const response = await api.post<Product>('/api/erp/products', requestData);
+
     return response.data;
   },
 
   // 상품 수정
   updateProduct: async (id: string, product: UpdateProductRequest) => {
-    const response = await api.put<Product>(`/api/erp/products/${id}`, product);
+    const requestData = {
+      name: product.name,
+      standard: product.standard,
+      stock: product.stock,
+      inboundPrice: product.inboundPrice,
+      outboundPrice: product.outboundPrice,
+      image: product.image
+    };
+
+    const response = await api.put<Product>(`/api/erp/products/${id}`, requestData);
+
     return response.data;
   },
 
@@ -49,8 +71,8 @@ export const productService = {
   // 선택된 상품들 삭제
   deleteProducts: async (ids: number[]) => {
     try {
-      await api.delete('/api/erp/products', {
-        data: { ids }
+      await api.post('/api/erp/products/delete', {
+        ids: ids
       });
     } catch (error) {
       console.error('선택된 상품 삭제 실패:', error);

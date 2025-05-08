@@ -15,8 +15,6 @@ export const usePagedProducts = (options: UsePagedProductsOptions) => {
     pageSize,
     sortOption,
     setCurrentPage,
-    setPageSize,
-    setSortOption
   } = useProductStore();
 
   console.log('Hook Initialized with options:', options);
@@ -41,10 +39,12 @@ export const usePagedProducts = (options: UsePagedProductsOptions) => {
       const params = {
         companyId: options.companyId,
         ...(searchQuery && { query: searchQuery }),
-        page: currentPage,
+        page: currentPage - 1,
         size: pageSize,
         sort: sortOption
       };
+
+      console.log('Params:', params);
 
       try {
         const response = await productService.getProducts(params);
@@ -76,25 +76,13 @@ export const usePagedProducts = (options: UsePagedProductsOptions) => {
     setCurrentPage(page);
   };
 
-  const handleSizeChange = (size: number) => {
-    console.log('Page size changed:', size);
-    setPageSize(size);
-    setCurrentPage(1);
-  };
-
-  const handleSortChange = (sort: number) => {
-    console.log('Sort option changed:', sort);
-    setSortOption(sort);
-    setCurrentPage(1);
-  };
-
   // 데이터가 없을 때 빈 배열 반환
   const products = data?.contents || [];
 
   return {
     products,
-    totalCount: data?.total_count || 0,
-    pageCount: data?.page_count || 0,
+    totalCount: data?.totalCount || 0,
+    pageCount: data?.pageCount || 0,
     currentPage,
     pageSize,
     sortOption,
@@ -102,8 +90,6 @@ export const usePagedProducts = (options: UsePagedProductsOptions) => {
     isLoading,
     error,
     handlePageChange,
-    handleSizeChange,
-    handleSortChange,
     refetch
   };
 };

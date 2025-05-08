@@ -3,10 +3,8 @@ import { api } from '@/shared/lib/axiosInstance';
 import { AxiosResponse } from 'axios';
 import { QueryClient } from '@tanstack/react-query';
 
-// scheduleService에서만 사용할 queryClient 생성
 const scheduleQueryClient = new QueryClient();
 
-// ISO 문자열에서 'Z'와 밀리초를 제거하는 유틸리티 함수
 const toISOStringWithoutZ = (date: Date): string => {
   return date.toISOString().replace(/\.\d{3}Z$/, '');
 };

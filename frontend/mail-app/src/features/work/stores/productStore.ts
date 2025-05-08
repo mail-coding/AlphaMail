@@ -19,11 +19,9 @@ interface ProductState {
   currentPage: number;
   pageSize: number;
   setCurrentPage: (page: number) => void;
-  setPageSize: (size: number) => void;
   
   // 정렬 관련 상태
   sortOption: number;
-  setSortOption: (option: number) => void;
 }
 
 export const useProductStore = create<ProductState>((set) => ({
@@ -49,13 +47,8 @@ export const useProductStore = create<ProductState>((set) => ({
       return { selectedProductIds: newSet };
     }),
   
-  // 페이지네이션 관련 상태
   currentPage: 1,
   pageSize: 10,
   setCurrentPage: (page) => set({ currentPage: page }),
-  setPageSize: (size) => set({ pageSize: size }),
-  
-  // 정렬 관련 상태
-  sortOption: 0,
-  setSortOption: (option) => set({ sortOption: option }),
+  sortOption: 0, 
 })); 

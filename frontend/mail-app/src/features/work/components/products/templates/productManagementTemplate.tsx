@@ -5,6 +5,8 @@ import { ProductTable } from '../organisms/productTable';
 import { ProductDetailTemplate } from './productDetailTemplate';
 import { productService } from '../../../services/productService';
 import { useProductStore } from '../../../stores/productStore';
+import { usePagedProducts } from '../../../hooks/usePagedProducts';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface ProductManagementTemplateProps {
   onAddProduct?: () => void;
@@ -15,6 +17,7 @@ export const ProductManagementTemplate: React.FC<ProductManagementTemplateProps>
   onAddProduct,
   companyId = 1 
 }) => {
+  const queryClient = useQueryClient();
   const {
     keyword,
     setKeyword,
@@ -24,6 +27,16 @@ export const ProductManagementTemplate: React.FC<ProductManagementTemplateProps>
     toggleProductSelection,
     setSelectedProductIds
   } = useProductStore();
+
+  const {
+    products,
+    totalCount,
+    pageCount,
+    currentPage,
+    isLoading,
+    error,
+    handlePageChange
+  } = usePagedProducts({ companyId });
 
   const handleSearch = (searchKeyword: string) => {
     setKeyword(searchKeyword);
@@ -51,11 +64,20 @@ export const ProductManagementTemplate: React.FC<ProductManagementTemplateProps>
       await productService.deleteProducts([...selectedProductIds]);
       setSelectedProductIds(new Set());
       alert('선택한 상품이 삭제되었습니다.');
+      
+      // 삭제 후 데이터 갱신
+      await queryClient.invalidateQueries({ 
+        queryKey: ['products'],
+        refetchType: 'all'
+      });
     } catch (error) {
       console.error('상품 삭제 실패:', error);
       alert('상품 삭제에 실패했습니다.');
     }
   };
+
+  if (isLoading) return <div>로딩 중...</div>;
+  if (error) return <div>에러가 발생했습니다.</div>;
 
   if (selectedProduct) {
     return (
@@ -97,10 +119,14 @@ export const ProductManagementTemplate: React.FC<ProductManagementTemplateProps>
             </div>
           </div>
           <ProductTable
-            companyId={companyId}
+            products={products}
+            totalCount={totalCount}
+            pageCount={pageCount}
+            currentPage={currentPage}
             onProductClick={handleProductClick}
             onSelectProduct={toggleProductSelection}
             selectedProductIds={selectedProductIds}
+            onPageChange={handlePageChange}
           />
         </div>
       </div>

@@ -3,6 +3,7 @@ import { Typography } from '@/shared/components/atoms/Typography';
 import { Product } from '../../../types/product';
 import { productService } from '../../../services/productService';
 import { useNavigate } from 'react-router-dom';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface ProductDetailTemplateProps {
   product?: Product;
@@ -17,6 +18,7 @@ interface ProductDetailForm {
   inboundPrice: number;
   outboundPrice: number;
   image?: File;
+  imageUrl?: string;
 }
 
 export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({ 
@@ -25,6 +27,7 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({
   companyId = 1 
 }) => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [formData, setFormData] = useState<ProductDetailForm>({
     name: '',
     standard: '',
@@ -32,18 +35,35 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({
     inboundPrice: 0,
     outboundPrice: 0,
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (product) {
-      setFormData({
-        name: product.name,
-        standard: product.standard,
-        stock: product.stock,
-        inboundPrice: product.inboundPrice,
-        outboundPrice: product.outboundPrice,
-      });
-    }
-  }, [product]);
+    const fetchProductDetail = async () => {
+      if (!product?.id) return;
+      
+      try {
+        setIsLoading(true);
+        setError(null);
+        const productDetail = await productService.getProduct(product.id.toString());
+        setFormData({
+          name: productDetail.name,
+          standard: productDetail.standard,
+          stock: productDetail.stock,
+          inboundPrice: productDetail.inboundPrice,
+          outboundPrice: productDetail.outboundPrice,
+          imageUrl: productDetail.image
+        });
+      } catch (err) {
+        console.error('상품 상세 정보 조회 실패:', err);
+        setError('상품 상세 정보를 불러오는데 실패했습니다.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProductDetail();
+  }, [product?.id]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -64,33 +84,74 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      if (product) {
-        // 수정
-        await productService.updateProduct(product.id.toString(), {
-          id: product.id,
-          ...formData,
-          companyId
-        });
-      } else {
-        // 등록
-        await productService.createProduct({
-          ...formData,
-          companyId
-        });
-      }
+  const createMutation = useMutation({
+    mutationFn: (data: ProductDetailForm) => 
+      productService.createProduct({
+        ...data,
+        companyId
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ 
+        queryKey: ['products'],
+        refetchType: 'all'
+      });
       if (onBack) {
         onBack();
       } else {
         navigate('/products');
+      }
+    },
+    onError: (error) => {
+      console.error('상품 저장 실패:', error);
+      alert('상품 저장에 실패했습니다.');
+    }
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: (data: ProductDetailForm) => 
+      productService.updateProduct(product!.id.toString(), {
+        id: product!.id,
+        ...data,
+        companyId
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ 
+        queryKey: ['products'],
+        refetchType: 'all'
+      });
+      if (onBack) {
+        onBack();
+      } else {
+        navigate('/products');
+      }
+    },
+    onError: (error) => {
+      console.error('상품 저장 실패:', error);
+      alert('상품 저장에 실패했습니다.');
+    }
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (product) {
+        updateMutation.mutate(formData);
+      } else {
+        createMutation.mutate(formData);
       }
     } catch (error) {
       console.error('상품 저장 실패:', error);
       alert('상품 저장에 실패했습니다.');
     }
   };
+
+  if (isLoading) {
+    return <div className="p-6">로딩 중...</div>;
+  }
+
+  if (error) {
+    return <div className="p-6 text-red-500">{error}</div>;
+  }
 
   return (
     <div className="p-6 bg-white rounded-lg shadow">
@@ -175,10 +236,10 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
               />
             </div>
-            {formData.image && (
+            {(formData.image || formData.imageUrl) && (
               <div className="mt-4">
                 <img 
-                  src={URL.createObjectURL(formData.image)} 
+                  src={formData.image ? URL.createObjectURL(formData.image) : formData.imageUrl} 
                   alt="상품 이미지 미리보기"
                   className="max-w-full h-auto rounded-md"
                 />
