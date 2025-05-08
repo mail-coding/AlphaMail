@@ -28,6 +28,11 @@ export const ProductTable: React.FC<ProductTableProps> = ({
     return <div>데이터 형식이 올바르지 않습니다.</div>;
   }
 
+  // 페이지당 상품 수 (기본값 10)
+  const itemsPerPage = 10;
+  // 현재 페이지의 시작 인덱스
+  const startIndex = (currentPage - 1) * itemsPerPage;
+
   return (
     <div>
       <div className="mb-4 flex justify-end items-center">
@@ -41,7 +46,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({
           <thead className="bg-gray-50">
             <tr>
               <th className="p-4 text-left">선택</th>
-              <th className="p-4 text-left">ID</th>
+              <th className="p-4 text-left">순번</th>
               <th className="p-4 text-left">품목명</th>
               <th className="p-4 text-center">규격</th>
               <th className="p-4 text-center">재고</th>
@@ -51,7 +56,9 @@ export const ProductTable: React.FC<ProductTableProps> = ({
           </thead>
           <tbody>
             {products.length > 0 ? (
-              products.map((product) => {
+              products.map((product, index) => {
+                // 역순 순번 계산 (전체 개수 - (현재 페이지 시작 인덱스 + 현재 인덱스))
+                const sequenceNumber = totalCount - (startIndex + index);
                 console.log('Rendering product:', product);
                 return (
                   <ProductTableRow
@@ -60,6 +67,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({
                       ...product,
                       isSelected: selectedProductIds.has(product.id)
                     }}
+                    sequenceNumber={sequenceNumber}
                     onSelect={onSelectProduct || (() => {})}
                     onProductClick={onProductClick}
                   />

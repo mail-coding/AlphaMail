@@ -5,12 +5,14 @@ interface ProductTableRowProps {
   product: Product;
   onSelect: (id: number) => void;
   onProductClick?: (product: Product) => void;
+  sequenceNumber: number;
 }
 
 export const ProductTableRow: React.FC<ProductTableRowProps> = ({
   product,
   onSelect,
   onProductClick,
+  sequenceNumber
 }) => {
   console.log('Product in Row:', product);
 
@@ -24,7 +26,7 @@ export const ProductTableRow: React.FC<ProductTableRowProps> = ({
           className="rounded border-gray-300"
         />
       </td>
-      <td className="p-4">{product.id}</td>
+      <td className="p-4">{sequenceNumber}</td>
       <td className="p-4">
         {onProductClick ? (
           <button
