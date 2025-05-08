@@ -13,4 +13,4 @@ if __name__ == "__main__":
 
     #FastAPI 앱을 실행하는 ASGI 서버
     import uvicorn
-    uvicorn.run("main:app", host="127.0.0.1", port=5000, reload=False)
+    uvicorn.run("main:app", host="127.0.0.1", port=5000, reload=True)
