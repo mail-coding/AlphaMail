@@ -2,7 +2,7 @@ package com.alphamail.api.user.infrastructure.adapter;
 
 import org.springframework.stereotype.Component;
 
-import com.alphamail.api.user.application.usecase.port.LoadUserPort;
+import com.alphamail.api.user.application.port.LoadUserPort;
 import com.alphamail.api.user.domain.repository.UserRepository;
 import com.alphamail.api.user.domain.valueobject.UserId;
 import com.alphamail.common.exception.ErrorMessage;

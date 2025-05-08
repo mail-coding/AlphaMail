@@ -1,4 +1,4 @@
-package com.alphamail.api.user.application.usecase.port;
+package com.alphamail.api.user.application.port;
 
 import com.alphamail.api.user.domain.valueobject.UserId;
 

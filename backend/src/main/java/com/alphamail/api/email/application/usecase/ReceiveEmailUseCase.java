@@ -10,7 +10,7 @@ import com.alphamail.api.email.domain.repository.EmailAttachmentRepository;
 import com.alphamail.api.email.domain.repository.EmailFolderRepository;
 import com.alphamail.api.email.domain.repository.EmailRepository;
 import com.alphamail.api.email.presentation.dto.ReceiveEmailRequest;
-import com.alphamail.api.user.application.usecase.port.LoadUserPort;
+import com.alphamail.api.user.application.port.LoadUserPort;
 import com.alphamail.api.user.domain.valueobject.UserId;
 
 import lombok.RequiredArgsConstructor;
