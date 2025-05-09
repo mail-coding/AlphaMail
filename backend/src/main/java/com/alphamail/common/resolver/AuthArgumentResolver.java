@@ -18,9 +18,9 @@ public class AuthArgumentResolver implements HandlerMethodArgumentResolver {
 
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
-		return parameter.getParameterAnnotation(Auth.class) != null &&
-			(parameter.getParameterType().equals(Integer.class) ||
-				parameter.getParameterType().equals(UserId.class));
+		return parameter.getParameterAnnotation(Auth.class) != null
+			&& (parameter.getParameterType().equals(Integer.class)
+				|| parameter.getParameterType().equals(UserId.class));
 	}
 
 
@@ -30,8 +30,8 @@ public class AuthArgumentResolver implements HandlerMethodArgumentResolver {
 
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-		if (authentication == null || !authentication.isAuthenticated() ||
-			authentication.getPrincipal().equals("anonymousUser")) {
+		if (authentication == null || !authentication.isAuthenticated()
+			|| authentication.getPrincipal().equals("anonymousUser")) {
 			return null;
 		}
 

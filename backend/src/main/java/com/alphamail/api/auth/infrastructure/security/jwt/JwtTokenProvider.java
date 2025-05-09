@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import com.alphamail.api.auth.infrastructure.security.userdetails.CustomUserDetailService;
 import com.alphamail.api.user.domain.valueobject.UserId;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -64,11 +65,11 @@ public class JwtTokenProvider {
 
 	public boolean validateToken(String token) {
 		try {
-				Claims claims = Jwts.parserBuilder()
-					.setSigningKey(key)
-					.build()
-					.parseClaimsJws(token)
-					.getBody();
+			Claims claims = Jwts.parserBuilder()
+				.setSigningKey(key)
+				.build()
+				.parseClaimsJws(token)
+				.getBody();
 
 			return !claims.getExpiration().before(new Date());
 		} catch (JwtException | IllegalArgumentException e) {

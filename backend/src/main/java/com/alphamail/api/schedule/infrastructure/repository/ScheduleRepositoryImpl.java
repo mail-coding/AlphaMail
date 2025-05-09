@@ -42,14 +42,15 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
 	}
 
 	@Override
-	public Page<Schedule> findByPeriodAndKeyword(LocalDateTime startTime, LocalDateTime endTime, String keyword, Integer userId,
-		Pageable pageable) {
+	public Page<Schedule> findByPeriodAndKeyword(LocalDateTime startTime, LocalDateTime endTime,
+		String keyword, Integer userId, Pageable pageable) {
 		return jpaRepository.findByPeriodAndKeyword(startTime, endTime, keyword, userId, pageable)
 			.map(scheduleMapper::toDomain);
 	}
 
 	@Override
-	public Page<Schedule> findByPeriod(LocalDateTime startTime, LocalDateTime endTime, Integer userId, Pageable pageable) {
+	public Page<Schedule> findByPeriod(LocalDateTime startTime, LocalDateTime endTime,
+		Integer userId, Pageable pageable) {
 		return jpaRepository.findByPeriod(startTime, endTime, userId, pageable)
 			.map(scheduleMapper::toDomain);
 	}
