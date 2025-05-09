@@ -1,5 +1,6 @@
 import React from 'react';
 import { Order } from '../../../types/order';
+import { format } from 'date-fns';
 
 interface OrderTableRowProps {
   order: Order;
@@ -28,18 +29,19 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
             onClick={() => onOrderClick(order)}
             className="text-left hover:text-blue-600 hover:underline"
           >
-            {order.order_no}
+            {order.orderNo}
           </button>
         ) : (
-          <span>{order.order_no}</span>
+          <span>{order.orderNo}</span>
         )}
       </td>
-      <td className="p-4">{order.date}</td>
-      <td className="p-4">{order.manager}</td>
-      <td className="p-4">{order.client_name}</td>
-      <td className="p-4">{order.due_date}</td>
-      <td className="p-4">{order.item}</td>
-      <td className="p-4 text-right">{order.amount.toLocaleString()}원</td>
+      <td className="p-4">{format(new Date(order.createdAt), 'yyyy/MM/dd')}</td>
+      <td className="p-4">{order.userName}</td>
+      <td className="p-4">{order.clientName}</td>
+      <td className="p-4">{format(new Date(order.deliverAt), 'yyyy/MM/dd')}</td>
+      <td className="p-4">{order.productName}</td>
+      <td className="p-4 text-right">{order.productCount.toLocaleString()}개</td>
+      <td className="p-4 text-right">{order.price.toLocaleString()}원</td>
     </tr>
   );
 };

@@ -1,12 +1,13 @@
 export interface Order {
   id: number;
-  order_no: string;
-  date: string;
-  manager: string;
-  client_name: string;
-  due_date: string;
-  item: string;
-  amount: number;
+  orderNo: string;
+  createdAt: Date;
+  userName: string;
+  clientName: string;
+  deliverAt: Date;
+  productName: string;
+  productCount: number;
+  price: number;
   isSelected?: boolean;
 }
 
@@ -22,10 +23,20 @@ export interface OrderSearchParams {
 }
 
 export interface OrderListResponse {
-  contents: Order[];
-  total_count: number;
-  page_count: number;
-  current_page: number;
+  contents: Array<{
+    id: number;
+    orderNo: string;
+    createdAt: Date;
+    userName: string;
+    clientName: string;
+    deliverAt: Date;
+    productName: string;
+    productCount: number;
+    price: number;
+  }>;
+  totalCount: number;
+  pageCount: number;
+  currentPage: number;
 }
 
 export interface OrderDetail {

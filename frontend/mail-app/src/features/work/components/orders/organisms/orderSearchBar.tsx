@@ -9,15 +9,17 @@ const OrderSearchBar: React.FC<OrderSearchBarProps> = ({ onSearch }) => {
   const orderNoRef = useRef<HTMLInputElement>(null);
   const managerRef = useRef<HTMLInputElement>(null);
   const itemRef = useRef<HTMLInputElement>(null);
-  const searchRef = useRef<HTMLInputElement>(null);
+  const startDateRef = useRef<HTMLInputElement>(null);
+  const endDateRef = useRef<HTMLInputElement>(null);
 
   const handleSearch = () => {
     const params = {
-      client_name: clientRef.current?.value,
-      order_no: orderNoRef.current?.value,
-      manager: managerRef.current?.value,
-      item: itemRef.current?.value,
-      search: searchRef.current?.value,
+      clientName: clientRef.current?.value,
+      orderNo: orderNoRef.current?.value,
+      userName: managerRef.current?.value,
+      productName: itemRef.current?.value,
+      startDate: startDateRef.current?.value,
+      endDate: endDateRef.current?.value,
     };
     onSearch(params);
   };
@@ -29,7 +31,21 @@ const OrderSearchBar: React.FC<OrderSearchBarProps> = ({ onSearch }) => {
       <input ref={orderNoRef} className="border p-2 rounded" placeholder="발주번호" />
       <input ref={managerRef} className="border p-2 rounded" placeholder="담당자" />
       <input ref={itemRef} className="border p-2 rounded" placeholder="품목" />
-      <input ref={searchRef} className="border p-2 rounded" placeholder="검색어" />
+      <div className="flex items-center gap-2">
+        <input 
+          ref={startDateRef} 
+          type="date" 
+          className="border p-2 rounded" 
+          placeholder="시작일"
+        />
+        <span>~</span>
+        <input 
+          ref={endDateRef} 
+          type="date" 
+          className="border p-2 rounded" 
+          placeholder="종료일"
+        />
+      </div>
       <button
         className="ml-2 px-4 py-2 bg-blue-500 text-white rounded"
         onClick={handleSearch}

@@ -56,7 +56,6 @@ const OrderDetailTemplate: React.FC<OrderDetailTemplateProps> = ({ order, onBack
         ...newProducts[index],
         [field]: value,
       };
-      // 수량이나 단가가 변경되면 금액 자동 계산
       if (field === 'quantity' || field === 'unit_price') {
         newProducts[index].amount = newProducts[index].quantity * newProducts[index].unit_price;
       }
@@ -96,10 +95,8 @@ const OrderDetailTemplate: React.FC<OrderDetailTemplateProps> = ({ order, onBack
     e.preventDefault();
     try {
       if (order) {
-        // 수정인 경우
         await orderService.updateOrder(Number(order.order_no), formData);
       } else {
-        // 등록인 경우
         await orderService.createOrder(formData);
       }
       onSave(formData);

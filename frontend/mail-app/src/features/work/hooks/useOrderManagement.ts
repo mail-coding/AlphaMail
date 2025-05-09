@@ -1,75 +1,73 @@
-import { useCallback } from 'react';
 import { useOrderStore } from '../store/orderStore';
 import { orderService } from '../services/orderService';
 import { OrderDetail } from '../types/order';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 export const useOrderManagement = () => {
-  const {
-    currentPage,
-    pageSize,
+  const queryClient = useQueryClient();
+  const { 
+    currentPage, 
+    pageSize, 
     sortOption,
-    setOrders,
-    setTotalPages,
-    setLoading,
-    setError,
+    searchParams,
     selectedOrderIds,
-    clearSelection,
+    clearSelection 
   } = useOrderStore();
 
-  const fetchOrders = useCallback(async (searchParams?: string) => {
-    try {
-      setLoading(true);
-      const response = await orderService.getOrders({
-        page: currentPage,
+  const { data: ordersData, isLoading, error } = useQuery({
+    queryKey: ['orders', currentPage, pageSize, sortOption, searchParams],
+    queryFn: async () => {
+      const response = await orderService.getOrders(1, {
+        page: currentPage - 1,
         size: pageSize,
-        sort: sortOption.toString(),
-        search: searchParams,
+        ...searchParams,
       });
-      setOrders(response.data);
-      setTotalPages(response.totalPages);
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to fetch orders');
-    } finally {
-      setLoading(false);
-    }
-  }, [currentPage, pageSize, sortOption, setOrders, setTotalPages, setLoading, setError]);
 
-  const handleDeleteOrders = useCallback(async () => {
-    if (selectedOrderIds.size === 0) {
-      setError('No orders selected for deletion');
-      return;
-    }
+      // isSelected 상태 업데이트
+      const ordersWithSelection = response.content.map(order => ({
+        ...order,
+        isSelected: selectedOrderIds.has(order.id),
+      }));
 
-    try {
-      setLoading(true);
-      await orderService.deleteOrders(Array.from(selectedOrderIds));
-      await fetchOrders();
+      return {
+        ...response,
+        content: ordersWithSelection,
+      };
+    },
+  });
+
+  const deleteOrderMutation = useMutation({
+    mutationFn: orderService.deleteOrders,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
       clearSelection();
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to delete orders');
-    } finally {
-      setLoading(false);
-    }
-  }, [selectedOrderIds, fetchOrders, clearSelection, setLoading, setError]);
+    },
+  });
 
-  const handleSaveOrder = useCallback(async (orderData: OrderDetail, orderId?: number) => {
-    try {
-      setLoading(true);
-      if (orderId) {
-        await orderService.updateOrder(orderId, orderData);
-      } else {
-        await orderService.createOrder(orderData);
-      }
-      await fetchOrders();
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to save order');
-    } finally {
-      setLoading(false);
+  const saveOrderMutation = useMutation({
+    mutationFn: orderService.saveOrder,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+    },
+  });
+
+  const handleDeleteOrders = async () => {
+    if (selectedOrderIds.size === 0) {
+      throw new Error('No orders selected for deletion');
     }
-  }, [fetchOrders, setLoading, setError]);
+    await deleteOrderMutation.mutateAsync(Array.from(selectedOrderIds));
+  };
+
+  const handleSaveOrder = async (orderData: OrderDetail, orderId?: number) => {
+    await saveOrderMutation.mutateAsync({ orderData, orderId });
+  };
 
   return {
-    fetchOrders,
+    orders: ordersData?.content || [],
+    totalPages: ordersData?.totalPages || 0,
+    totalElements: ordersData?.totalElements || 0,
+    isLoading,
+    error,
     handleDeleteOrders,
     handleSaveOrder,
   };

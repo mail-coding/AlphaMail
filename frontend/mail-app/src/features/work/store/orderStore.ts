@@ -1,70 +1,82 @@
 import { create } from 'zustand';
-import { Order, OrderDetail } from '../types/order';
+import { OrderDetail } from '../types/order';
 
-interface OrderState {
-  orders: Order[];
-  selectedOrder: OrderDetail | null;
-  selectedOrderIds: Set<number>;
+interface OrderStore {
+  // 페이지네이션
   currentPage: number;
-  totalPages: number;
   pageSize: number;
-  sortOption: number;
-  isLoading: boolean;
-  error: string | null;
-  showOrderDetail: boolean;
-  
-  // Actions
-  setOrders: (orders: Order[]) => void;
-  setSelectedOrder: (order: OrderDetail | null) => void;
-  setSelectedOrderIds: (ids: Set<number>) => void;
   setCurrentPage: (page: number) => void;
-  setTotalPages: (pages: number) => void;
   setPageSize: (size: number) => void;
+
+  // 정렬
+  sortOption: number;
   setSortOption: (option: number) => void;
-  setLoading: (loading: boolean) => void;
-  setError: (error: string | null) => void;
-  setShowOrderDetail: (show: boolean) => void;
-  
-  // Complex actions
-  toggleOrderSelection: (id: number) => void;
+
+  // 검색 파라미터
+  searchParams: {
+    clientName: string;
+    orderNo: number;
+    userName: string;
+    startDate: string;
+    endDate: string;
+    productName: string;
+  };
+  setSearchParams: (params: Partial<OrderStore['searchParams']>) => void;
+
+  // 선택된 주문
+  selectedOrderIds: Set<number>;
+  toggleOrderSelection: (id: number, checked: boolean) => void;
   clearSelection: () => void;
+
+  // 상세 보기
+  showOrderDetail: boolean;
+  selectedOrder: OrderDetail | null;
+  setShowOrderDetail: (show: boolean) => void;
+  setSelectedOrder: (order: OrderDetail | null) => void;
 }
 
-export const useOrderStore = create<OrderState>((set) => ({
-  orders: [],
-  selectedOrder: null,
-  selectedOrderIds: new Set(),
+export const useOrderStore = create<OrderStore>((set) => ({
+  // 페이지네이션
   currentPage: 1,
-  totalPages: 1,
   pageSize: 10,
-  sortOption: 0,
-  isLoading: false,
-  error: null,
-  showOrderDetail: false,
-
-  // Basic setters
-  setOrders: (orders) => set({ orders }),
-  setSelectedOrder: (order) => set({ selectedOrder: order }),
-  setSelectedOrderIds: (ids) => set({ selectedOrderIds: ids }),
   setCurrentPage: (page) => set({ currentPage: page }),
-  setTotalPages: (pages) => set({ totalPages: pages }),
   setPageSize: (size) => set({ pageSize: size }),
-  setSortOption: (option) => set({ sortOption: option }),
-  setLoading: (loading) => set({ isLoading: loading }),
-  setError: (error) => set({ error }),
-  setShowOrderDetail: (show) => set({ showOrderDetail: show }),
 
-  // Complex actions
-  toggleOrderSelection: (id) =>
+  // 정렬
+  sortOption: 0,
+  setSortOption: (option) => set({ sortOption: option }),
+
+  // 검색 파라미터
+  searchParams: {
+    clientName: '',
+    orderNo: 0,
+    userName: '',
+    startDate: '',
+    endDate: '',
+    productName: '',
+  },
+  setSearchParams: (params) =>
+    set((state) => ({
+      searchParams: { ...state.searchParams, ...params },
+    })),
+
+  // 선택된 주문
+  selectedOrderIds: new Set(),
+  toggleOrderSelection: (id, checked) =>
     set((state) => {
       const newSelectedIds = new Set(state.selectedOrderIds);
-      if (newSelectedIds.has(id)) {
-        newSelectedIds.delete(id);
-      } else {
+      if (checked) {
         newSelectedIds.add(id);
+      } else {
+        newSelectedIds.delete(id);
       }
       return { selectedOrderIds: newSelectedIds };
     }),
-
   clearSelection: () => set({ selectedOrderIds: new Set() }),
+
+  // 상세 보기
+  showOrderDetail: false,
+  selectedOrder: null,
+  setShowOrderDetail: (show) => set({ showOrderDetail: show }),
+  setSelectedOrder: (order) => set({ selectedOrder: order }),
 })); 
