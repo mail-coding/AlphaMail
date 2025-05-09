@@ -25,7 +25,6 @@ public class RedisTokenRepositoryImpl implements TokenRepository {
 	@Override
 	public void saveAccessToken(UserId userId, String accessToken, Long expiresIn) {
 		String key = generateKey(userId.getValue());
-		System.out.println("Saving token for key: " + key);
 		redisTemplate.opsForValue().set(key, accessToken, expiresIn, TimeUnit.SECONDS);
 	}
 
