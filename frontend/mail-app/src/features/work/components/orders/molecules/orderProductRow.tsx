@@ -19,7 +19,7 @@ const OrderProductRow: React.FC<OrderProductRowProps> = ({
   const handleProductSelect = (selectedProduct: Product) => {
     onProductChange(index, 'name', selectedProduct.name);
     onProductChange(index, 'standard', selectedProduct.standard);
-    onProductChange(index, 'unit_price', selectedProduct.outboundPrice);
+    onProductChange(index, 'price', selectedProduct.outboundPrice);
   };
 
   return (
@@ -42,16 +42,24 @@ const OrderProductRow: React.FC<OrderProductRowProps> = ({
       <td className="p-2">
         <input 
           type="number" 
-          value={product.quantity} 
-          onChange={e => onProductChange(index, 'quantity', Number(e.target.value))} 
+          value={product.count} 
+          onChange={e => onProductChange(index, 'count', Number(e.target.value))} 
           className="border p-1 rounded w-full" 
         />
       </td>
       <td className="p-2">
         <input 
           type="number" 
-          value={product.unit_price} 
-          onChange={e => onProductChange(index, 'unit_price', Number(e.target.value))} 
+          value={product.count} 
+          onChange={e => onProductChange(index, 'count', Number(e.target.value))} 
+          className="border p-1 rounded w-full" 
+        />
+      </td>
+      <td className="p-2">
+        <input 
+          type="number" 
+          value={product.price} 
+          onChange={e => onProductChange(index, 'price', Number(e.target.value))} 
           className="border p-1 rounded w-full" 
         />
       </td>

@@ -40,29 +40,36 @@ export interface OrderListResponse {
 }
 
 export interface OrderDetail {
-  order_no: string;
-  date: string;
-  is_inbound: boolean;
-  manager: string;
-  client_name: string;
-  business_no: string;
+  id: number;
+  userId: number;
+  userName: string;
+  groupId: number;
+  groupName: string;
+  clientId: number;
+  clientName: string;
+  licenseNumber: string;
   representative: string;
-  business_type: string;
-  business_category: string;
-  client_manager: string;
-  client_contact: string;
-  payment_condition: string;
-  due_date: string;
-  address: string;
+  businessType: string;
+  businessItem: string;
+  manager: string;
+  managerNumber: string;
+  paymentTerm: string;
+  shippingAddress: string;
+  orderNo: string;
+  createdAt: Date;
+  updatedAt: Date;
+  deliveryAt: Date;
   products: OrderProduct[];
 }
 
 export interface OrderProduct {
+  id: number;
   name: string;
   standard: string;
-  quantity: number;
-  unit_price: number;
+  count: number;
+  price: number;
   tax_amount: number;
   supply_amount: number;
   amount: number;
+  deletedAt?: Date | null;
 } 

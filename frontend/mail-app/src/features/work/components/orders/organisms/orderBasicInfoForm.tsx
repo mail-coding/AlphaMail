@@ -4,35 +4,69 @@ import AddressInput from '../../../../../shared/components/atoms/addressInput';
 import ClientInput from '../../../../../shared/components/atoms/clientInput';
 import { Client } from '../../../types/clients';
 import KakaoAddressTemplate from '../../../../../shared/components/template/kakaoAddressTemplate';
+import { api } from '../../../../../shared/lib/axiosInstance';
 
 interface OrderBasicInfoFormProps {
   formData: OrderDetail;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const fields = [
-  { name: 'order_no', label: '발주등록번호' },
-  { name: 'date', label: '일자' },
-  { name: 'manager', label: '발주담당자' },
-  { name: 'client_name', label: '거래처명', component: 'client' },
-  { name: 'business_no', label: '사업자등록번호' },
-  { name: 'representative', label: '대표자' },
-  { name: 'business_type', label: '업태' },
-  { name: 'business_category', label: '종목' },
-  { name: 'client_manager', label: '거래처담당자' },
-  { name: 'client_contact', label: '거래처연락처' },
-  { name: 'payment_condition', label: '결제조건' },
-  { name: 'due_date', label: '납기일자' },
-  { name: 'address', label: '주소', component: 'address', colSpan: 2 },
+interface FormField {
+  name: keyof OrderDetail;
+  label: string;
+  component?: 'client' | 'address';
+  colSpan?: number;
+  type?: 'text' | 'date' | 'number';
+  required?: boolean;
+  validation?: (value: string) => string | null;
+}
+
+const fields: FormField[] = [
+  { name: 'orderNo', label: '발주등록번호', required: true },
+  { name: 'createdAt', label: '일자', type: 'date', required: true },
+  { name: 'userName', label: '발주담당자', required: true },
+  { name: 'clientName', label: '거래처명', component: 'client', required: true },
+  { name: 'licenseNumber', label: '사업자등록번호', required: true },
+  { name: 'representative', label: '대표자', required: true },
+  { name: 'businessType', label: '업태' },
+  { name: 'businessItem', label: '종목' },
+  { name: 'manager', label: '거래처담당자' },
+  { name: 'managerNumber', label: '거래처연락처' },
+  { name: 'paymentTerm', label: '결제조건' },
+  { name: 'deliveryAt', label: '납기일자', type: 'date', required: true },
+  { name: 'shippingAddress', label: '주소', component: 'address', colSpan: 2, required: true },
 ];
 
 const OrderBasicInfoForm: React.FC<OrderBasicInfoFormProps> = ({ formData, onInputChange }) => {
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validateField = (field: FormField, value: string): string | null => {
+    if (field.required && !value) {
+      return `${field.label}은(는) 필수 입력 항목입니다.`;
+    }
+    return field.validation ? field.validation(value) : null;
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    const field = fields.find(f => f.name === name);
+    
+    if (field) {
+      const error = validateField(field, value);
+      setErrors(prev => ({
+        ...prev,
+        [name]: error || ''
+      }));
+    }
+    
+    onInputChange(e);
+  };
 
   const handleAddressChange = (value: string) => {
     const event = {
       target: {
-        name: 'address',
+        name: 'shippingAddress',
         value,
       },
     } as React.ChangeEvent<HTMLInputElement>;
@@ -50,33 +84,40 @@ const OrderBasicInfoForm: React.FC<OrderBasicInfoFormProps> = ({ formData, onInp
     setIsAddressModalOpen(false);
   };
 
-  const handleClientChange = (client: Client) => {
-    const events = [
-      { target: { name: 'client_name', value: client.name } },
-      { target: { name: 'business_no', value: client.business_no } },
-      { target: { name: 'representative', value: client.ceo } },
-      { target: { name: 'business_type', value: client.type || '' } },
-      { target: { name: 'business_category', value: client.item || '' } },
-      { target: { name: 'client_manager', value: '' } },
-      { target: { name: 'client_contact', value: client.contact } },
-      { target: { name: 'address', value: client.address } },
-    ] as React.ChangeEvent<HTMLInputElement>[];
+  const handleClientChange = async (client: Client) => {
+    try {
+      // 거래처 상세 정보 조회 API 호출
+      const response = await api.get(`/api/clients/${client.id}`);
+      const clientDetail = response.data;
 
-    events.forEach(event => onInputChange(event));
+      const events = [
+        { target: { name: 'clientName', value: clientDetail.name } },
+        { target: { name: 'licenseNumber', value: clientDetail.business_no } },
+        { target: { name: 'representative', value: clientDetail.ceo } },
+        { target: { name: 'businessType', value: clientDetail.type || '' } },
+        { target: { name: 'businessItem', value: clientDetail.item || '' } },
+      ] as React.ChangeEvent<HTMLInputElement>[];
+
+      events.forEach(event => onInputChange(event));
+    } catch (error) {
+      console.error('거래처 정보 조회 실패:', error);
+      alert('거래처 정보를 불러오는데 실패했습니다.');
+    }
   };
 
-  const renderField = (field: typeof fields[0]) => {
+  const renderField = (field: FormField) => {
     const commonProps = {
       name: field.name,
-      value: String(formData[field.name as keyof OrderDetail] || ''),
-      className: "mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2",
+      value: String(formData[field.name] || ''),
+      className: `mt-1 block w-full border ${errors[field.name] ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm p-2`,
+      required: field.required,
     };
 
     if (field.component === 'client') {
       return (
         <ClientInput
           key={field.name}
-          value={formData.client_name}
+          value={formData.clientName}
           onChange={handleClientChange}
           className="mt-1"
         />
@@ -87,7 +128,7 @@ const OrderBasicInfoForm: React.FC<OrderBasicInfoFormProps> = ({ formData, onInp
       return (
         <AddressInput
           key={field.name}
-          value={formData.address}
+          value={formData.shippingAddress}
           onChange={handleAddressChange}
           onSearchClick={() => setIsAddressModalOpen(true)}
           className="mt-1"
@@ -96,12 +137,17 @@ const OrderBasicInfoForm: React.FC<OrderBasicInfoFormProps> = ({ formData, onInp
     }
 
     return (
-      <input
-        key={field.name}
-        type={field.name === 'date' || field.name === 'due_date' ? 'date' : 'text'}
-        {...commonProps}
-        onChange={onInputChange}
-      />
+      <div>
+        <input
+          key={field.name}
+          type={field.type || 'text'}
+          {...commonProps}
+          onChange={handleInputChange}
+        />
+        {errors[field.name] && (
+          <p className="mt-1 text-sm text-red-500">{errors[field.name]}</p>
+        )}
+      </div>
     );
   };
 

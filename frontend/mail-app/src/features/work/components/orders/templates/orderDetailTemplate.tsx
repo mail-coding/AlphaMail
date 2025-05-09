@@ -13,31 +13,35 @@ interface OrderDetailTemplateProps {
 const OrderDetailTemplate: React.FC<OrderDetailTemplateProps> = ({ order, onBack, onSave }) => {
   const [formData, setFormData] = useState<OrderDetail>(
     order || {
-      order_no: '',
-      date: '',
-      is_inbound: false,
-      manager: '',
-      client_name: '',
-      business_no: '',
+      id: 0,
+      userId: 0,
+      userName: '',
+      groupId: 0,
+      groupName: '',
+      clientId: 0,
+      clientName: '',
+      licenseNumber: '',
       representative: '',
-      business_type: '',
-      business_category: '',
-      client_manager: '',
-      client_contact: '',
-      payment_condition: '',
-      due_date: '',
-      address: '',
-      products: [
-        {
-          name: '',
-          standard: '',
-          quantity: 0,
-          unit_price: 0,
-          tax_amount: 0,
-          supply_amount: 0,
-          amount: 0,
-        },
-      ],
+      businessType: '',
+      businessItem: '',
+      manager: '',
+      managerNumber: '',
+      paymentTerm: '',
+      shippingAddress: '',
+      orderNo: '',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deliveryAt: new Date(),
+      products: [{
+        id: 0,
+        name: '',
+        standard: '',
+        count: 0,
+        price: 0,
+        tax_amount: 0,
+        supply_amount: 0,
+        amount: 0
+      }]
     }
   );
 
@@ -56,8 +60,8 @@ const OrderDetailTemplate: React.FC<OrderDetailTemplateProps> = ({ order, onBack
         ...newProducts[index],
         [field]: value,
       };
-      if (field === 'quantity' || field === 'unit_price') {
-        newProducts[index].amount = newProducts[index].quantity * newProducts[index].unit_price;
+      if (field === 'count' || field === 'price') {
+        newProducts[index].amount = newProducts[index].count * newProducts[index].price;
       }
       return {
         ...prev,
@@ -72,13 +76,14 @@ const OrderDetailTemplate: React.FC<OrderDetailTemplateProps> = ({ order, onBack
       products: [
         ...prev.products,
         {
+          id: 0,
           name: '',
           standard: '',
-          quantity: 0,
-          unit_price: 0,
+          count: 0,
+          price: 0,
           tax_amount: 0,
           supply_amount: 0,
-          amount: 0,
+          amount: 0
         },
       ],
     }));
@@ -95,7 +100,7 @@ const OrderDetailTemplate: React.FC<OrderDetailTemplateProps> = ({ order, onBack
     e.preventDefault();
     try {
       if (order) {
-        await orderService.updateOrder(Number(order.order_no), formData);
+        await orderService.updateOrder(formData);
       } else {
         await orderService.createOrder(formData);
       }
