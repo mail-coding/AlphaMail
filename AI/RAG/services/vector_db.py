@@ -1,98 +1,110 @@
+import re
 import chromadb
-from sentence_transformers import SentenceTransformer
 from chromadb.utils import embedding_functions
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 from transformers import AutoTokenizer
+from typing import List, Dict, Any
+import logging
 
+# 로깅 설정
+logger = logging.getLogger(__name__)
 
-# 한국어 특화 임베딩 모델
-embedding_model = SentenceTransformer('nlpai-lab/KURE-v1')
+# 한국어 특화 임베딩 모델 및 토크나이저 설정
+EMBEDDING_MODEL = 'nlpai-lab/KURE-v1'
 embedding_function = embedding_functions.SentenceTransformerEmbeddingFunction(
-    model_name='nlpai-lab/KURE-v1'
+    model_name=EMBEDDING_MODEL
 )
+tokenizer = AutoTokenizer.from_pretrained(EMBEDDING_MODEL)
 
-tokenizer = AutoTokenizer.from_pretrained('nlpai-lab/KURE-v1')
-
+# ChromaDB 클라이언트 및 컬렉션 설정
 client = chromadb.PersistentClient(path="./db")
 collection = client.get_or_create_collection("email_collection", embedding_function=embedding_function)
 
-# 토큰화 기준 -> 맥락을 읽을때 영향을 끼침
-splitter = RecursiveCharacterTextSplitter(
-    chunk_size=256,
-    chunk_overlap=64,
-    length_function=lambda x: len(tokenizer.tokenize(x))
-)
+def korean_sentence_splitter(text: str) -> List[str]:
+    # 정규표현식 기반 문장 나누기
+    sentence_endings = re.compile(r'(?<=[\.\?\!])\s+|\n+|(?<=[가-힣])(?=[A-Z])')
+    sentences = sentence_endings.split(text.strip())
+    return [s.strip() for s in sentences if s.strip()]
 
-# DB벡터에 메일 내용 저장
+def chunk_sentences(sentences: List[str], chunk_size: int = 256, overlap: int = 64) -> List[str]:
+    chunks = []
+    current_chunk = []
+    current_length = 0
+
+    for sentence in sentences:
+        sent_len = len(tokenizer.tokenize(sentence))
+        if current_length + sent_len > chunk_size:
+            if current_chunk:
+                chunks.append(" ".join(current_chunk))
+                current_chunk = current_chunk[-(overlap // 10):]  # 일부 문장 중첩
+                current_length = sum(len(tokenizer.tokenize(s)) for s in current_chunk)
+        current_chunk.append(sentence)
+        current_length += sent_len
+
+    if current_chunk:
+        chunks.append(" ".join(current_chunk))
+
+    return chunks
+
+
 class VectorDBHandler:
     @staticmethod
-    def store_email_data(thread_id, email_data):
+    def store_email_data(vector_id: str, email_data: Dict[str, Any]) -> None:
     
-        # 메타데이터 제외한 body만 담음
-        email_text = email_data["body"]
+        email_text = email_data.get("body", "")
+        metadata = email_data.get("metadata", {})
+        if not email_text:
+            logger.warning(f"Empty email text for vector_id: {vector_id}")
+            return
+
         try:
-            print(f"[DEBUG] Email text sample (before splitting): {email_text[:100]}")
+            logger.debug(f"Processing email text (length: {len(email_text)})")
+            
+            # 문장 단위 분할 + 청크 생성
+            sentences = korean_sentence_splitter(email_text)
+            email_chunks = chunk_sentences(sentences)
+            logger.debug(f"Split email into {len(email_chunks)} chunks")
+
+            documents, metadatas, ids = [], [], []
+
+            for i, chunk in enumerate(email_chunks):
+                documents.append(chunk)
+                metadatas.append({
+                    "vector_id": vector_id,
+                    "doc_type": "email",
+                    "subject": email_data["metadata"].get("subject"),
+                    "timestamp": email_data["metadata"].get("timestamp"),
+                    "sender": email_data["metadata"].get("sender"),
+                    "receiver": email_data["metadata"].get("receiver"),
+                    "chunk_index": i
+                })
+                ids.append(f"{vector_id}_email_{i}")
+
+            if documents:
+                collection.add(documents=documents, metadatas=metadatas, ids=ids)
+                logger.info(f"Successfully stored {len(documents)} email chunks for {vector_id}")
+
         except Exception as e:
-            print(f"[ERROR] Error printing email text: {str(e)}")
-        
-        email_chunks = splitter.split_text(email_text)
-        print(f"[DEBUG] Split email into {len(email_chunks)} chunks")
-        
-        # 메일 바디&메타데이터 저장
-        for i, chunk in enumerate(email_chunks):
-            try:
-                print(f"[DEBUG] Chunk {i} sample: {chunk[:50]}")
-            except Exception as e:
-                print(f"[ERROR] Error printing chunk: {str(e)}")
-                
-            try:
-                collection.add(
-                    documents=[chunk],
-                    metadatas=[{
-                        "thread_id": thread_id,
-                        "doc_type": "email",
-                        **email_data["metadata"]
-                    }],
-                    # chunk 별로 고유한 id 있어야함
-                    ids=[f"{thread_id}_email_{i}"]
-                )
-                print(f"[DEBUG] Successfully stored email chunk {i}")
-            except Exception as e:
-                print(f"[ERROR] Failed to store email chunk {i}: {str(e)}")
-                import traceback
-                traceback.print_exc()
+            logger.error(f"Failed to store email data: {str(e)}")
+            raise
 
-
-    # 데이터 검색
     @staticmethod
-    def retrieve_thread_data(thread_id):
+    def retrieve_thread_data(vector_id: str) -> List[Dict[str, Any]]:
+        """벡터 ID에 해당하는 스레드 데이터 검색"""
         try:
-
-            res = collection.get(where={"thread_id": thread_id})
+            res = collection.get(where={"vector_id": vector_id})
+            if not res or 'documents' not in res:
+                logger.warning(f"No documents found for vector_id: {vector_id}")
+                return []
 
             documents = []
-            if res and 'documents' in res:
-                docs = res['documents']
-                metas = res['metadatas']
-                
-                print(f"[DEBUG] Retrieved {len(docs)} documents for thread {thread_id}")
-                
+            for doc, meta in zip(res['documents'], res['metadatas']):
+                if isinstance(doc, bytes):
+                    doc = doc.decode('utf-8', errors='replace')
+                documents.append({"content": doc, "metadata": meta})
 
-                for d, m in zip(docs, metas):
-            
-                    if isinstance(d, bytes):
-                        d = d.decode('utf-8', errors='replace')
-                    
-                    documents.append({"content": d, "metadata": m})
-                    
-                    try:
-                        print(f"[DEBUG] Document sample: {d[:50]}")
-                    except Exception as e:
-                        print(f"[ERROR] Error printing document: {str(e)}")
-            
+            logger.debug(f"Retrieved {len(documents)} documents for thread {vector_id}")
             return documents
+
         except Exception as e:
-            print(f"[ERROR] Error retrieving thread data: {str(e)}")
-            import traceback
-            traceback.print_exc()
+            logger.error(f"Error retrieving thread data: {str(e)}")
             return []
