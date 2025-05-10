@@ -14,7 +14,7 @@ const ProductSelectTemplate: React.FC<ProductSelectTemplateProps> = ({
   isOpen, onSelect, onClose
 }) => {
   const {
-    products,
+    products = [],
     searchKeyword,
     selectedId,
     isLoading,
