@@ -21,16 +21,16 @@ export const clientService = {
       params: {
         ...(params?.query && { query: params.query }),
         ...(params?.page && { page: params.page }),
-        ...(params?.size && { size: params.size }),
-        ...(params?.sort && { sort: params.sort })
+        ...(params?.size && { size: params.size })
       }
     });
+
     return response.data;
   },
 
   // 거래처 상세 조회
   getClient: async (id: string) => {
-    const response = await api.get<Client>(`/api/erp/clients/${id}`);
+    const response = await api.get<ClientDetail>(`/api/erp/clients/${id}`);
     return response.data;
   },
 

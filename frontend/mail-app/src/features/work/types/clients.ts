@@ -20,7 +20,7 @@ export interface Client {
     businessType: string;
     businessItem: string;
     businessLicense: string;
-    createdAt: string;
+    createdAt: string;   // TODO: 현재 사용하지 않아 String으로 설정하였지만, 후에 Date로 변경해야 함
     updatedAt: string | null;
   }
   

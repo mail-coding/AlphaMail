@@ -3,7 +3,7 @@ import { ClientTable } from '../organisms/clientTable';
 import { ClientSearchBar } from '../organisms/clientSearchBar';
 import { ClientDetailTemplate } from './clientDetailTemplate';
 import { Client } from '../../../types/clients';
-import { useClientsManagementQuery } from '../../../hooks/useClientsManagementQuery';
+import { useClients } from '../../../hooks/useClients';
 import { clientService } from '../../../services/clientService';
 
 export const ClientManagementTemplate: React.FC = () => {
@@ -14,7 +14,7 @@ export const ClientManagementTemplate: React.FC = () => {
   const [showDetail, setShowDetail] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
 
-  const { data, refetch } = useClientsManagementQuery({
+  const { data, refetch } = useClients({
     companyId: 1,
     query: searchKeyword,
     page: currentPage,

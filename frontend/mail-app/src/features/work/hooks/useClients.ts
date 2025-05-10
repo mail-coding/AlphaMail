@@ -2,7 +2,7 @@ import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import { clientService } from '../services/clientService';
 import { ClientResponse } from '../types/clients';
 
-interface UseClientsManagementQueryParams {
+interface UseClientsParams {
   companyId: number;
   query?: string;
   page?: number;
@@ -10,12 +10,12 @@ interface UseClientsManagementQueryParams {
   sort?: number;
 }
 
-export const useClientsManagementQuery = (
-  params: UseClientsManagementQueryParams,
+export const useClients = (
+  params: UseClientsParams,
   placeholderData?: ClientResponse
 ): UseQueryResult<ClientResponse> => {
   return useQuery<ClientResponse>({
-    queryKey: ['clients-management', params],
+    queryKey: ['clients', params],
     queryFn: () => clientService.getClients(params),
     placeholderData,
   });

@@ -19,7 +19,7 @@ export const ClientSelectTemplate: React.FC<ClientSelectTemplateProps> = ({
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
   const { data } = useClientsSelectQuery({
-    companyId: 1,
+    companyId: 1, // TODO : 회사 아이디 받아오기
     query: searchKeyword,
     page: currentPage,
     size: pageSize,
