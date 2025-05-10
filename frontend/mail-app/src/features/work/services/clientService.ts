@@ -3,8 +3,8 @@ import {
   Client,
   ClientDetail,
   ClientResponse,
-  UpdateClientRequest,
 } from '../types/clients';
+
 
 interface GetClientsParams {
   query?: string;
@@ -20,7 +20,7 @@ export const clientService = {
     const response = await api.get<ClientResponse>(`/api/erp/companies/${params.companyId}/clients`, {
       params: {
         ...(params?.query && { query: params.query }),
-        ...(params?.page && { page: params.page }),
+        ...(params?.page && { page: params.page - 1 }),
         ...(params?.size && { size: params.size })
       }
     });
@@ -35,26 +35,52 @@ export const clientService = {
   },
 
   // 거래처 생성
-  createClient: async (client: ClientDetail) => {
-    const response = await api.post<Client>('/api/erp/clients', client);
+  createClient: async (companyId: number, groupId: number, client: ClientDetail) => {
+    const requestData = {
+      companyId: companyId,
+      groupId: groupId,
+      licenseNum : client.licenseNum,
+      corpName : client.corpName,
+      representative : client.representative,
+      phoneNum : client.phoneNum,
+      email : client.email,
+      address : client.address,
+      businessType : client.businessType,
+      businessItem : client.businessItem,
+      businessLicense : client.businessLicense,
+    };
+
+    const response = await api.post<Client>('/api/erp/clients', requestData);
     return response.data;
   },
 
   // 거래처 수정
-  updateClient: async (id: string, client: UpdateClientRequest) => {
-    const response = await api.put<Client>(`/api/erp/clients/${id}`, client);
+  updateClient: async (id: string, client: ClientDetail) => {
+    const requestData = {
+      licenseNum : client.licenseNum,
+      corpName : client.corpName,
+      representative : client.representative,
+      phoneNum : client.phoneNum,
+      email : client.email,
+      address : client.address,
+      businessType : client.businessType,
+      businessItem : client.businessItem,
+      businessLicense : client.businessLicense,
+    };
+
+    const response = await api.put<ClientDetail>(`/api/erp/clients/${id}`, requestData);
     return response.data;
   },
 
   // 거래처 삭제
-  deleteClient: async (id: string) => {
+  deleteClient: async (id: number) => {
     await api.delete(`/api/erp/clients/${id}`);
   },
 
   // 선택된 거래처들 삭제 (옵션)
   deleteClients: async (ids: number[]) => {
-    await api.delete('/api/erp/clients', {
-      data: { ids }
+    await api.post('/api/erp/clients/delete', {
+      ids: ids
     });
   }
 };

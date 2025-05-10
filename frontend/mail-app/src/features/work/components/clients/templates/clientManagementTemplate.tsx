@@ -4,6 +4,8 @@ import { ClientSearchBar } from '../organisms/clientSearchBar';
 import { ClientDetailTemplate } from './clientDetailTemplate';
 import { Client } from '../../../types/clients';
 import { useClients } from '../../../hooks/useClients';
+import { useClient } from '../../../hooks/useClient';
+import { useQueryClient } from '@tanstack/react-query';
 import { clientService } from '../../../services/clientService';
 
 export const ClientManagementTemplate: React.FC = () => {
@@ -12,7 +14,7 @@ export const ClientManagementTemplate: React.FC = () => {
   const [pageSize, setPageSize] = useState(10);
   const [selectedClientIds, setSelectedClientIds] = useState<Set<number>>(new Set());
   const [showDetail, setShowDetail] = useState(false);
-  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
 
   const { data, refetch } = useClients({
     companyId: 1,
@@ -20,6 +22,10 @@ export const ClientManagementTemplate: React.FC = () => {
     page: currentPage,
     size: pageSize,
   });
+
+  const { data: clientDetail, isLoading: isLoadingDetail } = useClient(selectedClientId);
+
+  const queryClient = useQueryClient();
 
   const handleSearch = (keyword: string) => {
     setSearchKeyword(keyword);
@@ -43,30 +49,35 @@ export const ClientManagementTemplate: React.FC = () => {
   };
 
   const handleAddClient = () => {
-    setSelectedClient(null);
+    setSelectedClientId(null);
     setShowDetail(true);
   };
 
   const handleClientClick = (client: Client) => {
-    setSelectedClient(client);
+    setSelectedClientId(client.id);
     setShowDetail(true);
+    queryClient.invalidateQueries({ queryKey: ['client', client.id] });
   };
 
   const handleDetailCancel = () => {
     setShowDetail(false);
-    setSelectedClient(null);
+    setSelectedClientId(null);
   };
 
   const handleDetailSave = (_data: Partial<Client>) => {
     setShowDetail(false);
-    setSelectedClient(null);
-    refetch();
+    setSelectedClientId(null);
+    queryClient.invalidateQueries({ queryKey: ['clients'] });
+    queryClient.invalidateQueries({ queryKey: ['client'] });
   };
 
   if (showDetail) {
+    if (isLoadingDetail) {
+      return <div className="p-8 text-center">로딩중...</div>;
+    }
     return (
       <ClientDetailTemplate
-        client={selectedClient || undefined}
+        client={clientDetail}
         onSave={handleDetailSave}
         onCancel={handleDetailCancel}
       />

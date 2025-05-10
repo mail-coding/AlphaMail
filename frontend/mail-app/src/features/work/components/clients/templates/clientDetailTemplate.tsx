@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Client, ClientDetail } from '../../../types/clients';
+import { ClientDetail } from '../../../types/clients';
 import { clientService } from '../../../services/clientService';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface ClientDetailTemplateProps {
-  client?: Client;
+  client?: ClientDetail;
   onSave?: (data: ClientDetail) => void;
   onCancel: () => void;
 }
@@ -16,22 +16,22 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
 }) => {
   const queryClient = useQueryClient();
   const [form, setForm] = useState<ClientDetail>({
-    id: client?.id || 0,
+    id: client?.id || 1,  // TODO : 거래처 아이디 받아오기
     corpName: client?.corpName || '',
     representative: client?.representative || '',
-    licenseNum: client?.licenseNumber || '',
-    phoneNum: client?.phoneNumber || '',
+    licenseNum: client?.licenseNum || '',
+    phoneNum: client?.phoneNum || '',
     email: client?.email || '',
     address: client?.address || '',
-    businessType: '',
-    businessItem: '',
-    businessLicense: '',
+    businessType: client?.businessType || '',
+    businessItem: client?.businessItem || '',
+    businessLicense: client?.businessLicense || '',
     createdAt: new Date().toISOString(),
     updatedAt: null
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: ClientDetail) => clientService.createClient(data),
+    mutationFn: (data: ClientDetail) => clientService.createClient(1, 1, data), // TODO : 회사 아이디, 그룹 아이디 받아오기
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clients'] });
       if (onSave) onSave(form);
