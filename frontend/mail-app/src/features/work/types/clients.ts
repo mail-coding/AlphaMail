@@ -1,21 +1,34 @@
 export interface Client {
     id: number;
-    name: string;
-    ceo: string;
-    business_no: string;
-    contact: string;
+    corpName: string;
+    representative: string;
+    licenseNumber: string;
+    phoneNumber: string;
     email: string;
     address: string;
-    item?: string;
-    type?: string;
-    address_detail?: string;
     isSelected?: boolean;
+  }
+
+  export interface ClientDetail {
+    id: number;
+    corpName: string;
+    representative: string;
+    licenseNum: string;
+    phoneNum: string;
+    email: string;
+    address: string;
+    businessType: string;
+    businessItem: string;
+    businessLicense: string;
+    createdAt: string;
+    updatedAt: string | null;
   }
   
   export interface ClientResponse {
     contents: Client[];
-    total_count: number;
-    page_count: number;
+    totalCount: number;
+    pageCount: number;
+    currentPage: number;
   }
   
   export interface CreateClientRequest {

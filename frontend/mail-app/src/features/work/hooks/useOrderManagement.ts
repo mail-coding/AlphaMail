@@ -1,4 +1,4 @@
-import { useOrderStore } from '../store/orderStore';
+import { useOrderStore } from '../stores/orderStore';
 import { orderService } from '../services/orderService';
 import { OrderDetail } from '../types/order';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';

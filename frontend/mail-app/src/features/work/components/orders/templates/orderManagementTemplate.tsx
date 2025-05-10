@@ -3,7 +3,7 @@ import OrderTable from '../organisms/orderTable';
 import { Order } from '../../../types/order';
 import OrderDetailTemplate from './orderDetailTemplate';
 import { OrderDetail } from '../../../types/order';
-import { useOrderStore } from '../../../store/orderStore';
+import { useOrderStore } from '../../../stores/orderStore';
 import { useOrderManagement } from '../../../hooks/useOrderManagement';
 
 function orderToOrderDetail(order: Order): OrderDetail {

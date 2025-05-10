@@ -19,8 +19,8 @@ export const ClientSelectTableRow: React.FC<ClientSelectTableRowProps> = ({
       />
     </td>
     <td className="text-center">{String(client.id).padStart(4, '0')}</td>
-    <td>{client.name}</td>
-    <td>{client.ceo}</td>
-    <td>{client.business_no}</td>
+    <td>{client.corpName}</td>
+    <td>{client.representative}</td>
+    <td>{client.licenseNumber}</td>
   </tr>
 ); 

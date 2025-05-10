@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from 'react';
-import { useProductSelectStore } from '../store/productSelectStore';
+import { useProductSelectStore } from '../stores/productSelectStore';
 import { productService } from '../services/productService';
 import { useCompany } from './useCompany';
 

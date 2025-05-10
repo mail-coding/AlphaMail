@@ -60,15 +60,15 @@ export const ClientTable: React.FC<ClientTableProps> = ({
                       className="text-left hover:text-blue-600 hover:underline"
                       onClick={() => onClientClick(client)}
                     >
-                      {client.name}
+                      {client.corpName}
                     </button>
                   ) : (
-                    client.name
+                    client.corpName
                   )}
                 </td>
-                <td className="p-2">{client.ceo}</td>
-                <td className="p-2">{client.business_no}</td>
-                <td className="p-2">{client.contact}</td>
+                <td className="p-2">{client.representative}</td>
+                <td className="p-2">{client.licenseNumber}</td>
+                <td className="p-2">{client.phoneNumber}</td>
                 <td className="p-2">{client.email}</td>
                 <td className="p-2">{client.address}</td>
               </tr>

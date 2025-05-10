@@ -29,15 +29,15 @@ export const ClientTableRow: React.FC<ClientTableRowProps> = ({
             onClick={() => onClientClick(client)}
             className="text-left hover:text-blue-600 hover:underline"
           >
-            {client.name}
+            {client.corpName}
           </button>
         ) : (
-          <span>{client.name}</span>
+          <span>{client.corpName}</span>
         )}
       </td>
-      <td className="p-4">{client.ceo}</td>
-      <td className="p-4">{client.business_no}</td>
-      <td className="p-4">{client.contact}</td>
+      <td className="p-4">{client.representative}</td>
+      <td className="p-4">{client.licenseNumber}</td>
+      <td className="p-4">{client.phoneNumber}</td>
       <td className="p-4">{client.email}</td>
       <td className="p-4">{client.address}</td>
     </tr>

@@ -116,8 +116,8 @@ export const ClientManagementTemplate: React.FC = () => {
             }}
             setCurrentPage={setCurrentPage}
             setPageSize={setPageSize}
-            totalCount={data?.total_count || 0}
-            pageCount={data?.page_count || 0}
+            totalCount={data?.totalCount || 0}
+            pageCount={data?.pageCount || 0}
             onClientClick={handleClientClick}
           />
         </div>

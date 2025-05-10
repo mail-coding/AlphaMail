@@ -1,8 +1,8 @@
 import { api } from '@/shared/lib/axiosInstance';
 import {
   Client,
+  ClientDetail,
   ClientResponse,
-  CreateClientRequest,
   UpdateClientRequest,
 } from '../types/clients';
 
@@ -35,7 +35,7 @@ export const clientService = {
   },
 
   // 거래처 생성
-  createClient: async (client: CreateClientRequest) => {
+  createClient: async (client: ClientDetail) => {
     const response = await api.post<Client>('/api/erp/clients', client);
     return response.data;
   },
