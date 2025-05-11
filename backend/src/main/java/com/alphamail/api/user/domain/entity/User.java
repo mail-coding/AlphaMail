@@ -9,6 +9,8 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import com.alphamail.api.email.domain.entity.EmailFolder;
 import com.alphamail.api.user.domain.valueobject.UserId;
 import com.alphamail.api.user.presentation.dto.CreateUserRequest;
+import com.alphamail.common.exception.BadRequestException;
+import com.alphamail.common.exception.ErrorMessage;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -64,5 +66,24 @@ public class User {
 
 	public boolean verifyPassword(String plainPassword) {
 		return BCrypt.checkpw(plainPassword, hashedPassword);
+	}
+
+
+	public User updatePassword(String newPassword) {
+		if (newPassword == null || newPassword.isEmpty()) {
+			throw new BadRequestException(ErrorMessage.PASSWORD_EMPTY);
+		}
+		return User.builder()
+			.id(this.id)
+			.groupId(this.groupId)
+			.position(this.position)
+			.name(this.name)
+			.email(this.email)
+			.phoneNum(this.phoneNum)
+			.hashedPassword(hashPassword(newPassword))
+			.image(this.image)
+			.updatedAt(LocalDateTime.now())
+			.deletedAt(this.deletedAt)
+			.build();
 	}
 }

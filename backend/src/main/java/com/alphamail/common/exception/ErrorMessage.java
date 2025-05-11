@@ -24,6 +24,10 @@ public enum ErrorMessage {
 	NO_FOLDER_ID("폴더 아이디가 없습니다."),
 	NO_TRASH_FOLDER("휴지통 폴더가 아닙니다."),
 
+	CURRENT_PASSWORD_MISMATCH("현재 비밀번호가 일치하지 않습니다"),
+	SAME_AS_CURRENT_PASSWORD("새 비밀번호는 현재 비밀번호와 달라야 합니다"),
+	PASSWORD_EMPTY("비밀번호는 빈 값일 수 없습니다"),
+
 	// 401 Unauthorized 관련 오류 (UnauthorizedException)
 	UNAUTHORIZED("인증에 실패했습니다"),
 	INVALID_TOKEN("유효하지 않은 토큰입니다"),
