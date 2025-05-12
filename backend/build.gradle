@@ -67,6 +67,8 @@ dependencies {
 	// === S3 라이브러리 사용 ===
 	implementation 'com.amazonaws:aws-java-sdk-s3:1.12.472'
 
+	implementation 'com.fasterxml.jackson.core:jackson-databind'
+
 }
 
 tasks.named('test') {

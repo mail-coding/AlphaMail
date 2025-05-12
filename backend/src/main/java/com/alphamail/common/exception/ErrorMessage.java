@@ -51,7 +51,13 @@ public enum ErrorMessage {
 	// 500 Internal Server Error 관련 오류
 	INTERNAL_SERVER_ERROR("서버 내부 오류가 발생했습니다"),
 	DATABASE_ERROR("데이터베이스 오류가 발생했습니다"),
-	UNEXPECTED_ERROR("예상치 못한 오류가 발생했습니다");
+	UNEXPECTED_ERROR("예상치 못한 오류가 발생했습니다"),
+
+	// ChatBot 관련
+	NO_CHATBOT_RESULT("일정 정보를 이해하지 못했어요. 다시 말씀해주시겠어요?"),
+	NO_SCHEDULE_NAME("일정명이 빠졌어요. 일정명이 무엇인가요?"),
+	NO_SCHEDULE_START_TIME("시작 시간이 빠졌어요. 언제부터 시작되는 일정인가요?"),
+	NO_SCHEDULE_END_TIME("언제까지 진행되는 일정인가요?");
 
 	private final String message;
 }
