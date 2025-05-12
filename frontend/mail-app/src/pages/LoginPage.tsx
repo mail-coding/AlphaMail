@@ -27,7 +27,7 @@ const LoginPage = () => {
       // 토큰 저장
       localStorage.setItem('accessToken', mockToken);
       // 유저 정보 저장
-      login(mockUser);
+      login(mockUser, mockToken);
       
       navigate('/');
     } catch (error) {

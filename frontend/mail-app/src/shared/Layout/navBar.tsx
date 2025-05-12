@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/shared/utils/cn';
 import { Typography } from '@/shared/components/atoms/Typography';
 import { useNavbarStore } from '../stores/useNavbarStore';
@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 
 export const NavBar = () => {
     const location = useLocation();
+    const navigate = useNavigate();
     const path = location.pathname;
 
     const { isCollapsed, toggleCollapse, contentVisible, setContentVisible } = useNavbarStore();
@@ -26,6 +27,10 @@ export const NavBar = () => {
         return () => clearTimeout(timer);
         }
     }, [isCollapsed, setContentVisible]);
+
+    const handleLogin = () => {
+        navigate('/login');
+    };
 
     return (
         <div className={cn(
@@ -128,20 +133,42 @@ export const NavBar = () => {
                 </ul>
             </nav>
 
-            {/* 로그아웃 버튼 */}
-            <div className="p-4 mt-auto">
+            {/* 로그인/로그아웃 버튼 영역 */}
+            <div className="p-4 mt-auto space-y-2">
+                {/* 로그인 버튼 */}
                 {!isCollapsed && contentVisible ? (
-                <button className="w-full py-3 text-white border border-white rounded-md hover:bg-[#3E99C6] transition-colors">
-                    <Typography variant="titleSmall" color="text-white">로그아웃</Typography>
-                </button>
+                    <button 
+                        onClick={handleLogin}
+                        className="w-full py-3 text-white border border-white rounded-md hover:bg-[#3E99C6] transition-colors"
+                    >
+                        <Typography variant="titleSmall" color="text-white">로그인</Typography>
+                    </button>
                 ) : (
-                <button className="w-full flex justify-center py-3 text-white border border-white rounded-md hover:bg-[#3E99C6] transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                    <polyline points="16 17 21 12 16 7"></polyline>
-                    <line x1="21" y1="12" x2="9" y2="12"></line>
-                    </svg>
-                </button>
+                    <button 
+                        onClick={handleLogin}
+                        className="w-full flex justify-center py-3 text-white border border-white rounded-md hover:bg-[#3E99C6] transition-colors"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                            <polyline points="10 17 15 12 10 7"></polyline>
+                            <line x1="15" y1="12" x2="3" y2="12"></line>
+                        </svg>
+                    </button>
+                )}
+
+                {/* 로그아웃 버튼 */}
+                {!isCollapsed && contentVisible ? (
+                    <button className="w-full py-3 text-white border border-white rounded-md hover:bg-[#3E99C6] transition-colors">
+                        <Typography variant="titleSmall" color="text-white">로그아웃</Typography>
+                    </button>
+                ) : (
+                    <button className="w-full flex justify-center py-3 text-white border border-white rounded-md hover:bg-[#3E99C6] transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                    </button>
                 )}
             </div>
             </div>
