@@ -1,5 +1,7 @@
 import React from 'react';
 import { Client } from '../../../types/clients';
+import { Typography } from '@/shared/components/atoms/Typography';
+import { Button } from '@/shared/components/atoms/button';
 
 interface ClientTableRowProps {
   client: Client;
@@ -22,24 +24,53 @@ export const ClientTableRow: React.FC<ClientTableRowProps> = ({
           className="rounded border-gray-300"
         />
       </td>
-      <td className="p-4">{client.id}</td>
+      <td className="p-4">
+        <Typography variant="body">
+          {client.id}
+        </Typography>
+      </td>
       <td className="p-4">
         {onClientClick ? (
-          <button
+          <Button
+            variant="text"
             onClick={() => onClientClick(client)}
             className="text-left hover:text-blue-600 hover:underline"
           >
-            {client.corpName}
-          </button>
+            <Typography variant="body">
+              {client.corpName}
+            </Typography>
+          </Button>
         ) : (
-          <span>{client.corpName}</span>
+          <Typography variant="body">
+            {client.corpName}
+          </Typography>
         )}
       </td>
-      <td className="p-4">{client.representative}</td>
-      <td className="p-4">{client.licenseNumber}</td>
-      <td className="p-4">{client.phoneNumber}</td>
-      <td className="p-4">{client.email}</td>
-      <td className="p-4">{client.address}</td>
+      <td className="p-4">
+        <Typography variant="body">
+          {client.representative}
+        </Typography>
+      </td>
+      <td className="p-4">
+        <Typography variant="body">
+          {client.licenseNumber}
+        </Typography>
+      </td>
+      <td className="p-4">
+        <Typography variant="body">
+          {client.phoneNumber}
+        </Typography>
+      </td>
+      <td className="p-4">
+        <Typography variant="body">
+          {client.email}
+        </Typography>
+      </td>
+      <td className="p-4">
+        <Typography variant="body">
+          {client.address}
+        </Typography>
+      </td>
     </tr>
   );
 }; 

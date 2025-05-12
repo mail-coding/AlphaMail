@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from '@emotion/styled';
 import { useUserStore } from '../shared/stores/useUserStore';
+import { Button } from '@/shared/components/atoms/button';
+import { Input } from '@/shared/components/atoms/input';
+import { Typography } from '@/shared/components/atoms/Typography';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -38,31 +41,44 @@ const LoginPage = () => {
   return (
     <Container>
       <LoginBox>
-        <Title>로그인</Title>
+        <Typography variant="titleLarge" bold className="text-center mb-8">
+          로그인
+        </Typography>
         <Form onSubmit={handleSubmit}>
           <InputGroup>
-            <Label htmlFor="email">이메일</Label>
+            <Typography variant="body" color="text-gray-600" className="mb-2">
+              이메일
+            </Typography>
             <Input
               type="email"
-              id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="이메일을 입력하세요"
               required
+              size="large"
             />
           </InputGroup>
           <InputGroup>
-            <Label htmlFor="password">비밀번호</Label>
+            <Typography variant="body" color="text-gray-600" className="mb-2">
+              비밀번호
+            </Typography>
             <Input
               type="password"
-              id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="비밀번호를 입력하세요"
               required
+              size="large"
             />
           </InputGroup>
-          <LoginButton type="submit">로그인</LoginButton>
+          <Button 
+            type="submit" 
+            size="large" 
+            variant="primary"
+            className="w-full mt-6"
+          >
+            로그인
+          </Button>
         </Form>
       </LoginBox>
     </Container>
@@ -86,12 +102,6 @@ const LoginBox = styled.div`
   max-width: 400px;
 `;
 
-const Title = styled.h1`
-  text-align: center;
-  color: #333;
-  margin-bottom: 2rem;
-`;
-
 const Form = styled.form`
   display: flex;
   flex-direction: column;
@@ -101,39 +111,6 @@ const Form = styled.form`
 const InputGroup = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-`;
-
-const Label = styled.label`
-  font-size: 0.9rem;
-  color: #666;
-`;
-
-const Input = styled.input`
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-  
-  &:focus {
-    outline: none;
-    border-color: #007bff;
-  }
-`;
-
-const LoginButton = styled.button`
-  background-color: #007bff;
-  color: white;
-  padding: 0.75rem;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: #0056b3;
-  }
 `;
 
 export default LoginPage;

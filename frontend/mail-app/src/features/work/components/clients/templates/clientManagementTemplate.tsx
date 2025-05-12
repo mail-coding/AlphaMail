@@ -7,6 +7,9 @@ import { useClients } from '../../../hooks/useClients';
 import { useClient } from '../../../hooks/useClient';
 import { useQueryClient } from '@tanstack/react-query';
 import { clientService } from '../../../services/clientService';
+import { Button } from '@/shared/components/atoms/button';
+import { Typography } from '@/shared/components/atoms/Typography';
+import { Spinner } from '@/shared/components/atoms/spinner';
 
 export const ClientManagementTemplate: React.FC = () => {
   const [searchKeyword, setSearchKeyword] = useState('');
@@ -73,7 +76,14 @@ export const ClientManagementTemplate: React.FC = () => {
 
   if (showDetail) {
     if (isLoadingDetail) {
-      return <div className="p-8 text-center">로딩중...</div>;
+      return (
+        <div className="p-8 text-center">
+          <Spinner size="large" />
+          <Typography variant="body" className="mt-4">
+            로딩중...
+          </Typography>
+        </div>
+      );
     }
     return (
       <ClientDetailTemplate
@@ -94,22 +104,27 @@ export const ClientManagementTemplate: React.FC = () => {
       <div className="bg-white rounded-lg shadow">
         <div className="p-4">
           <div className="flex justify-between items-center mb-4">
-            <button 
+            <Button
               onClick={handleAddClient}
-              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+              variant="primary"
+              size="large"
             >
               거래처 등록
-            </button>
-            <div className="space-x-2">
-              <button className="px-4 py-2 bg-white border rounded-md hover:bg-gray-50">
+            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="secondary"
+                size="large"
+              >
                 출력
-              </button>
-              <button 
+              </Button>
+              <Button
                 onClick={handleDelete}
-                className="px-4 py-2 bg-white border rounded-md hover:bg-gray-50"
+                variant="secondary"
+                size="large"
               >
                 삭제
-              </button>
+              </Button>
             </div>
           </div>
           <ClientTable
