@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/shared/components/atoms/button';
 import { Input } from '@/shared/components/atoms/input';
 import { Typography } from '@/shared/components/atoms/Typography';
+import { useUserInfo } from '@/shared/hooks/useUserInfo';
 
 interface ClientDetailTemplateProps {
   client?: ClientDetail;
@@ -18,6 +19,7 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
   onCancel,
 }) => {
   const queryClient = useQueryClient();
+  const { data: userInfo } = useUserInfo();
   const [form, setForm] = useState<ClientDetail>({
     id: client?.id || 1,
     corpName: client?.corpName || '',
@@ -34,7 +36,12 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: ClientDetail) => clientService.createClient(1, 1, data),
+    mutationFn: (data: ClientDetail) => {
+      if (!userInfo?.companyId || !userInfo?.groupId) {
+        throw new Error('Company ID or Group ID is not available');
+      }
+      return clientService.createClient(userInfo.companyId, userInfo.groupId, data);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clients'] });
       if (onSave) onSave(form);

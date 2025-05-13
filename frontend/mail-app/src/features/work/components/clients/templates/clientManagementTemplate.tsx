@@ -20,7 +20,6 @@ export const ClientManagementTemplate: React.FC = () => {
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
 
   const { data, refetch } = useClients({
-    companyId: 1,
     query: searchKeyword,
     page: currentPage,
     size: pageSize,

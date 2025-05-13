@@ -7,13 +7,12 @@ import { Input } from '@/shared/components/atoms/input';
 import { Typography } from '@/shared/components/atoms/Typography';
 import { login as loginService } from '../features/auth/services/loginService';
 import { useQueryClient } from '@tanstack/react-query';
-import { userService } from '../features/auth/services/userService';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
-  const login = useUserStore((state) => state.login);
+  const setAuth = useUserStore((state) => state.setAuth);
   const queryClient = useQueryClient();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -25,17 +24,8 @@ const LoginPage = () => {
       // 로그인 성공 후 사용자 정보 쿼리 무효화
       queryClient.invalidateQueries({ queryKey: ['user'] });
       
-      // useUser 쿼리를 즉시 실행하여 최신 사용자 정보 가져오기
-      const userData = await queryClient.fetchQuery({
-        queryKey: ['user'],
-        queryFn: () => userService.getUser(),
-      });
-
-      // 사용자 정보와 토큰 저장
-      login({
-        ...userData,
-        id: String(userData.id), // id를 문자열로 변환
-      }, response.accessToken);
+      // 토큰 저장
+      setAuth(response.accessToken);
       
       navigate('/');
     } catch (error) {

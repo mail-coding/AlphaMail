@@ -1,33 +1,21 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  profileImage?: string;
-}
-
-interface UserState {
-  user: User | null;
+interface AuthState {
   isAuthenticated: boolean;
   accessToken: string | null;
-  setUser: (user: User | null) => void;
-  login: (user: User, token: string) => void;
+  setAuth: (token: string) => void;
   logout: () => void;
   checkAuth: () => boolean;
 }
 
-export const useUserStore = create<UserState>()(
+export const useUserStore = create<AuthState>()(
   persist(
     (set, get) => ({
-      user: null,
       isAuthenticated: false,
       accessToken: null,
-      setUser: (user) => set({ user, isAuthenticated: !!user }),
-      login: (user, token) => {
+      setAuth: (token) => {
         set({ 
-          user, 
           isAuthenticated: true,
           accessToken: token 
         });
@@ -35,7 +23,6 @@ export const useUserStore = create<UserState>()(
       },
       logout: () => {
         set({ 
-          user: null, 
           isAuthenticated: false,
           accessToken: null 
         });
@@ -47,9 +34,8 @@ export const useUserStore = create<UserState>()(
       }
     }),
     {
-      name: 'user-storage',
+      name: 'auth-storage',
       partialize: (state) => ({ 
-        user: state.user,
         isAuthenticated: state.isAuthenticated,
         accessToken: state.accessToken
       })

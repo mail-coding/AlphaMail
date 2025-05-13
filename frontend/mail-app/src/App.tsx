@@ -12,12 +12,16 @@ import { useSidebarStore } from './shared/stores/useSidebarStore';
 import { HeaderContent } from './shared/Layout/headerContent';
 import { ToastContainer } from 'react-toastify';
 import { AuthProvider } from './features/auth/providers/AuthProvider';
+import { useAuthGuard } from './shared/hooks/useAuthGuard';
 
 // 라우터를 포함한 앱 레이아웃 컴포넌트
 const AppLayout = () => {
   const location = useLocation();
   const path = location.pathname;
   const { setActiveItem } = useSidebarStore();
+
+  // 인증 상태 체크 추가
+  useAuthGuard();
 
   // 사이드바 표시 여부 및 타입 결정
   const showSidebar = path.startsWith('/mail') || path === '/work';
@@ -29,6 +33,18 @@ const AppLayout = () => {
       setActiveItem(null);
     }
   }, [path, setActiveItem]);
+
+  // 로그인 페이지일 경우 SideBar만 숨김
+  if (path === '/login') {
+    return (
+      <div className="flex h-screen">
+        <NavBar />
+        <main className="flex-1">
+          <Router />
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen">
@@ -53,7 +69,6 @@ const AppLayout = () => {
         draggable
         pauseOnHover
       />
-
     </div>
   );
 };

@@ -11,6 +11,9 @@ import { addDays, format, isBefore, startOfDay } from 'date-fns';
 import { useScheduleSearchStore } from '@/shared/stores/useSearchBar';
 import { ScheduleSearchTemplate } from './scheduleSearchTemplate';
 import { useLocation } from 'react-router-dom';
+import { Typography } from '@/shared/components/atoms/Typography';
+import { Button } from '@/shared/components/atoms/button';
+import { Spinner } from '@/shared/components/atoms/spinner';
 
 export const MainTemplate: React.FC = () => {
   const { isOpen, isAnimating, openModal, closeModal } = useModalStore();
@@ -114,7 +117,13 @@ export const MainTemplate: React.FC = () => {
     }, 0);
   };
 
-  if (isCalendarLoading || isWeeklyLoading) return <div>로딩 중...</div>;
+  if (isCalendarLoading || isWeeklyLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Spinner size="large" />
+      </div>
+    );
+  }
 
   // 검색 모드일 때는 검색 결과 템플릿을 표시
   if (isSearchMode) {
@@ -124,13 +133,16 @@ export const MainTemplate: React.FC = () => {
   return (
     <div className="relative p-4">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">캘린더</h1>
-        <button
+        <Typography variant="titleLarge" bold>
+          캘린더
+        </Typography>
+        <Button
           onClick={handleAddSchedule}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          variant="primary"
+          size="large"
         >
           일정 추가
-        </button>
+        </Button>
       </div>
       <div className="flex gap-4">
         <div className="flex-1">
