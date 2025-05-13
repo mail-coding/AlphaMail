@@ -10,12 +10,10 @@ import { useQueryClient } from '@tanstack/react-query';
 
 interface ProductManagementTemplateProps {
   onAddProduct?: () => void;
-  companyId?: number;
 }
 
 export const ProductManagementTemplate: React.FC<ProductManagementTemplateProps> = ({ 
   onAddProduct,
-  companyId = 1 
 }) => {
   const queryClient = useQueryClient();
   const {
@@ -36,7 +34,7 @@ export const ProductManagementTemplate: React.FC<ProductManagementTemplateProps>
     isLoading,
     error,
     handlePageChange
-  } = usePagedProducts({ companyId });
+  } = usePagedProducts();
 
   const handleSearch = (searchKeyword: string) => {
     setKeyword(searchKeyword);
@@ -84,7 +82,6 @@ export const ProductManagementTemplate: React.FC<ProductManagementTemplateProps>
       <ProductDetailTemplate
         product={selectedProduct}
         onBack={handleBack}
-        companyId={companyId}
       />
     );
   }

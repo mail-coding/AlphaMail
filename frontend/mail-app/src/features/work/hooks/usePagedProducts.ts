@@ -3,12 +3,12 @@ import { productService } from '../services/productService';
 import { ProductResponse } from '../types/product';
 import { useEffect } from 'react';
 import { useProductStore } from '../stores/productStore';
+import { useUserInfo } from '@/shared/hooks/useUserInfo';
 
-interface UsePagedProductsOptions {
-  companyId: number;
-}
+export const usePagedProducts = () => {
+  const { data: userInfo } = useUserInfo();
+  const companyId = userInfo?.companyId;
 
-export const usePagedProducts = (options: UsePagedProductsOptions) => {
   const {
     keyword: searchQuery,
     currentPage,
@@ -17,19 +17,23 @@ export const usePagedProducts = (options: UsePagedProductsOptions) => {
     setCurrentPage,
   } = useProductStore();
 
-  console.log('Hook Initialized with options:', options);
   console.log('Current state:', {
     searchQuery,
     currentPage,
     pageSize,
-    sortOption
+    sortOption,
+    companyId
   });
 
   const { data, isLoading, error, refetch } = useQuery<ProductResponse>({
-    queryKey: ['products', options.companyId, currentPage, pageSize, searchQuery, sortOption],
+    queryKey: ['products', companyId, currentPage, pageSize, searchQuery, sortOption],
     queryFn: async () => {
+      if (!companyId) {
+        console.warn('Company ID is not available, skipping API call.');
+        return { contents: [], totalCount: 0, pageCount: 0, currentPage: 1 };
+      }
       console.log('Fetching products with params:', {
-        companyId: options.companyId,
+        companyId,
         searchQuery,
         currentPage,
         pageSize,
@@ -37,17 +41,17 @@ export const usePagedProducts = (options: UsePagedProductsOptions) => {
       });
 
       const params = {
-        companyId: options.companyId,
         ...(searchQuery && { query: searchQuery }),
         page: currentPage - 1,
         size: pageSize,
         sort: sortOption
       };
 
-      console.log('Params:', params);
+      console.log('Params for getProducts (first arg):', params);
+      console.log('Company ID for getProducts (second arg):', companyId);
 
       try {
-        const response = await productService.getProducts(params);
+        const response = await productService.getProducts(params, companyId);
         console.log('API Response:', response);
         console.log('Response items:', response.contents);
         console.log('Response items type:', typeof response.contents);
@@ -59,24 +63,22 @@ export const usePagedProducts = (options: UsePagedProductsOptions) => {
       }
     },
     placeholderData: (previousData) => previousData,
-    staleTime: 30000, // 30초 동안 데이터를 신선한 상태로 유지
-    enabled: true // 항상 활성화
+    staleTime: 30000,
+    enabled: !!companyId
   });
 
-  // 검색어가 변경될 때마다 API 호출
   useEffect(() => {
-    if (searchQuery.trim() !== '') {
+    if (companyId && searchQuery.trim() !== '') {
       console.log('검색어 변경으로 인한 API 호출:', searchQuery);
       refetch();
     }
-  }, [searchQuery, refetch]);
+  }, [searchQuery, refetch, companyId]);
 
   const handlePageChange = (page: number) => {
     console.log('Page changed:', page);
     setCurrentPage(page);
   };
 
-  // 데이터가 없을 때 빈 배열 반환
   const products = data?.contents || [];
 
   return {

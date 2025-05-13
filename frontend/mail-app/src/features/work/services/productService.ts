@@ -6,13 +6,12 @@ interface GetProductsParams {
   page?: number;
   size?: number;
   sort?: number;
-  companyId: number;
 }
 
 export const productService = {
   // 상품 목록 조회
-  getProducts: async (params: GetProductsParams) => {
-    const response = await api.get<ProductResponse>(`/api/erp/companies/${params.companyId}/products`, {
+  getProducts: async (params: GetProductsParams, companyId: number) => {
+    const response = await api.get<ProductResponse>(`/api/erp/companies/${companyId}/products`, {
       params: {
         ...(params?.query && { query: params.query }),
         ...(params?.page && { page: params.page }),

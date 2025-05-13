@@ -1,10 +1,10 @@
 import { useCallback, useEffect } from 'react';
 import { useProductSelectStore } from '../stores/productSelectStore';
 import { productService } from '../services/productService';
-import { useCompany } from './useCompany';
+import { useUserInfo } from '@/shared/hooks/useUserInfo';
 
 export const useProductSelect = () => {
-  const { companyId } = useCompany();
+  const { data: userInfo } = useUserInfo();
   const {
     products,
     searchKeyword,
@@ -19,22 +19,27 @@ export const useProductSelect = () => {
   } = useProductSelectStore();
 
   const fetchProducts = useCallback(async () => {
-    if (!companyId) return;
+    if (!userInfo?.companyId) {
+      setProducts([]);
+      return;
+    }
     
     try {
       setLoading(true);
-      const response = await productService.searchProducts(companyId, searchKeyword);
+      const response = await productService.searchProducts(userInfo.companyId, searchKeyword);
       setProducts(response.contents);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to fetch products');
     } finally {
       setLoading(false);
     }
-  }, [companyId, searchKeyword, setProducts, setLoading, setError]);
+  }, [userInfo?.companyId, searchKeyword, setProducts, setLoading, setError]);
 
   useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
+    if (userInfo?.companyId) {
+      fetchProducts();
+    }
+  }, [fetchProducts, userInfo?.companyId]);
 
   const handleSearch = useCallback((keyword: string) => {
     setSearchKeyword(keyword);

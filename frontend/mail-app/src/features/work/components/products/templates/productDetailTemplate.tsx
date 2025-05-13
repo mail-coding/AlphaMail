@@ -4,11 +4,11 @@ import { Product } from '../../../types/product';
 import { productService } from '../../../services/productService';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useUserInfo } from '@/shared/hooks/useUserInfo';
 
 interface ProductDetailTemplateProps {
   product?: Product;
   onBack?: () => void;
-  companyId?: number;
 }
 
 interface ProductDetailForm {
@@ -19,21 +19,23 @@ interface ProductDetailForm {
   outboundPrice: number;
   image?: File;
   imageUrl?: string;
+  companyId: number;
 }
 
 export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({ 
   product, 
-  onBack,
-  companyId = 1 
+  onBack
 }) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { data: userInfo } = useUserInfo();
   const [formData, setFormData] = useState<ProductDetailForm>({
     name: '',
     standard: '',
     stock: 0,
     inboundPrice: 0,
     outboundPrice: 0,
+    companyId: userInfo?.companyId || 0
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,7 +54,8 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({
           stock: productDetail.stock,
           inboundPrice: productDetail.inboundPrice,
           outboundPrice: productDetail.outboundPrice,
-          imageUrl: productDetail.image
+          imageUrl: productDetail.image,
+          companyId: userInfo?.companyId || 0
         });
       } catch (err) {
         console.error('상품 상세 정보 조회 실패:', err);
@@ -86,10 +89,9 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({
 
   const createMutation = useMutation({
     mutationFn: (data: ProductDetailForm) => 
-      productService.createProduct({
-        ...data,
-        companyId
-      }),
+      productService.createProduct(
+        data
+      ),
     onSuccess: () => {
       queryClient.invalidateQueries({ 
         queryKey: ['products'],
@@ -112,7 +114,7 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({
       productService.updateProduct(product!.id.toString(), {
         id: product!.id,
         ...data,
-        companyId
+        companyId: userInfo?.companyId || 0
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ 
