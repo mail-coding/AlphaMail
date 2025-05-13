@@ -58,7 +58,7 @@ export interface OrderDetail {
   orderNo: string;
   createdAt: Date;
   updatedAt: Date;
-  deliveryAt: Date;
+  deliverAt: Date;
   products: OrderProduct[];
 }
 

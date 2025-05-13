@@ -8,6 +8,7 @@ interface OrderProductRowProps {
   product: OrderProduct;
   onProductChange: (index: number, field: keyof OrderProduct, value: string | number) => void;
   onRemoveProduct: (index: number) => void;
+  onProductSelect: (product: Product) => void;
 }
 
 const OrderProductRow: React.FC<OrderProductRowProps> = ({
@@ -15,20 +16,15 @@ const OrderProductRow: React.FC<OrderProductRowProps> = ({
   product,
   onProductChange,
   onRemoveProduct,
+  onProductSelect,
 }) => {
-  const handleProductSelect = (selectedProduct: Product) => {
-    onProductChange(index, 'name', selectedProduct.name);
-    onProductChange(index, 'standard', selectedProduct.standard);
-    onProductChange(index, 'price', selectedProduct.outboundPrice);
-  };
-
   return (
     <tr>
       <td className="p-2 text-center">{index + 1}</td>
       <td className="p-2">
         <ProductInput
           value={product.name}
-          onChange={handleProductSelect}
+          onChange={onProductSelect}
           className="border p-1 rounded"
         />
       </td>
@@ -36,14 +32,6 @@ const OrderProductRow: React.FC<OrderProductRowProps> = ({
         <input 
           value={product.standard} 
           onChange={e => onProductChange(index, 'standard', e.target.value)} 
-          className="border p-1 rounded w-full" 
-        />
-      </td>
-      <td className="p-2">
-        <input 
-          type="number" 
-          value={product.count} 
-          onChange={e => onProductChange(index, 'count', Number(e.target.value))} 
           className="border p-1 rounded w-full" 
         />
       </td>
@@ -79,7 +67,7 @@ const OrderProductRow: React.FC<OrderProductRowProps> = ({
           className="border p-1 rounded w-full" 
         />
       </td>
-      <td className="p-2 text-right">{product.amount.toLocaleString()}원</td>
+      <td className="p-2 text-right">{product.price}원</td>
       <td className="p-2 text-center">
         <button 
           type="button" 

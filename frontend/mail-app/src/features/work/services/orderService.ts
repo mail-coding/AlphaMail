@@ -1,12 +1,13 @@
 import { OrderDetail, Order, OrderProduct } from '../types/order';
 import { api } from '../../../shared/lib/axiosInstance';
+import { useUserInfo } from '@/shared/hooks/useUserInfo';
 
 interface OrderService {
   getOrders: (companyId: number, params: {
     page: number;
     size: number;
     clientName?:string;
-    orderNo?:number;
+    orderNo?:string;
     userName?:string;
     startDate?:string;
     endDate?:string;
@@ -19,8 +20,8 @@ interface OrderService {
     number: number;
   }>;
   getOrderDetail: (orderId: number) => Promise<any>;
-  createOrder: (orderData: OrderDetail) => Promise<any>;
-  updateOrder: (orderData: OrderDetail) => Promise<any>;
+  createOrder: (orderData: OrderDetail, userId: number, companyId: number, groupId: number) => Promise<any>;
+  updateOrder: (orderData: OrderDetail, userId: number, companyId: number, groupId: number) => Promise<any>;
   deleteOrders: (orderIds: number[]) => Promise<any>;
   saveOrder: (params: { orderData: OrderDetail; orderId?: number }) => Promise<any>;
 }
@@ -30,15 +31,24 @@ export const orderService: OrderService = {
     page: number;
     size: number;
     clientName?:string;
-    orderNo?:number;
+    orderNo?:string;
     userName?:string;
     startDate?:string;
     endDate?:string;
     productName?:string;
   }) => {
-    const response = await api.get(`/api/erp/companies/${companyId}/purchase-orders`, { params });
-    
+    const filteredParams = Object.entries(params).reduce((acc, [key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        acc[key] = value;
+      }
+      return acc;
+    }, {} as Record<string, any>);
 
+    console.log(filteredParams);
+    const response = await api.get(`/api/erp/companies/${companyId}/purchase-orders`, { params: filteredParams });
+
+    console.log(response);
+    
     const orders: Order[] = (response.data?.contents || []).map((order:any) => ({
       id: order.id,
       orderNo: order.orderNo,
@@ -52,6 +62,8 @@ export const orderService: OrderService = {
       isSelected: false,
     }));
 
+    console.log(orders);
+
     return {
       content: orders,
       totalElements: response.data.totalElements,
@@ -62,29 +74,29 @@ export const orderService: OrderService = {
   },
 
   getOrderDetail: async (orderId: number) => {
-    const response = await api.get(`/api/orders/${orderId}`);
+    const response = await api.get(`/api/erp/purchase-orders/${orderId}`);
 
-    const order: Order[] = (response.data || []).map((order:any) => ({
-      id: order.id,
-      userId: order.userId,
-      userName: order.userName,
-      groupId: order.groupId,
-      groupName: order.groupName,
-      clientId: order.clientId,
-      clientName: order.clientName,
-      licenseNumber: order.licenseNumber,
-      representative: order.representative,
-      businessType: order.businessType,
-      businessItem: order.businessItem,
-      manager: order.manager,
-      managerNumber: order.managerNumber,
-      paymentTerm: order.paymentTerm,
-      shippingAddress: order.shippingAddress,
-      orderNo: order.orderNo,
-      createdAt: new Date(order.createdAt),
-      updatedAt: new Date(order.updatedAt),
-      deliveryAt: new Date(order.deliveryAt),
-      products: (order.products || []).map((product: any) => ({
+    const order: OrderDetail = {
+      id: response.data.id,
+      userId: response.data.userId,
+      userName: response.data.userName,
+      groupId: response.data.groupId,
+      groupName: response.data.groupName,
+      clientId: response.data.clientId,
+      clientName: response.data.clientName,
+      licenseNumber: response.data.licenseNumber,
+      representative: response.data.representative,
+      businessType: response.data.businessType,
+      businessItem: response.data.businessItem,
+      manager: response.data.manager,
+      managerNumber: response.data.managerNumber,
+      paymentTerm: response.data.paymentTerm,
+      shippingAddress: response.data.shippingAddress,
+      orderNo: response.data.orderNo,
+      createdAt: new Date(response.data.createdAt),
+      updatedAt: new Date(response.data.updatedAt),
+      deliverAt: new Date(response.data.deliverAt),
+      products: (response.data.products || []).map((product: any) => ({
         id: product.id,
         name: product.name,
         standard: product.standard,
@@ -94,41 +106,46 @@ export const orderService: OrderService = {
         supply_amount: product.supply_amount,
         deletedAt: product.deletedAt ? new Date(product.deletedAt) : null,
       })),
-    }));
+    };
+
+    console.log(order);
     return order;
   },
 
-  createOrder: async (orderData: OrderDetail) => {
+  createOrder: async (orderData: OrderDetail, userId: number, companyId: number, groupId: number) => {
     const requestData = {
-      userId: 1, // TODO: 로그인된 아이디의 아이디 추가
-      companyId: 1, // TODO: 로그인된 아이디의 회사 아이디 추가
-      groupId: orderData.groupId,
+      userId,
+      companyId,
+      groupId,
       clientId: orderData.clientId,
       orderNo: orderData.orderNo,
-      deliveryAt: orderData.deliveryAt,
+      deliverAt: orderData.deliverAt.toISOString(),
       shippingAddress: orderData.shippingAddress,
       manager: orderData.manager,
       managerNumber: orderData.managerNumber,
       paymentTerm: orderData.paymentTerm,
       products: (orderData.products || []).map((product: OrderProduct) => ({
+        purchaseOrderId: null,
         productId: product.id,
         count: product.count,
         price: product.price
       })),
     };
+
+    console.log(requestData);
     
-    const response = await api.post('/api/orders', requestData);
+    const response = await api.post('/api/erp/purchase-orders', requestData);
     return response.data;
   },
 
-  updateOrder: async (orderData: OrderDetail) => {
+  updateOrder: async (orderData: OrderDetail, userId: number, companyId: number, groupId: number) => {
     const requestData = {
-      userId: 1, // TODO: 로그인된 아이디의 아이디 추가
-      companyId: 1, // TODO: 로그인된 아이디의 회사 아이디 추가
-      groupId: orderData.groupId,
+      userId: userId,
+      companyId: companyId,
+      groupId: groupId,
       clientId: orderData.clientId,
       orderNo: orderData.orderNo,
-      deliveryAt: orderData.deliveryAt,
+      deliverAt: orderData.deliverAt.toISOString(),
       shippingAddress: orderData.shippingAddress,
       manager: orderData.manager,
       managerNumber: orderData.managerNumber,
@@ -139,23 +156,28 @@ export const orderService: OrderService = {
         price: product.price
       })),
     };
-    
-    const response = await api.put(`/api/orders/${orderData.id}`, requestData);
+    const response = await api.put(`/api/erp/purchase-orders/${orderData.id}`, requestData);
     return response.data;
   },
 
   deleteOrders: async (orderIds: number[]) => {
-    const response = await api.delete('/api/orders', {
-      data: { orderIds },
+    const response = await api.post('/api/erp/purchase-orders/delete', {
+      ids: orderIds
     });
     return response.data;
   },
 
   saveOrder: async ({ orderData, orderId }: { orderData: OrderDetail; orderId?: number }) => {
+    const { data: userInfo } = useUserInfo();
+      
+    if (!userInfo) {
+      throw new Error('사용자 정보를 찾을 수 없습니다.');
+    }
+
     if (orderId) {
-      return orderService.updateOrder(orderData);
+      return orderService.updateOrder(orderData, userInfo.id, userInfo.companyId, userInfo.groupId);
     } else {
-      return orderService.createOrder(orderData);
+      return orderService.createOrder(orderData, userInfo.id, userInfo.companyId, userInfo.groupId);
     }
   },
 }; 

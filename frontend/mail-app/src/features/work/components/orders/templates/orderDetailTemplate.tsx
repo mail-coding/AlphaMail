@@ -1,8 +1,12 @@
-import React, { useState } from 'react';
-import { OrderDetail, OrderProduct } from '../../../types/order';
+import React, { useEffect } from 'react';
+import { OrderDetail } from '../../../types/order';
 import OrderBasicInfoForm from '../organisms/orderBasicInfoForm';
 import OrderProductTable from '../organisms/orderProductTable';
 import { orderService } from '../../../services/orderService';
+import { useOrderStore } from '../../../stores/orderStore';
+import { useUserInfo } from '@/shared/hooks/useUserInfo';
+import { useOrderDetail } from '../../../hooks/useOrderDetail';
+import { Spinner } from '@/shared/components/atoms/spinner';
 
 interface OrderDetailTemplateProps {
   order: OrderDetail | null;
@@ -11,98 +15,29 @@ interface OrderDetailTemplateProps {
 }
 
 const OrderDetailTemplate: React.FC<OrderDetailTemplateProps> = ({ order, onBack, onSave }) => {
-  const [formData, setFormData] = useState<OrderDetail>(
-    order || {
-      id: 0,
-      userId: 0,
-      userName: '',
-      groupId: 0,
-      groupName: '',
-      clientId: 0,
-      clientName: '',
-      licenseNumber: '',
-      representative: '',
-      businessType: '',
-      businessItem: '',
-      manager: '',
-      managerNumber: '',
-      paymentTerm: '',
-      shippingAddress: '',
-      orderNo: '',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      deliveryAt: new Date(),
-      products: [{
-        id: 0,
-        name: '',
-        standard: '',
-        count: 0,
-        price: 0,
-        tax_amount: 0,
-        supply_amount: 0,
-        amount: 0
-      }]
+  const { formData, setFormData } = useOrderStore();
+  const { data: userInfo } = useUserInfo();
+  const { data: orderDetail, isLoading } = useOrderDetail(order?.id || null);
+
+  useEffect(() => {
+    if (orderDetail) {
+      setFormData(orderDetail);
+    } else if (order) {
+      setFormData(order);
     }
-  );
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
-  };
-
-  const handleProductChange = (index: number, field: keyof OrderProduct, value: string | number) => {
-    setFormData((prev) => {
-      const newProducts = [...prev.products];
-      newProducts[index] = {
-        ...newProducts[index],
-        [field]: value,
-      };
-      if (field === 'count' || field === 'price') {
-        newProducts[index].amount = newProducts[index].count * newProducts[index].price;
-      }
-      return {
-        ...prev,
-        products: newProducts,
-      };
-    });
-  };
-
-  const addProduct = () => {
-    setFormData((prev) => ({
-      ...prev,
-      products: [
-        ...prev.products,
-        {
-          id: 0,
-          name: '',
-          standard: '',
-          count: 0,
-          price: 0,
-          tax_amount: 0,
-          supply_amount: 0,
-          amount: 0
-        },
-      ],
-    }));
-  };
-
-  const removeProduct = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      products: prev.products.filter((_, i) => i !== index),
-    }));
-  };
+  }, [order, orderDetail, setFormData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      if (!userInfo) {
+        throw new Error('사용자 정보를 찾을 수 없습니다.');
+      }
+
       if (order) {
-        await orderService.updateOrder(formData);
+        await orderService.updateOrder(formData, userInfo.id, userInfo.companyId, userInfo.groupId);
       } else {
-        await orderService.createOrder(formData);
+        await orderService.createOrder(formData, userInfo.id, userInfo.companyId, userInfo.groupId);
       }
       onSave(formData);
     } catch (error) {
@@ -110,6 +45,14 @@ const OrderDetailTemplate: React.FC<OrderDetailTemplateProps> = ({ order, onBack
       alert('발주서 저장에 실패했습니다.');
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Spinner size="large" />
+      </div>
+    );
+  }
 
   return (
     <div className="p-4">
@@ -123,13 +66,8 @@ const OrderDetailTemplate: React.FC<OrderDetailTemplateProps> = ({ order, onBack
         </button>
       </div>
       <form onSubmit={handleSubmit} className="space-y-6">
-        <OrderBasicInfoForm formData={formData} onInputChange={handleInputChange} />
-        <OrderProductTable
-          products={formData.products}
-          onProductChange={handleProductChange}
-          onAddProduct={addProduct}
-          onRemoveProduct={removeProduct}
-        />
+        <OrderBasicInfoForm />
+        <OrderProductTable />
         <div className="flex justify-end space-x-4">
           <button
             type="button"

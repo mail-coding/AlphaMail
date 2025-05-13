@@ -2,10 +2,10 @@ import React from 'react';
 import { Order } from '../../../types/order';
 import OrderTableRow from '../molecules/orderTableRow';
 import Pagination from '../molecules/pagination';
+import { useOrderStore } from '../../../stores/orderStore';
 
 interface OrderTableProps {
   orders: Order[];
-  onSelect: (id: number, checked: boolean) => void;
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
@@ -20,7 +20,6 @@ interface OrderTableProps {
 
 const OrderTable: React.FC<OrderTableProps> = ({
   orders,
-  onSelect,
   currentPage,
   totalPages,
   onPageChange,
@@ -32,6 +31,8 @@ const OrderTable: React.FC<OrderTableProps> = ({
   onOrderClick,
   isLoading,
 }) => {
+  const { selectedOrderIds, toggleOrderSelection } = useOrderStore();
+
   return (
     <div className="relative">
       {isLoading && (
@@ -78,6 +79,7 @@ const OrderTable: React.FC<OrderTableProps> = ({
               <th className="p-4 text-left">거래처명</th>
               <th className="p-4 text-left">납기일자</th>
               <th className="p-4 text-left">품목</th>
+              <th className="p-4 text-right">수량</th>
               <th className="p-4 text-right">금액</th>
             </tr>
           </thead>
@@ -87,13 +89,14 @@ const OrderTable: React.FC<OrderTableProps> = ({
                 <OrderTableRow
                   key={order.id}
                   order={order}
-                  onSelect={onSelect}
+                  onSelect={toggleOrderSelection}
                   onOrderClick={onOrderClick}
+                  isSelected={selectedOrderIds.has(order.id)}
                 />
               ))
             ) : (
               <tr>
-                <td colSpan={8} className="p-4 text-center">
+                <td colSpan={9} className="p-4 text-center">
                   발주서가 없습니다.
                 </td>
               </tr>

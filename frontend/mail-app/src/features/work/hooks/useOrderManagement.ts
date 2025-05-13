@@ -2,9 +2,13 @@ import { useOrderStore } from '../stores/orderStore';
 import { orderService } from '../services/orderService';
 import { OrderDetail } from '../types/order';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useUserInfo } from '@/shared/hooks/useUserInfo';
+import { useUserStore } from '@/shared/stores/useUserStore';
 
 export const useOrderManagement = () => {
   const queryClient = useQueryClient();
+  const { data: userInfo } = useUserInfo();
+  const isAuthenticated = useUserStore((state) => state.isAuthenticated);
   const { 
     currentPage, 
     pageSize, 
@@ -17,11 +21,18 @@ export const useOrderManagement = () => {
   const { data: ordersData, isLoading, error } = useQuery({
     queryKey: ['orders', currentPage, pageSize, sortOption, searchParams],
     queryFn: async () => {
-      const response = await orderService.getOrders(1, {
+      if (!userInfo?.companyId) {
+        throw new Error('Company ID is not available');
+      }
+      console.log(userInfo.companyId);
+      console.log(currentPage)
+      const response = await orderService.getOrders(userInfo.companyId, {
         page: currentPage - 1,
         size: pageSize,
         ...searchParams,
-      });
+      }); 
+
+      console.log(response);
 
       // isSelected 상태 업데이트
       const ordersWithSelection = response.content.map(order => ({
@@ -34,6 +45,7 @@ export const useOrderManagement = () => {
         content: ordersWithSelection,
       };
     },
+    enabled: isAuthenticated,
   });
 
   const deleteOrderMutation = useMutation({

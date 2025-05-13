@@ -4,23 +4,26 @@ import { format } from 'date-fns';
 
 interface OrderTableRowProps {
   order: Order;
-  onSelect: (id: number, checked: boolean) => void;
+  onSelect: (id: number) => void;
   onOrderClick?: (order: Order) => void;
+  isSelected: boolean;
 }
 
 const OrderTableRow: React.FC<OrderTableRowProps> = ({
   order,
   onSelect,
   onOrderClick,
+  isSelected,
 }) => {
   return (
-    <tr className={`border-b hover:bg-gray-50 ${order.isSelected ? 'bg-blue-50' : ''}`}>
+    <tr className={`border-b hover:bg-gray-50 ${isSelected ? 'bg-blue-50' : ''}`}>
       <td className="p-4">
         <input
           type="checkbox"
-          checked={order.isSelected || false}
-          onChange={(e) => onSelect(order.id, e.target.checked)}
+          checked={isSelected}
+          onChange={() => onSelect(order.id)}
           className="rounded border-gray-300"
+          onClick={(e) => e.stopPropagation()}
         />
       </td>
       <td className="p-4">

@@ -1,20 +1,22 @@
 import React from 'react';
-import { OrderProduct } from '../../../types/order';
+import { Product } from '../../../types/product';
 import OrderProductRow from '../molecules/orderProductRow';
+import { useOrderStore } from '../../../stores/orderStore';
 
-interface OrderProductTableProps {
-  products: OrderProduct[];
-  onProductChange: (index: number, field: keyof OrderProduct, value: string | number) => void;
-  onAddProduct: () => void;
-  onRemoveProduct: (index: number) => void;
-}
+const OrderProductTable: React.FC = () => {
+  const { formData, updateProduct, addProduct, removeProduct } = useOrderStore();
 
-const OrderProductTable: React.FC<OrderProductTableProps> = ({
-  products,
-  onProductChange,
-  onAddProduct,
-  onRemoveProduct,
-}) => {
+  const handleProductSelect = async (index: number, product: Product) => {
+    try {
+      updateProduct(index, 'id', product.id);
+      updateProduct(index, 'name', product.name);
+      updateProduct(index, 'standard', product.standard || '');
+      updateProduct(index, 'price', product.outboundPrice || 0);
+    } catch (error) {
+      console.error('제품 정보 업데이트 실패:', error);
+    }
+  };
+
   return (
     <div className="bg-white rounded shadow p-4">
       <table className="min-w-full mb-2">
@@ -32,20 +34,21 @@ const OrderProductTable: React.FC<OrderProductTableProps> = ({
           </tr>
         </thead>
         <tbody>
-          {products.map((product, idx) => (
+          {formData.products.map((product, idx) => (
             <OrderProductRow
               key={idx}
               index={idx}
               product={product}
-              onProductChange={onProductChange}
-              onRemoveProduct={onRemoveProduct}
+              onProductChange={updateProduct}
+              onRemoveProduct={removeProduct}
+              onProductSelect={(product) => handleProductSelect(idx, product)}
             />
           ))}
         </tbody>
       </table>
       <button
         type="button"
-        onClick={onAddProduct}
+        onClick={addProduct}
         className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
       >
         행 추가

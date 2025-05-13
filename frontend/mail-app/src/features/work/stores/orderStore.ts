@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { OrderDetail } from '../types/order';
+import { OrderDetail, OrderProduct } from '../types/order';
 
 interface OrderStore {
   // 페이지네이션
@@ -14,18 +14,18 @@ interface OrderStore {
 
   // 검색 파라미터
   searchParams: {
-    clientName: string;
-    orderNo: number;
-    userName: string;
-    startDate: string;
-    endDate: string;
-    productName: string;
+    clientName?: string;
+    orderNo?: string;
+    userName?: string;
+    startDate?: string;
+    endDate?: string;
+    productName?: string;
   };
-  setSearchParams: (params: Partial<OrderStore['searchParams']>) => void;
+  setSearchParams: (params: any) => void;
 
   // 선택된 주문
   selectedOrderIds: Set<number>;
-  toggleOrderSelection: (id: number, checked: boolean) => void;
+  toggleOrderSelection: (id: number) => void;
   clearSelection: () => void;
 
   // 상세 보기
@@ -33,7 +33,47 @@ interface OrderStore {
   selectedOrder: OrderDetail | null;
   setShowOrderDetail: (show: boolean) => void;
   setSelectedOrder: (order: OrderDetail | null) => void;
+
+  // 폼 데이터 관리
+  formData: OrderDetail;
+  setFormData: (data: OrderDetail) => void;
+  updateFormField: (field: keyof OrderDetail, value: any) => void;
+  updateProduct: (index: number, field: keyof OrderProduct, value: string | number) => void;
+  addProduct: () => void;
+  removeProduct: (index: number) => void;
 }
+
+const initialFormData: OrderDetail = {
+  id: 0,
+  userId: 0,
+  userName: '',
+  groupId: 0,
+  groupName: '',
+  clientId: 0,
+  clientName: '',
+  licenseNumber: '',
+  representative: '',
+  businessType: '',
+  businessItem: '',
+  manager: '',
+  managerNumber: '',
+  paymentTerm: '',
+  shippingAddress: '',
+  orderNo: '',
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  deliverAt: new Date(),
+  products: [{
+    id: 0,
+    name: '',
+    standard: '',
+    count: 0,
+    price: 0,
+    tax_amount: 0,
+    supply_amount: 0,
+    amount: 0
+  }]
+};
 
 export const useOrderStore = create<OrderStore>((set) => ({
   // 페이지네이션
@@ -47,28 +87,18 @@ export const useOrderStore = create<OrderStore>((set) => ({
   setSortOption: (option) => set({ sortOption: option }),
 
   // 검색 파라미터
-  searchParams: {
-    clientName: '',
-    orderNo: 0,
-    userName: '',
-    startDate: '',
-    endDate: '',
-    productName: '',
-  },
-  setSearchParams: (params) =>
-    set((state) => ({
-      searchParams: { ...state.searchParams, ...params },
-    })),
+  searchParams: {},
+  setSearchParams: (params) => set({ searchParams: params }),
 
   // 선택된 주문
   selectedOrderIds: new Set(),
-  toggleOrderSelection: (id, checked) =>
+  toggleOrderSelection: (id) =>
     set((state) => {
       const newSelectedIds = new Set(state.selectedOrderIds);
-      if (checked) {
-        newSelectedIds.add(id);
-      } else {
+      if (newSelectedIds.has(id)) {
         newSelectedIds.delete(id);
+      } else {
+        newSelectedIds.add(id);
       }
       return { selectedOrderIds: newSelectedIds };
     }),
@@ -79,4 +109,55 @@ export const useOrderStore = create<OrderStore>((set) => ({
   selectedOrder: null,
   setShowOrderDetail: (show) => set({ showOrderDetail: show }),
   setSelectedOrder: (order) => set({ selectedOrder: order }),
+
+  // 폼 데이터 관리
+  formData: initialFormData,
+  setFormData: (data) => set({ formData: data }),
+  updateFormField: (field, value) => 
+    set((state) => ({
+      formData: { ...state.formData, [field]: value }
+    })),
+  updateProduct: (index, field, value) =>
+    set((state) => {
+      const newProducts = [...state.formData.products];
+      newProducts[index] = {
+        ...newProducts[index],
+        [field]: value,
+      };
+      if (field === 'count' || field === 'price') {
+        newProducts[index].amount = newProducts[index].count * newProducts[index].price;
+      }
+      return {
+        formData: {
+          ...state.formData,
+          products: newProducts,
+        },
+      };
+    }),
+  addProduct: () =>
+    set((state) => ({
+      formData: {
+        ...state.formData,
+        products: [
+          ...state.formData.products,
+          {
+            id: 0,
+            name: '',
+            standard: '',
+            count: 0,
+            price: 0,
+            tax_amount: 0,
+            supply_amount: 0,
+            amount: 0
+          },
+        ],
+      },
+    })),
+  removeProduct: (index) =>
+    set((state) => ({
+      formData: {
+        ...state.formData,
+        products: state.formData.products.filter((_, i) => i !== index),
+      },
+    })),
 })); 

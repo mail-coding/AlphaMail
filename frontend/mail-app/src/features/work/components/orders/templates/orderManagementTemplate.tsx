@@ -3,44 +3,13 @@ import OrderTable from '../organisms/orderTable';
 import { Order } from '../../../types/order';
 import OrderDetailTemplate from './orderDetailTemplate';
 import { OrderDetail } from '../../../types/order';
+import { orderService } from '../../../services/orderService';
 import { useOrderStore } from '../../../stores/orderStore';
 import { useOrderManagement } from '../../../hooks/useOrderManagement';
 
-function orderToOrderDetail(order: Order): OrderDetail {
-  return {
-    id: 0,
-    userId: 0,
-    userName: order.userName,
-    groupId: 0,
-    groupName: '',
-    clientId: 0,
-    clientName: order.clientName,
-    licenseNumber: '',
-    representative: '',
-    businessType: '',
-    businessItem: '',
-    manager: order.userName,
-    managerNumber: '',
-    paymentTerm: '',
-    shippingAddress: '',
-    orderNo: order.orderNo,
-    createdAt: order.createdAt,
-    updatedAt: new Date(),
-    deliveryAt: order.deliverAt,
-    products: [
-      {
-        id: 0,
-        name: order.productName,
-        standard: '',
-        count: order.productCount,
-        price: order.price,
-        tax_amount: 0,
-        supply_amount: 0,
-        amount: order.price,
-        deletedAt: new Date()
-      },
-    ],
-  };
+async function orderToOrderDetail(order: Order): Promise<OrderDetail> {
+  const orderDetail = await orderService.getOrderDetail(order.id);
+  return orderDetail;
 }
 
 const OrderManagementTemplate: React.FC = () => {
@@ -56,7 +25,6 @@ const OrderManagementTemplate: React.FC = () => {
     setSortOption,
     setShowOrderDetail,
     setSelectedOrder,
-    toggleOrderSelection,
     setSearchParams,
   } = useOrderStore();
 
@@ -93,8 +61,9 @@ const OrderManagementTemplate: React.FC = () => {
     setSortOption(option);
   };
 
-  const handleOrderClick = (order: Order) => {
-    setSelectedOrder(orderToOrderDetail(order));
+  const handleOrderClick = async (order: Order) => {
+    const orderDetail = await orderToOrderDetail(order);
+    setSelectedOrder(orderDetail);
     setShowOrderDetail(true);
   };
 
@@ -156,7 +125,6 @@ const OrderManagementTemplate: React.FC = () => {
           </div>
           <OrderTable
             orders={orders}
-            onSelect={toggleOrderSelection}
             currentPage={currentPage}
             totalPages={totalPages}
             onPageChange={handlePageChange}
