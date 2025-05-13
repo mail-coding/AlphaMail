@@ -48,7 +48,4 @@ public class ScheduleEntity extends BaseTimeEntity {
 
 	@Column(nullable = false)
 	private Boolean isDone = false;
-
-
-
 }

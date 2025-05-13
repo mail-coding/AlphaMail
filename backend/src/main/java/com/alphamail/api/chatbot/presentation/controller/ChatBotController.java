@@ -7,10 +7,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.alphamail.api.chatbot.application.dto.ChatBotResult;
-import com.alphamail.api.chatbot.application.service.ChatBotService;
-import com.alphamail.api.chatbot.application.usecase.RegistChatMessageUseCase;
-import com.alphamail.api.chatbot.domain.entity.ChatBot;
-import com.alphamail.api.chatbot.domain.entity.ChatRole;
+import com.alphamail.api.chatbot.application.service.RegistScheduleService;
+import com.alphamail.api.chatbot.application.service.SearchScheduleService;
+import com.alphamail.api.chatbot.infrastructure.extractor.SummarizeScheduleExtractor;
 import com.alphamail.api.chatbot.presentation.dto.ChatBotRequest;
 import com.alphamail.api.chatbot.presentation.dto.ChatBotResponse;
 
@@ -21,17 +20,20 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/chatbot")
 public class ChatBotController {
 
-	private final ChatBotService chatBotService;
-	private final RegistChatMessageUseCase registChatMessageUseCase;
+	private final RegistScheduleService registScheduleService;
+	private final SearchScheduleService searchScheduleService;
 
-	@PostMapping("/message")
-	public ResponseEntity<ChatBotResponse> sendMessage(@RequestBody ChatBotRequest request) {
-		registChatMessageUseCase.execute(ChatBot.ofUser(request.userId(), request.message()));
-
-		ChatBotResult result = chatBotService.execute(request);
-
-		registChatMessageUseCase.execute(ChatBot.ofBot(request.userId(), result.reply()));
+	@PostMapping("/regist/schedule")
+	public ResponseEntity<ChatBotResponse> registSchedule(@RequestBody ChatBotRequest request) {
+		ChatBotResult result = registScheduleService.execute(request);
 
 		return ResponseEntity.ok(ChatBotResponse.from(result));
+	}
+
+	@PostMapping("/search/summary")
+	public ResponseEntity<ChatBotResponse> searchAndSummarize(@RequestBody ChatBotRequest request) {
+		ChatBotResponse response = searchScheduleService.searchWithSummary(request.userId(), request.message());
+
+		return ResponseEntity.ok(response);
 	}
 }

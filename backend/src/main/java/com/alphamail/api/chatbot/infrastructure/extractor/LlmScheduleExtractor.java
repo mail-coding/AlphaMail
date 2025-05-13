@@ -1,6 +1,8 @@
-package com.alphamail.api.chatbot.infrastructure.adapter;
+package com.alphamail.api.chatbot.infrastructure.extractor;
 
 import org.springframework.stereotype.Component;
+
+import com.alphamail.api.chatbot.infrastructure.adapter.ClaudeApiClient;
 
 import lombok.RequiredArgsConstructor;
 

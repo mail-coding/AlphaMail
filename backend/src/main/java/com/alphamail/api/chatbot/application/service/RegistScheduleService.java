@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 
 import com.alphamail.api.chatbot.application.dto.ChatBotResult;
 import com.alphamail.api.chatbot.application.dto.ScheduleExtractionResult;
-import com.alphamail.api.chatbot.infrastructure.adapter.LlmScheduleExtractor;
+import com.alphamail.api.chatbot.infrastructure.extractor.LlmScheduleExtractor;
 import com.alphamail.api.chatbot.presentation.dto.ChatBotRequest;
 import com.alphamail.api.schedule.application.usecase.CreateScheduleUseCase;
 import com.alphamail.api.schedule.presentation.dto.CreateScheduleRequest;
@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class ChatBotService {
+public class RegistScheduleService {
 
 	private final LlmScheduleExtractor extractor;
 	private final CreateScheduleUseCase createScheduleUseCase;
