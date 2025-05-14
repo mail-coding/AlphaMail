@@ -18,7 +18,8 @@ const LoginPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await loginService(email, password);
+      const emailToSubmit = email.includes('@') ? email : `${email}@alphamail.my`;
+      const response = await loginService(emailToSubmit, password);
       console.log('로그인 성공! 액세스 토큰:', response.accessToken);
       
       // 로그인 성공 후 사용자 정보 쿼리 무효화
@@ -46,7 +47,7 @@ const LoginPage = () => {
               이메일
             </Typography>
             <Input
-              type="email"
+              type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="이메일을 입력하세요"
