@@ -1,13 +1,19 @@
-import React, { useState } from 'react';
-import { QuoteDetail, QuoteProduct, CreateQuoteRequest, UpdateQuoteRequest } from '../../../types/quote';
-import { QuoteBasicInfoForm } from '../organisms/quoteBasicInfoForm';
+import React, { useEffect } from 'react';
+import { QuoteDetail } from '../../../types/quote';
 import { QuoteProductTable } from '../organisms/quoteProductTable';
-import { useQuote } from '../../../hooks/useQuote';
+import { useUserInfo } from '@/shared/hooks/useUserInfo';
+import { useQuotes } from '../../../hooks/useQuote';
+import { Client } from '../../../types/clients';
+import { Product } from '@/features/work/types/product';
+import ClientInput from '@/shared/components/atoms/clientInput';
+import AddressInput from '@/shared/components/atoms/addressInput';
+import KakaoAddressTemplate from '@/shared/components/template/kakaoAddressTemplate';
+import { api } from '@/shared/lib/axiosInstance';
 
 interface QuoteDetailTemplateProps {
-  quote?: QuoteDetail;
+  quote: QuoteDetail | null;
   onBack: () => void;
-  onSave: () => void;
+  onSave: (quoteData: QuoteDetail) => void;
 }
 
 export const QuoteDetailTemplate: React.FC<QuoteDetailTemplateProps> = ({
@@ -15,109 +21,118 @@ export const QuoteDetailTemplate: React.FC<QuoteDetailTemplateProps> = ({
   onBack,
   onSave,
 }) => {
-  const { handleCreateQuote, handleUpdateQuote } = useQuote();
-  const [formData, setFormData] = useState<QuoteDetail>(
+  const { data: userInfo } = useUserInfo();
+  const { handleCreateQuote, handleUpdateQuote } = useQuotes({});
+  const [isAddressModalOpen, setIsAddressModalOpen] = React.useState(false);
+  const [formData, setFormData] = React.useState<QuoteDetail>(
     quote || {
-      quote_no: '',
-      order_no: '',
-      date: new Date().toISOString().split('T')[0],
-      client_name: '',
-      business_no: '',
-      representative: '',
-      business_type: '',
-      business_category: '',
+      id: 0,
+      userId: 0,
+      userName: '',
+      groupId: 0,
+      groupName: '',
+      clientId: 0,
+      clientName: '',
       manager: '',
-      client_manager: '',
-      client_contact: '',
-      payment_condition: '',
-      delivery_date: '',
-      address: '',
+      managerNumber: '',
+      licenseNumber: '',
+      businessType: '',
+      businessItem: '',
+      shippingAddress: '',
+      quoteNo: '',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      representative: '',
       products: [
         {
+          id: 0,
           name: '',
           standard: '',
-          quantity: 0,
-          unit_price: 0,
-          tax_amount: 0,
-          supply_amount: 0,
-          amount: 0,
+          count: 0,
+          price: 0,
+          deletedAt: null,
         },
       ],
     }
   );
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
+  useEffect(() => {
+    if (quote) {
+      setFormData(quote);
+    }
+  }, [quote]);
+
+  const handleClientChange = async (client: Client) => {
+    try {
+      const response = await api.get(`/api/erp/clients/${client.id}`);
+      const clientDetail = response.data;
+
+      setFormData(prev => ({
+        ...prev,
+        clientId: client.id,
+        clientName: clientDetail.corpName,
+        licenseNumber: clientDetail.licenseNum,
+        representative: clientDetail.representative,
+        businessType: clientDetail.businessType || '',
+        businessItem: clientDetail.businessItem || '',
+        manager: clientDetail.manager || '',
+        managerNumber: clientDetail.managerPhone || '',
+        shippingAddress: clientDetail.address || '',
+      }));
+    } catch (error) {
+      console.error('거래처 정보 조회 실패:', error);
+      alert('거래처 정보를 불러오는데 실패했습니다.');
+    }
+  };
+
+  const handleAddressChange = (value: string) => {
+    setFormData(prev => ({
       ...prev,
-      [name]: value,
+      shippingAddress: value,
     }));
   };
 
-  const handleProductChange = (index: number, field: keyof QuoteProduct, value: string | number) => {
-    setFormData((prev) => {
-      const newProducts = [...prev.products];
-      newProducts[index] = {
-        ...newProducts[index],
-        [field]: value,
-      };
-      
-      // 수량이나 단가가 변경되면 금액 자동 계산
-      if (field === 'quantity' || field === 'unit_price') {
-        newProducts[index].amount = 
-          newProducts[index].quantity * newProducts[index].unit_price;
-      }
-      
-      return {
-        ...prev,
-        products: newProducts,
-      };
-    });
+  const handleAddressSelect = (data: {
+    address: string;
+    zonecode: string;
+    addressType: string;
+    bname: string;
+    buildingName: string;
+  }) => {
+    handleAddressChange(data.address);
+    setIsAddressModalOpen(false);
   };
 
-  const addProduct = () => {
-    setFormData((prev) => ({
+  const handleProductSelect = (product: Product) => {
+    setFormData(prev => ({
       ...prev,
       products: [
         ...prev.products,
         {
-          name: '',
-          standard: '',
-          quantity: 0,
-          unit_price: 0,
-          tax_amount: 0,
-          supply_amount: 0,
-          amount: 0,
+          id: product.id,
+          name: product.name,
+          standard: product.standard,
+          count: 1,
+          price: product.outboundPrice,
+          deletedAt: null,
         },
       ],
-    }));
-  };
-
-  const removeProduct = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      products: prev.products.filter((_, i) => i !== index),
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      if (quote) {
-        // Update existing quote
-        const updateData: UpdateQuoteRequest = {
-          id: Number(quote.quote_no),
-          ...formData,
-        };
-        await handleUpdateQuote(updateData);
-      } else {
-        // Create new quote
-        const createData: CreateQuoteRequest = {
-          ...formData,
-        };
-        await handleCreateQuote(createData);
+      if (!userInfo) {
+        throw new Error('사용자 정보를 찾을 수 없습니다.');
       }
-      onSave();
+
+      if (quote) {
+        await handleUpdateQuote(formData);
+      } else {
+        await handleCreateQuote(formData);
+      }
+      onSave(formData);
     } catch (error) {
       console.error('Failed to save quote:', error);
       alert('견적서 저장에 실패했습니다.');
@@ -139,16 +154,211 @@ export const QuoteDetailTemplate: React.FC<QuoteDetailTemplateProps> = ({
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <QuoteBasicInfoForm
-          formData={formData}
-          onInputChange={handleInputChange}
-        />
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">견적번호</label>
+              <input
+                type="text"
+                name="quoteNo"
+                value={formData.quoteNo}
+                onChange={(e) => {
+                  const { name, value } = e.target;
+                  setFormData((prev) => ({
+                    ...prev,
+                    [name]: value,
+                  }));
+                }}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">일자</label>
+              <input
+                type="date"
+                name="createdAt"
+                value={formData.createdAt.toISOString().split('T')[0]}
+                onChange={(e) => {
+                  const { name, value } = e.target;
+                  setFormData((prev) => ({
+                    ...prev,
+                    [name]: new Date(value),
+                  }));
+                }}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">담당자</label>
+              <input
+                type="text"
+                name="manager"
+                value={formData.manager}
+                onChange={(e) => {
+                  const { name, value } = e.target;
+                  setFormData((prev) => ({
+                    ...prev,
+                    [name]: value,
+                  }));
+                }}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">거래처</label>
+              <ClientInput
+                value={formData.clientName}
+                onChange={handleClientChange}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">사업자등록번호</label>
+              <input
+                type="text"
+                name="licenseNumber"
+                value={formData.licenseNumber}
+                onChange={(e) => {
+                  const { name, value } = e.target;
+                  setFormData((prev) => ({
+                    ...prev,
+                    [name]: value,
+                  }));
+                }}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">대표자</label>
+              <input
+                type="text"
+                name="representative"
+                value={formData.representative}
+                onChange={(e) => {
+                  const { name, value } = e.target;
+                  setFormData((prev) => ({
+                    ...prev,
+                    [name]: value,
+                  }));
+                }}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">업태</label>
+              <input
+                type="text"
+                name="businessType"
+                value={formData.businessType}
+                onChange={(e) => {
+                  const { name, value } = e.target;
+                  setFormData((prev) => ({
+                    ...prev,
+                    [name]: value,
+                  }));
+                }}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">종목</label>
+              <input
+                type="text"
+                name="businessItem"
+                value={formData.businessItem}
+                onChange={(e) => {
+                  const { name, value } = e.target;
+                  setFormData((prev) => ({
+                    ...prev,
+                    [name]: value,
+                  }));
+                }}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">거래처담당자</label>
+              <input
+                type="text"
+                name="manager"
+                value={formData.manager}
+                onChange={(e) => {
+                  const { name, value } = e.target;
+                  setFormData((prev) => ({
+                    ...prev,
+                    [name]: value,
+                  }));
+                }}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">거래처연락처</label>
+              <input
+                type="text"
+                name="managerNumber"
+                value={formData.managerNumber}
+                onChange={(e) => {
+                  const { name, value } = e.target;
+                  setFormData((prev) => ({
+                    ...prev,
+                    [name]: value,
+                  }));
+                }}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+            <div className="col-span-2">
+              <label className="block text-sm font-medium text-gray-700">주소</label>
+              <AddressInput
+                value={formData.shippingAddress}
+                onChange={handleAddressChange}
+                onSearchClick={() => setIsAddressModalOpen(true)}
+                className="mt-1"
+              />
+            </div>
+          </div>
+        </div>
 
         <QuoteProductTable
           products={formData.products}
-          onProductChange={handleProductChange}
-          onAddProduct={addProduct}
-          onRemoveProduct={removeProduct}
+          onProductChange={(index, field, value) => {
+            setFormData((prev) => {
+              const newProducts = [...prev.products];
+              newProducts[index] = {
+                ...newProducts[index],
+                [field]: value,
+              };
+              return {
+                ...prev,
+                products: newProducts,
+              };
+            });
+          }}
+          onAddProduct={() => {
+            setFormData((prev) => ({
+              ...prev,
+              products: [
+                ...prev.products,
+                {
+                  id: 0,
+                  name: '',
+                  standard: '',
+                  count: 0,
+                  price: 0,
+                  deletedAt: null,
+                },
+              ],
+            }));
+          }}
+          onRemoveProduct={(index) => {
+            setFormData((prev) => ({
+              ...prev,
+              products: prev.products.filter((_, i) => i !== index),
+            }));
+          }}
+          availableProducts={[]}
+          onProductSelect={handleProductSelect}
         />
 
         <div className="flex justify-end space-x-4">
@@ -167,6 +377,12 @@ export const QuoteDetailTemplate: React.FC<QuoteDetailTemplateProps> = ({
           </button>
         </div>
       </form>
+
+      <KakaoAddressTemplate
+        isOpen={isAddressModalOpen}
+        onClose={() => setIsAddressModalOpen(false)}
+        onSelect={handleAddressSelect}
+      />
     </div>
   );
 }; 

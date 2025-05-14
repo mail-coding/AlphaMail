@@ -1,72 +1,81 @@
 export interface Quote {
   id: number;
-  quote_no: string;
-  created_at: string;
-  user_name: string;
-  client_name: string;
-  product_count: number;
-  product_name: string;
+  quoteNo: string;
+  createdAt: Date;
+  updatedAt: Date;
+  userName: string;
+  clientName: string;
+  productCount: number;
+  productName: string;
   price: number;
   isSelected?: boolean;
 }
 
+export const parseQuote = (data: any): Quote => ({
+  ...data,
+  createdAt: new Date(data.createdAt),
+  updatedAt: new Date(data.updatedAt),
+});
+
 export interface QuoteDetail {
-  quote_no: string;
-  order_no: string;
-  date: string;
-  client_name: string;
-  business_no: string;
-  representative: string;
-  business_type: string;
-  business_category: string;
+  id: number;
+  userId: number;
+  userName: string;
+  groupId: number;
+  groupName: string;
+  clientId: number;
+  clientName: string;
   manager: string;
-  client_manager: string;
-  client_contact: string;
-  payment_condition: string;
-  delivery_date: string;
-  address: string;
+  managerNumber: string;
+  licenseNumber: string;
+  businessType: string;
+  businessItem: string;
+  shippingAddress: string;
+  quoteNo: string;
+  createdAt: Date;
+  updatedAt: Date;
+  representative: string;
   products: QuoteProduct[];
 }
 
+export const parseQuoteDetail = (data: any): QuoteDetail => ({
+  ...data,
+  createdAt: new Date(data.createdAt),
+  updatedAt: new Date(data.updatedAt),
+  products: data.products.map(parseQuoteProduct),
+});
+
 export interface QuoteProduct {
-  id?: number;
+  id: number;
   name: string;
   standard: string;
-  quantity: number;
-  unit_price: number;
-  tax_amount: number;
-  supply_amount: number;
-  amount: number;
+  count: number;
+  price: number;
+  deletedAt: Date | null;
 }
+
+export const parseQuoteProduct = (data: any): QuoteProduct => ({
+  ...data,
+  deletedAt: data.deletedAt ? new Date(data.deletedAt) : null,
+});
 
 export interface QuoteResponse {
   contents: Quote[];
-  total_count: number;
-  page_count: number;
+  totalCount: number;
+  pageCount: number;
+  currentPage: number;
 }
 
-export interface CreateQuoteRequest {
-  client_name: string;
-  business_no: string;
-  representative: string;
-  business_type: string;
-  business_category: string;
-  manager: string;
-  client_manager: string;
-  client_contact: string;
-  payment_condition: string;
-  delivery_date: string;
-  address: string;
-  products: Omit<QuoteProduct, 'id'>[];
-}
-
-export interface UpdateQuoteRequest extends Partial<CreateQuoteRequest> {
-  id: number;
-}
+export const parseQuoteResponse = (data: any): QuoteResponse => ({
+  contents: data.contents.map(parseQuote),
+  totalCount: data.totalCount,
+  pageCount: data.pageCount,
+  currentPage: data.currentPage,
+});
 
 export interface QuoteQueryParams {
   page?: number;
   size?: number;
   search?: string;
-  sort?: string;
+  sort?: number;
 } 

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { quoteService } from '../services/quoteService';
-import { Quote, QuoteDetail, QuoteQueryParams, CreateQuoteRequest, UpdateQuoteRequest } from '../types/quote';
+import { Quote, QuoteDetail, QuoteQueryParams } from '../types/quote';
+import { useUserInfo } from '@/shared/hooks/useUserInfo';
 
 interface QuoteState {
   quotes: Quote[];
@@ -16,8 +17,6 @@ interface QuoteState {
   sortOption: number;
   fetchQuotes: (params?: QuoteQueryParams) => Promise<void>;
   fetchQuoteById: (id: number) => Promise<void>;
-  createQuote: (data: CreateQuoteRequest) => Promise<void>;
-  updateQuote: (data: UpdateQuoteRequest) => Promise<void>;
   deleteQuote: (id: number) => Promise<void>;
   clearError: () => void;
   setKeyword: (keyword: string) => void;
@@ -48,8 +47,8 @@ export const useQuoteStore = create<QuoteState>((set) => ({
       const response = await quoteService.getQuotes(params);
       set({
         quotes: response.contents,
-        totalCount: response.total_count,
-        pageCount: response.page_count,
+        totalCount: response.totalCount,
+        pageCount: response.pageCount,
       });
     } catch (error) {
       set({ error: error instanceof Error ? error.message : 'Failed to fetch quotes' });
@@ -70,16 +69,19 @@ export const useQuoteStore = create<QuoteState>((set) => ({
     }
   },
 
-  createQuote: async (data) => {
+  createQuote: async (data: QuoteDetail) => {
     try {
       set({ isLoading: true, error: null });
-      await quoteService.createQuote(data);
+      const { data: userInfo } = useUserInfo();
+      if (!userInfo) throw new Error('사용자 정보를 찾을 수 없습니다.');
+      
+      await quoteService.createQuote(data, userInfo.companyId, userInfo.id, userInfo.groupId);
       // Refresh quotes list after creation
       const response = await quoteService.getQuotes();
       set({
         quotes: response.contents,
-        totalCount: response.total_count,
-        pageCount: response.page_count,
+        totalCount: response.totalCount,
+        pageCount: response.pageCount,
       });
     } catch (error) {
       set({ error: error instanceof Error ? error.message : 'Failed to create quote' });
@@ -88,16 +90,19 @@ export const useQuoteStore = create<QuoteState>((set) => ({
     }
   },
 
-  updateQuote: async (data) => {
+  updateQuote: async (data: QuoteDetail) => {
     try {
       set({ isLoading: true, error: null });
-      await quoteService.updateQuote(data);
+      const { data: userInfo } = useUserInfo();
+      if (!userInfo) throw new Error('사용자 정보를 찾을 수 없습니다.');
+      
+      await quoteService.updateQuote(data, userInfo.companyId, userInfo.id, userInfo.groupId);
       // Refresh quotes list after update
       const response = await quoteService.getQuotes();
       set({
         quotes: response.contents,
-        totalCount: response.total_count,
-        pageCount: response.page_count,
+        totalCount: response.totalCount,
+        pageCount: response.pageCount,
       });
     } catch (error) {
       set({ error: error instanceof Error ? error.message : 'Failed to update quote' });
@@ -114,8 +119,8 @@ export const useQuoteStore = create<QuoteState>((set) => ({
       const response = await quoteService.getQuotes();
       set({
         quotes: response.contents,
-        totalCount: response.total_count,
-        pageCount: response.page_count,
+        totalCount: response.totalCount,
+        pageCount: response.pageCount,
       });
     } catch (error) {
       set({ error: error instanceof Error ? error.message : 'Failed to delete quote' });

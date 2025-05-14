@@ -30,12 +30,12 @@ export const QuoteTableRow: React.FC<QuoteTableRowProps> = ({
       </td>
       <td className="p-4">{quote.id}</td>
       <td className="p-4 cursor-pointer hover:text-blue-600" onClick={handleClick}>
-        {quote.quote_no}
+        {quote.quoteNo}
       </td>
-      <td className="p-4">{quote.created_at}</td>
-      <td className="p-4">{quote.user_name}</td>
-      <td className="p-4">{quote.client_name}</td>
-      <td className="p-4">{quote.product_name} 외 {quote.product_count - 1}개</td>
+      <td className="p-4">{quote.createdAt.toLocaleDateString()}</td>
+      <td className="p-4">{quote.userName}</td>
+      <td className="p-4">{quote.clientName}</td>
+      <td className="p-4">{quote.productName} 외 {quote.productCount - 1}개</td>
       <td className="p-4 text-right">{quote.price.toLocaleString()}원</td>
     </tr>
   );

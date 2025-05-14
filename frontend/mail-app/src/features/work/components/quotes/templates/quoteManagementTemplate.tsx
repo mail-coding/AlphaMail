@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Quote, QuoteDetail } from '../../../types/quote';
 import { QuoteSearchBar, QuoteSearchParams } from '../molecules/quoteSearchBar';
 import { QuoteTable } from '../organisms/quoteTable';
-import { useQuoteStore } from '../../../stores/quoteStore';
+import { useQuotes } from '../../../hooks/useQuote';
+import { quoteService } from '../../../services/quoteService';
 
 interface QuoteManagementTemplateProps {
   onAddQuote?: () => void;
@@ -15,30 +16,39 @@ export const QuoteManagementTemplate: React.FC<QuoteManagementTemplateProps> = (
   onQuoteClick,
   companyId = 1,
 }) => {
-  const {
-    setKeyword,
-    selectedQuoteIds,
-    toggleQuoteSelection,
-    setSelectedQuoteIds,
-    fetchQuoteById,
-    selectedQuote,
-  } = useQuoteStore();
+  const [selectedQuoteIds, setSelectedQuoteIds] = useState<Set<number>>(new Set());
+  const [keyword, setKeyword] = useState<string>('');
+
+  const { data: quoteResponse, isLoading, error } = useQuotes({
+    search: keyword,
+    page: 1,
+    size: 10,
+  });
 
   const handleSearch = (params: QuoteSearchParams) => {
     setKeyword(params.keyword);
-    // 여기에 검색 파라미터를 사용한 API 호출 로직 추가
-    console.log('Search params:', params);
   };
 
   const handleQuoteClick = async (quote: Quote) => {
     try {
-      await fetchQuoteById(quote.id);
-      if (selectedQuote) {
-        onQuoteClick?.(selectedQuote);
-      }
+      const quoteDetail = await quoteService.getQuoteById(quote.id);
+      onQuoteClick?.(quoteDetail);
     } catch (error) {
-      console.error('Failed to fetch quote details:', error);
+      console.error('견적서 상세 조회 실패:', error);
+      alert('견적서 상세 정보를 불러오는데 실패했습니다.');
     }
+  };
+
+  const toggleQuoteSelection = (quoteId: number) => {
+    setSelectedQuoteIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(quoteId)) {
+        newSet.delete(quoteId);
+      } else {
+        newSet.add(quoteId);
+      }
+      return newSet;
+    });
   };
 
   const handleDelete = async () => {
@@ -52,7 +62,7 @@ export const QuoteManagementTemplate: React.FC<QuoteManagementTemplateProps> = (
     }
 
     try {
-      // API 호출 필요
+      await quoteService.deleteQuotes(Array.from(selectedQuoteIds));
       setSelectedQuoteIds(new Set());
       alert('선택한 견적서가 삭제되었습니다.');
     } catch (error) {
@@ -60,6 +70,9 @@ export const QuoteManagementTemplate: React.FC<QuoteManagementTemplateProps> = (
       alert('견적서 삭제에 실패했습니다.');
     }
   };
+
+  if (isLoading) return <div>로딩 중...</div>;
+  if (error) return <div>에러가 발생했습니다.</div>;
 
   return (
     <div className="p-4">
@@ -89,6 +102,7 @@ export const QuoteManagementTemplate: React.FC<QuoteManagementTemplateProps> = (
           </div>
           <QuoteTable
             companyId={companyId}
+            quotes={quoteResponse?.contents || []}
             onQuoteClick={handleQuoteClick}
             onSelectQuote={toggleQuoteSelection}
             selectedQuoteIds={selectedQuoteIds}

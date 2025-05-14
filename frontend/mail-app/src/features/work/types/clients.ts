@@ -1,11 +1,16 @@
 export interface Client {
     id: number;
+    name: string;
+    manager: string;
+    managerNumber: string;
+    licenseNumber: string;
+    businessType: string;
+    businessItem: string;
+    address: string;
     corpName: string;
     representative: string;
-    licenseNumber: string;
     phoneNumber: string;
     email: string;
-    address: string;
     isSelected?: boolean;
   }
 

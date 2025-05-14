@@ -72,7 +72,7 @@ const WorkPage = () => {
       case '견적서 관리':
         return showQuoteDetail ? (
           <QuoteDetailTemplate 
-            quote={selectedQuote || undefined}
+            quote={selectedQuote || null}
             onBack={handleBack}
             onSave={handleQuoteSave}
           />

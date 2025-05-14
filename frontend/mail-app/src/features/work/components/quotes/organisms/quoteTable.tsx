@@ -6,12 +6,14 @@ import { useQuoteStore } from '../../../stores/quoteStore';
 
 interface QuoteTableProps {
   companyId: number;
+  quotes: Quote[];
   onQuoteClick?: (quote: Quote) => void;
   onSelectQuote?: (id: number) => void;
   selectedQuoteIds?: Set<number>;
 }
 
 export const QuoteTable: React.FC<QuoteTableProps> = ({
+  quotes,
   onQuoteClick,
   onSelectQuote,
   selectedQuoteIds = new Set(),
@@ -24,21 +26,6 @@ export const QuoteTable: React.FC<QuoteTableProps> = ({
     setPageSize,
     setSortOption,
   } = useQuoteStore();
-
-  // 임시 데이터 (실제로는 API에서 가져와야 함)
-  const quotes: Quote[] = [
-    {
-      id: 1,
-      quote_no: '123-456',
-      created_at: '25/04/23',
-      user_name: 'SSAFY',
-      client_name: '빛도어',
-      product_count: 3,
-      product_name: '도기그룹',
-      price: 990000,
-    },
-    // ... 더 많은 데이터
-  ];
 
   const totalCount = quotes.length;
   const pageCount = Math.ceil(totalCount / pageSize);

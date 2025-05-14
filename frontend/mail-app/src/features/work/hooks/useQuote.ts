@@ -1,70 +1,48 @@
-import { useCallback } from 'react';
-import { useQuoteStore } from '../stores/quoteStore';
-import { QuoteQueryParams, CreateQuoteRequest, UpdateQuoteRequest } from '../types/quote';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { quoteService } from '../services/quoteService';
+import { QuoteResponse, QuoteQueryParams, QuoteDetail } from '../types/quote';
+import { useUserInfo } from '@/shared/hooks/useUserInfo';
 
-export const useQuote = () => {
-  const {
-    quotes,
-    selectedQuote,
-    totalCount,
-    pageCount,
-    isLoading,
-    error,
-    fetchQuotes,
-    fetchQuoteById,
-    createQuote,
-    updateQuote,
-    deleteQuote,
-    clearError,
-  } = useQuoteStore();
+interface UseQuotesReturn {
+  data: QuoteResponse | undefined;
+  isLoading: boolean;
+  error: Error | null;
+  handleCreateQuote: (data: QuoteDetail) => void;
+  handleUpdateQuote: (data: QuoteDetail) => void;
+}
 
-  const handleFetchQuotes = useCallback(
-    async (params?: QuoteQueryParams) => {
-      await fetchQuotes(params);
+export const useQuotes = (params: QuoteQueryParams): UseQuotesReturn => {
+  const { data: userInfo } = useUserInfo();
+  const userId = userInfo?.id;
+  const companyId = userInfo?.companyId;
+  const groupId = userInfo?.groupId;
+  const queryClient = useQueryClient();
+
+  const { data, isLoading, error } = useQuery<QuoteResponse>({
+    queryKey: ['quotes', params, companyId],
+    queryFn: () => quoteService.getQuotes(params, companyId!),
+    enabled: !!companyId,
+  });
+
+  const createMutation = useMutation({
+    mutationFn: (data: QuoteDetail) => quoteService.createQuote(data, companyId!, userId!, groupId!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['quotes'] });
     },
-    [fetchQuotes]
-  );
+  });
 
-  const handleFetchQuoteById = useCallback(
-    async (id: number) => {
-      await fetchQuoteById(id);
+  const updateMutation = useMutation({
+    mutationFn: (data: QuoteDetail) => quoteService.updateQuote(data, companyId!, userId!, groupId!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['quotes'] });
     },
-    [fetchQuoteById]
-  );
-
-  const handleCreateQuote = useCallback(
-    async (data: CreateQuoteRequest) => {
-      await createQuote(data);
-    },
-    [createQuote]
-  );
-
-  const handleUpdateQuote = useCallback(
-    async (data: UpdateQuoteRequest) => {
-      await updateQuote(data);
-    },
-    [updateQuote]
-  );
-
-  const handleDeleteQuote = useCallback(
-    async (id: number) => {
-      await deleteQuote(id);
-    },
-    [deleteQuote]
-  );
+  });
 
   return {
-    quotes,
-    selectedQuote,
-    totalCount,
-    pageCount,
+    data,
     isLoading,
     error,
-    handleFetchQuotes,
-    handleFetchQuoteById,
-    handleCreateQuote,
-    handleUpdateQuote,
-    handleDeleteQuote,
-    clearError,
+    handleCreateQuote: createMutation.mutate,
+    handleUpdateQuote: updateMutation.mutate,
   };
 }; 
