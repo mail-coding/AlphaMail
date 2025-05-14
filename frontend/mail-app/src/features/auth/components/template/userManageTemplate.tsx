@@ -25,6 +25,8 @@ export const UserManageTemplate: React.FC = () => {
     companyId: 0,
     groupId: 0,
   });
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
 
@@ -49,6 +51,7 @@ export const UserManageTemplate: React.FC = () => {
     setMessage({ type: '', text: '' });
 
     try {
+      // 기본 정보 업데이트
       await api.put(`/api/erp/users/${formData.id}`, {
         name: formData.name,
         phone: formData.phone,
@@ -56,8 +59,28 @@ export const UserManageTemplate: React.FC = () => {
         department: formData.department,
       });
 
+      // 비밀번호가 입력된 경우에만 비밀번호 변경
+      if (newPassword) {
+        if (newPassword.length < 8) {
+          setMessage({ type: 'error', text: '비밀번호는 8자 이상이어야 합니다.' });
+          return;
+        }
+        if (newPassword !== confirmPassword) {
+          setMessage({ type: 'error', text: '비밀번호가 일치하지 않습니다.' });
+          return;
+        }
+
+        await api.put(`/api/erp/users/${formData.id}/password`, {
+          newPassword
+        });
+      }
+
       setMessage({ type: 'success', text: '사용자 정보가 성공적으로 수정되었습니다.' });
       refetch();
+      
+      // 비밀번호 필드 초기화
+      setNewPassword('');
+      setConfirmPassword('');
     } catch (error) {
       console.error('Failed to update user:', error);
       setMessage({ type: 'error', text: '사용자 정보 수정에 실패했습니다.' });
@@ -153,6 +176,32 @@ export const UserManageTemplate: React.FC = () => {
               onChange={handleChange}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             />
+          </div>
+
+          <div className="border-t pt-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">비밀번호 변경</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">새 비밀번호</label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  placeholder="새 비밀번호 (8자 이상)"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">새 비밀번호 확인</label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  placeholder="새 비밀번호 확인"
+                />
+              </div>
+            </div>
           </div>
         </div>
 
