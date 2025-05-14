@@ -12,6 +12,8 @@ import MailWriteTemplate from '@/features/mail/components/templates/mailWriteTem
 import MailResultTemplate from '@/features/mail/components/templates/mailResultTemplate';
 import MailTrashTemplate from '@/features/mail/components/templates/mailTrashTemplate';
 import SentMailTemplate from '@/features/mail/components/templates/sentMailTemplate';
+import { UserManageTemplate } from '@/features/auth/components/template/userManageTemplate';
+import { PasswordConfirmTemplate } from '@/features/auth/components/template/passwordConfirmTemplate';
 
 export const Router = () => {
   return (
@@ -49,6 +51,18 @@ export const Router = () => {
       } />
       <Route path="/group" element={<GroupManagePage />} />
       <Route path="/search-test" element={<SearchTest />} />
+      
+      {/* User Management Routes */}
+      <Route path="/user/confirm-password" element={
+        <ProtectedRoute>
+          <PasswordConfirmTemplate />
+        </ProtectedRoute>
+      } />
+      <Route path="/user/manage" element={
+        <ProtectedRoute>
+          <UserManageTemplate />
+        </ProtectedRoute>
+      } />
 
       {/* Fallback Route */}
       <Route path="*" element={<Navigate to="/" replace />} />
