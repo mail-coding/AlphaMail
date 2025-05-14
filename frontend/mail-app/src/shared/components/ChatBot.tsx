@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import styled from '@emotion/styled';
+import { useChatStore } from '../stores/useChatStore';
+import { ChatMessage } from '../types/chat';
+import { useUserStore } from '../stores/useUserStore';
 
 const ChatBotContainer = styled.div`
   position: fixed;
@@ -83,20 +86,63 @@ const SendButton = styled.button`
   }
 `;
 
+const MessageBubble = styled.div<{ isUser: boolean }>`
+  max-width: 80%;
+  padding: 10px 15px;
+  margin: 5px 0;
+  border-radius: 15px;
+  background-color: ${props => props.isUser ? '#007bff' : '#f0f0f0'};
+  color: ${props => props.isUser ? 'white' : 'black'};
+  align-self: ${props => props.isUser ? 'flex-end' : 'flex-start'};
+`;
+
+const MessageContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
+const LoadingIndicator = styled.div`
+  padding: 10px;
+  text-align: center;
+  color: #666;
+`;
+
+const ErrorMessage = styled.div`
+  padding: 10px;
+  color: #dc3545;
+  text-align: center;
+  background-color: #f8d7da;
+  border-radius: 4px;
+  margin: 5px 0;
+`;
+
 const ChatBot: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { messages, isLoading, error, sendMessage } = useChatStore();
+  const { accessToken } = useUserStore();
 
   const toggleChat = () => {
     setIsOpen(!isOpen);
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (message.trim()) {
-      // 여기에 메시지 전송 로직 추가
+      await sendMessage(message.trim(), accessToken || '');
       setMessage('');
     }
   };
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
 
   return (
     <ChatBotContainer>
@@ -107,7 +153,16 @@ const ChatBot: React.FC = () => {
         <ChatWindow>
           <ChatHeader>챗봇</ChatHeader>
           <ChatMessages>
-            {/* 메시지 내용이 여기에 표시됩니다 */}
+            <MessageContainer>
+              {messages.map((msg: ChatMessage, index: number) => (
+                <MessageBubble key={index} isUser={msg.isUser}>
+                  {msg.reply}
+                </MessageBubble>
+              ))}
+              {isLoading && <LoadingIndicator>답변을 생성하는 중...</LoadingIndicator>}
+              {error && <ErrorMessage>{error}</ErrorMessage>}
+              <div ref={messagesEndRef} />
+            </MessageContainer>
           </ChatMessages>
           <ChatInput>
             <Input
@@ -116,8 +171,11 @@ const ChatBot: React.FC = () => {
               onChange={(e) => setMessage(e.target.value)}
               placeholder="메시지를 입력하세요..."
               onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+              disabled={isLoading}
             />
-            <SendButton onClick={handleSendMessage}>전송</SendButton>
+            <SendButton onClick={handleSendMessage} disabled={isLoading}>
+              전송
+            </SendButton>
           </ChatInput>
         </ChatWindow>
       )}
