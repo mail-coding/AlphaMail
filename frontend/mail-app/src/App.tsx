@@ -13,6 +13,7 @@ import { HeaderContent } from './shared/Layout/headerContent';
 import { ToastContainer } from 'react-toastify';
 import { AuthProvider } from './features/auth/providers/AuthProvider';
 import { useAuthGuard } from './shared/hooks/useAuthGuard';
+import ChatBot from './shared/components/ChatBot';
 
 // 라우터를 포함한 앱 레이아웃 컴포넌트
 const AppLayout = () => {
@@ -69,6 +70,7 @@ const AppLayout = () => {
         draggable
         pauseOnHover
       />
+      <ChatBot />
     </div>
   );
 };
