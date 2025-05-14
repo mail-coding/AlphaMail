@@ -13,6 +13,8 @@ class ChatService {
 
   async sendMessage(message: string, userId: string): Promise<ChatMessage> {
     try {
+        console.log(message, userId);
+
       const response = await api.post('/api/chatbot/message', {
         message,
         userId,

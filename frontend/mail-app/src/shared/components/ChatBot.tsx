@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import styled from '@emotion/styled';
 import { useChatStore } from '../stores/useChatStore';
 import { ChatMessage } from '../types/chat';
-import { useUserStore } from '../stores/useUserStore';
+import { useUser } from '@/features/auth/hooks/useUser';
 
 const ChatBotContainer = styled.div`
   position: fixed;
@@ -122,15 +122,15 @@ const ChatBot: React.FC = () => {
   const [message, setMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { messages, isLoading, error, sendMessage } = useChatStore();
-  const { accessToken } = useUserStore();
+  const { data: userInfo } = useUser();
 
   const toggleChat = () => {
     setIsOpen(!isOpen);
   };
 
   const handleSendMessage = async () => {
-    if (message.trim()) {
-      await sendMessage(message.trim(), accessToken || '');
+    if (message.trim() && userInfo?.id) {
+      await sendMessage(message.trim(), userInfo.id.toString());
       setMessage('');
     }
   };
