@@ -4,11 +4,12 @@ import { useChatStore } from '../stores/useChatStore';
 import { ChatMessage } from '../types/chat';
 import { useUser } from '@/features/auth/hooks/useUser';
 
-const ChatBotContainer = styled.div`
+const ChatBotContainer = styled.div<{ position: { x: number; y: number } }>`
   position: fixed;
-  bottom: 20px;
-  right: 20px;
+  left: ${props => props.position.x}px;
+  top: ${props => props.position.y}px;
   z-index: 1000;
+  transition: transform 0.1s ease-out;
 `;
 
 const ChatButton = styled.button`
@@ -19,22 +20,26 @@ const ChatButton = styled.button`
   border: none;
   color: white;
   font-size: 24px;
-  cursor: pointer;
+  cursor: move;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
   transition: transform 0.2s;
+  user-select: none;
 
   &:hover {
     transform: scale(1.1);
   }
 `;
 
-const ChatWindow = styled.div`
+const ChatWindow = styled.div<{ 
+  position: { x: number; y: number },
+  windowPosition: { x: number; y: number }
+}>`
   position: fixed;
-  bottom: 90px;
-  right: 20px;
+  left: ${props => props.windowPosition.x}px;
+  top: ${props => props.windowPosition.y}px;
   width: 350px;
   height: 500px;
   background-color: white;
@@ -43,6 +48,7 @@ const ChatWindow = styled.div`
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  transition: all 0.2s ease-out;
 `;
 
 const ChatHeader = styled.div`
@@ -120,9 +126,105 @@ const ErrorMessage = styled.div`
 const ChatBot: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState('');
+  const [position, setPosition] = useState({ x: 20, y: window.innerHeight - 80 });
+  const [windowPosition, setWindowPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [startPosition, setStartPosition] = useState({ x: 0, y: 0 });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { messages, isLoading, error, sendMessage } = useChatStore();
   const { data: userInfo } = useUser();
+
+  const calculateWindowPosition = (botX: number, botY: number) => {
+    const windowWidth = 350;
+    const windowHeight = 500;
+    const margin = 20;
+    let newX = botX;
+    let newY = botY;
+
+    // 화면 오른쪽에 가까운 경우
+    if (botX > window.innerWidth / 2) {
+      newX = botX - windowWidth - margin;
+    } else {
+      newX = botX + 60 + margin; // 버튼 너비 + 여백
+    }
+
+    // 화면 아래쪽에 가까운 경우
+    if (botY > window.innerHeight / 2) {
+      newY = botY - windowHeight - margin;
+    } else {
+      newY = botY + margin;
+    }
+
+    // 화면 경계 체크
+    newX = Math.max(margin, Math.min(newX, window.innerWidth - windowWidth - margin));
+    newY = Math.max(margin, Math.min(newY, window.innerHeight - windowHeight - margin));
+
+    return { x: newX, y: newY };
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+    const rect = e.currentTarget.getBoundingClientRect();
+    setDragOffset({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    });
+    setStartPosition({
+      x: e.clientX,
+      y: e.clientY
+    });
+  };
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (isDragging) {
+      const newX = e.clientX - dragOffset.x;
+      const newY = e.clientY - dragOffset.y;
+      
+      // 화면 경계 체크
+      const maxX = window.innerWidth - 60;
+      const maxY = window.innerHeight - 60;
+      
+      const newPosition = {
+        x: Math.max(0, Math.min(newX, maxX)),
+        y: Math.max(0, Math.min(newY, maxY))
+      };
+      
+      setPosition(newPosition);
+      setWindowPosition(calculateWindowPosition(newPosition.x, newPosition.y));
+    }
+  };
+
+  const handleMouseUp = (e: MouseEvent) => {
+    if (isDragging) {
+      const dragDistance = Math.sqrt(
+        Math.pow(e.clientX - startPosition.x, 2) + 
+        Math.pow(e.clientY - startPosition.y, 2)
+      );
+      
+      if (dragDistance < 5) {
+        toggleChat();
+      }
+    }
+    setIsDragging(false);
+  };
+
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, dragOffset, startPosition]);
+
+  useEffect(() => {
+    setWindowPosition(calculateWindowPosition(position.x, position.y));
+  }, [position]);
 
   const toggleChat = () => {
     setIsOpen(!isOpen);
@@ -143,14 +245,16 @@ const ChatBot: React.FC = () => {
     scrollToBottom();
   }, [messages]);
 
-
   return (
-    <ChatBotContainer>
-      <ChatButton onClick={toggleChat}>
+    <ChatBotContainer position={position}>
+      <ChatButton 
+        onMouseDown={handleMouseDown}
+        style={{ opacity: isDragging ? 0.8 : 1 }}
+      >
         {isOpen ? '×' : '💬'}
       </ChatButton>
       {isOpen && (
-        <ChatWindow>
+        <ChatWindow position={position} windowPosition={windowPosition}>
           <ChatHeader>챗봇</ChatHeader>
           <ChatMessages>
             <MessageContainer>
