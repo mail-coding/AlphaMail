@@ -208,9 +208,9 @@ export const ScheduleDetailTemplate: React.FC<ScheduleDetailTemplateProps> = ({
         >
           <div className="p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">
+              <Typography variant="titleMedium">
                 {isEdit ? '일정 상세' : '일정 등록'}
-              </h2>
+              </Typography>
               <div className="flex items-center space-x-2">
                 <button
                   onClick={onClose}
@@ -225,7 +225,7 @@ export const ScheduleDetailTemplate: React.FC<ScheduleDetailTemplateProps> = ({
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <Typography variant="body" bold className="mb-1">
+                <Typography variant="body" className="mb-1">
                   일정명 <span className="text-red-500">*</span>
                 </Typography>
                 <Input
@@ -244,7 +244,7 @@ export const ScheduleDetailTemplate: React.FC<ScheduleDetailTemplateProps> = ({
 
               <div className="flex gap-2">
                 <div className="flex-1">
-                  <Typography variant="body" bold className="mb-1">
+                  <Typography variant="body" className="mb-1">
                     시작 일시 <span className="text-red-500">*</span>
                   </Typography>
                   <Input
@@ -263,7 +263,7 @@ export const ScheduleDetailTemplate: React.FC<ScheduleDetailTemplateProps> = ({
                   )}
                 </div>
                 <div className="flex-1">
-                  <Typography variant="body" bold className="mb-1">
+                  <Typography variant="body" className="mb-1">
                     종료 일시 <span className="text-red-500">*</span>
                   </Typography>
                   <Input
@@ -284,13 +284,13 @@ export const ScheduleDetailTemplate: React.FC<ScheduleDetailTemplateProps> = ({
               </div>
 
               <div>
-                <Typography variant="body" bold className="mb-1">
+                <Typography variant="body" className="mb-1">
                   설명
                 </Typography>
                 <textarea
                   value={schedule.description}
                   onChange={(e) => setSchedule({ ...schedule, description: e.target.value })}
-                  className={`w-full px-3 py-2 border rounded-md resize-none ${errors.description ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`w-full px-3 py-2 border resize-none ${errors.description ? 'border-red-500' : 'border-gray-300'}`}
                   rows={3}
                   maxLength={50}
                   placeholder="설명을 입력하세요 (최대 50자)"
