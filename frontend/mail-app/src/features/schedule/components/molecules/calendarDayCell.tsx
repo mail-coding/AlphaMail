@@ -39,7 +39,7 @@ export const CalendarDayCell: React.FC<CalendarDayCellProps> = ({
   }
 
   const getEventStyle = (event: Schedule) => {
-    if (!event) return '';
+    if (!event) return 'text-xs text-black cursor-pointer p-1 overflow-hidden flex items-center';
 
     const currentDate = startOfDay(date);
     const startDate = startOfDay(new Date(event.start_time));
@@ -63,15 +63,27 @@ export const CalendarDayCell: React.FC<CalendarDayCellProps> = ({
         !isCurrentMonth ? 'text-gray-400 bg-gray-50' : 'bg-white'
       } ${isToday ? 'bg-blue-100' : ''}`}
     >
-      <div className={`flex justify-between items-center font-medium p-2 ${isToday ? 'text-blue-600 font-bold' : ''} ${dayColor}`}>
-        {holidayName ? (
-          <span className="text-xs align-middle text-red-500">{holidayName}</span>
-        ) : <span></span>}
+      <div className={`inline-flex items-center font-medium p-2 ${isToday ? 'text-blue-600 font-bold' : ''} ${!isCurrentMonth ? 'text-gray-400' : dayColor}`}>
         <span>{date.getDate()}</span>
+        {holidayName && (
+          <span className={`ml-1 text-xs align-middle ${!isCurrentMonth ? 'text-gray-400' : 'text-red-500'}`}>{holidayName}</span>
+        )}
       </div>
       <div className="space-y-0.5">
         {events.map((event, index) => {
-          if (!event) return <div key={index} className="h-[28px]" />;
+          const baseEvent = events[index] || {} as Schedule;
+          const eventClass = getEventStyle(baseEvent) + " w-full flex items-center p-1 overflow-hidden";
+          if (!event) {
+            return (
+              <div
+                key={index}
+                className={eventClass + " h-[24px]"}
+                style={{ opacity: 0 }}
+              >
+                <span className="flex-1 min-w-0">&nbsp;</span>
+              </div>
+            );
+          }
 
           const isStart = isSameDay(date, new Date(event.start_time));
           const isEnd = isSameDay(date, new Date(event.end_time));
@@ -80,15 +92,17 @@ export const CalendarDayCell: React.FC<CalendarDayCellProps> = ({
           return (
             <div
               key={`${event.id}-${index}`}
-              className={getEventStyle(event)}
+              className={getEventStyle(event) + " w-full h-[24px]"}
               onClick={() => event && onEventClick?.(event)}
             >
               {isStart ? (
-                <div className="truncate flex items-center">
+                <div className="flex items-center w-full min-w-0">
                   {isSingleDay ? (
-                    <span className="inline-block w-2 h-2 rounded-full mr-1" style={{ background: '#3E99C6' }} />
+                    <span className="inline-block w-2 h-2 rounded-full mr-1 flex-shrink-0" style={{ background: '#3E99C6' }} />
                   ) : null}
-                  {formatTime(event.start_time.toISOString())} {event.name}
+                  <span className="flex-1 min-w-0 overflow-hidden whitespace-nowrap text-ellipsis">
+                    {formatTime(event.start_time.toISOString())} {event.name}
+                  </span>
                 </div>
               ) : (
                 <div className="invisible">placeholder</div>

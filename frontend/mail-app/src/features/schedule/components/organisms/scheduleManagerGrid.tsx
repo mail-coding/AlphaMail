@@ -1,6 +1,7 @@
 import React from 'react';
 import { CalendarScheduleInfo } from '../molecules/calendarScheduleInfo';
 import { Schedule } from '@/features/schedule/types/schedule';
+import { Typography } from '@/shared/components/atoms/Typography';
 
 interface ScheduleManagerGridProps {
   schedules: Schedule[];
@@ -26,7 +27,7 @@ export const ScheduleManagerGrid: React.FC<ScheduleManagerGridProps> = ({
   return (
     <div className="bg-white rounded-lg shadow p-4">
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-gray-700 mb-2">이번주 완료된 일정</h3>
+        <Typography variant="titleMedium" className="mb-2">이번주 완료된 일정</Typography>
         {completedSchedules.length === 0 ? (
           <p className="text-gray-500 text-sm">완료된 일정이 없습니다.</p>
         ) : (
@@ -40,7 +41,7 @@ export const ScheduleManagerGrid: React.FC<ScheduleManagerGridProps> = ({
       </div>
 
       <div>
-        <h3 className="text-lg font-semibold text-gray-700 mb-2">이번주 남은 일정</h3>
+        <Typography variant="titleMedium" className="mb-2">이번주 남은 일정</Typography>
         {remainingSchedules.length === 0 ? (
           <p className="text-gray-500 text-sm">남은 일정이 없습니다.</p>
         ) : (

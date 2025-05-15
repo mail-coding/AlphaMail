@@ -290,7 +290,7 @@ export const ScheduleDetailTemplate: React.FC<ScheduleDetailTemplateProps> = ({
                 <textarea
                   value={schedule.description}
                   onChange={(e) => setSchedule({ ...schedule, description: e.target.value })}
-                  className={`w-full px-3 py-2 border rounded-md ${errors.description ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`w-full px-3 py-2 border rounded-md resize-none ${errors.description ? 'border-red-500' : 'border-gray-300'}`}
                   rows={3}
                   maxLength={50}
                   placeholder="설명을 입력하세요 (최대 50자)"

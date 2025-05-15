@@ -12,7 +12,6 @@ import { useScheduleSearchStore } from '@/shared/stores/useSearchBar';
 import { ScheduleSearchTemplate } from './scheduleSearchTemplate';
 import { useLocation } from 'react-router-dom';
 import { Typography } from '@/shared/components/atoms/Typography';
-import { Button } from '@/shared/components/atoms/button';
 import { Spinner } from '@/shared/components/atoms/spinner';
 import { useHolidays } from '../../hooks/useHolidays';
 
@@ -134,19 +133,8 @@ export const MainTemplate: React.FC = () => {
   
   return (
     <div className="relative p-4">
-      <div className="flex justify-between items-center mb-4">
-        <Typography variant="titleLarge" bold>
-          캘린더
-        </Typography>
-        <Button
-          onClick={handleAddSchedule}
-          variant="primary"
-          size="large"
-        >
-          일정 추가
-        </Button>
-      </div>
       <div className="flex gap-4">
+        {/* 좌측: 캘린더 */}
         <div className="flex-1">
           <CalendarGrid 
             year={currentDate.getFullYear()}
@@ -157,13 +145,29 @@ export const MainTemplate: React.FC = () => {
             holidayMap={holidayMap}
           />
         </div>
-        <div className="w-80">
-          <ScheduleManagerGrid
-            schedules={weeklySchedules?.data || []}
-          />
+        {/* 우측: 일정 추가 버튼 + ScheduleManagerGrid */}
+        <div className="w-80 flex flex-col">
+          <div className="mb-4">
+            <button
+              onClick={handleAddSchedule}
+              className="flex items-center gap-3 w-full px-2 py-2 rounded-lg hover:bg-gray-100 transition"
+              type="button"
+            >
+              <span className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 5v14M5 12h14" stroke="#38BDF8" strokeWidth="2.5" strokeLinecap="round"/>
+                </svg>
+              </span>
+              <Typography variant="titleMedium">새로운 일정 등록</Typography>
+            </button>
+          </div>
+          <div className="flex-1">
+            <ScheduleManagerGrid
+              schedules={weeklySchedules?.data || []}
+            />
+          </div>
         </div>
       </div>
-
       <ScheduleDetailTemplate
         onClose={closeModal}
         isOpen={isOpen}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { CalendarDayCell } from '@/features/schedule/components/molecules/calendarDayCell';
 import { Schedule } from '@/features/schedule/types/schedule';
+import { Typography } from '@/shared/components/atoms/Typography';
 
 interface CalendarGridProps {
   year: number;
@@ -69,7 +70,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   return (
     <div className="w-full">
       {/* 월 네비게이션 */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-center mb-4 gap-2">
         <button
           onClick={handlePrevMonth}
           className="p-2 rounded-full hover:bg-gray-100"
@@ -78,20 +79,11 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
             <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
           </svg>
         </button>
-        <div className="flex items-center gap-4">
-          <div className="text-xl font-semibold">
+        <Typography variant="titleMedium">
+          <div className="flex items-center justify-center w-[140px] truncate">
             {year}년 {month + 1}월
           </div>
-          <button
-            onClick={() => {
-              const today = new Date();
-              onMonthChange(today.getFullYear(), today.getMonth());
-            }}
-            className="px-3 py-1 text-sm bg-blue-100 text-blue-600 rounded-md hover:bg-blue-200"
-          >
-            오늘
-          </button>
-        </div>
+        </Typography>
         <button
           onClick={handleNextMonth}
           className="p-2 rounded-full hover:bg-gray-100"
@@ -100,14 +92,23 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
             <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
           </svg>
         </button>
+        <button
+          onClick={() => {
+            const today = new Date();
+            onMonthChange(today.getFullYear(), today.getMonth());
+          }}
+          className="ml-2 px-3 py-1 text-sm bg-blue-100 text-blue-600 rounded-md hover:bg-blue-200"
+        >
+          오늘
+        </button>
       </div>
 
       {/* 요일 헤더 */}
-      <div className="grid grid-cols-7 text-center font-bold mb-2">
+      <div className="grid grid-cols-7 text-left mb-2 pl-2">
         {weekDays.map((day) => (
-          <div key={day} className="p-2">
+          <Typography key={day} variant="titleSmall">
             {day}
-          </div>
+          </Typography>
         ))}
       </div>
 

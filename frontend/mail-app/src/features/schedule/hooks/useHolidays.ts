@@ -24,7 +24,6 @@ export function useHolidays(year: number, month?: number) {
       const xmlDoc = parser.parseFromString(text, 'text/xml');
       const items = xmlDoc.getElementsByTagName('item');
       const holidayMap: Record<string, string> = {};
-      console.log('items: ', items.length);
       for (let i = 0; i < items.length; i++) {
         const locdate = items[i].getElementsByTagName('locdate')[0]?.textContent;
         const dateName = items[i].getElementsByTagName('dateName')[0]?.textContent;
@@ -42,5 +41,6 @@ export function useHolidays(year: number, month?: number) {
     },
     staleTime: 0,
     enabled: typeof year === 'number' && !isNaN(year),
+    placeholderData: {},
   });
 } 
