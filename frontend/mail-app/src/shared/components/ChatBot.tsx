@@ -126,7 +126,13 @@ const ErrorMessage = styled.div`
 const ChatBot: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState('');
-  const [position, setPosition] = useState({ x: 20, y: window.innerHeight - 80 });
+  const [position, setPosition] = useState(() => {
+    const distance = window.innerHeight * 0.14;
+    return {
+      x: window.innerWidth - distance,
+      y: window.innerHeight - distance
+    };
+  });
   const [windowPosition, setWindowPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
