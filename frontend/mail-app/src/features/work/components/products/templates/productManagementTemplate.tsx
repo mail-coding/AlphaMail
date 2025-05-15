@@ -10,10 +10,12 @@ import { useQueryClient } from '@tanstack/react-query';
 
 interface ProductManagementTemplateProps {
   onAddProduct?: () => void;
+  onProductClick?: (product: Product) => void;
 }
 
 export const ProductManagementTemplate: React.FC<ProductManagementTemplateProps> = ({ 
   onAddProduct,
+  onProductClick,
 }) => {
   const queryClient = useQueryClient();
   const {
@@ -41,7 +43,11 @@ export const ProductManagementTemplate: React.FC<ProductManagementTemplateProps>
   };
 
   const handleProductClick = (product: Product) => {
-    setSelectedProduct(product);
+    if (onProductClick) {
+      onProductClick(product);
+    } else {
+      setSelectedProduct(product);
+    }
   };
 
   const handleBack = () => {
@@ -77,7 +83,7 @@ export const ProductManagementTemplate: React.FC<ProductManagementTemplateProps>
   if (isLoading) return <div>로딩 중...</div>;
   if (error) return <div>에러가 발생했습니다.</div>;
 
-  if (selectedProduct) {
+  if (selectedProduct && !onProductClick) {
     return (
       <ProductDetailTemplate
         product={selectedProduct}

@@ -44,11 +44,34 @@ export const Router = () => {
           <SchedulePage />
         </ProtectedRoute>
       } />
-      <Route path="/work/*" element={
+      
+      {/* Work Routes */}
+      <Route path="/work" element={
         <ProtectedRoute>
           <WorkPage />
         </ProtectedRoute>
       } />
+      <Route path="/work/clients/*" element={
+        <ProtectedRoute>
+          <WorkPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/work/orders/*" element={
+        <ProtectedRoute>
+          <WorkPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/work/products/*" element={
+        <ProtectedRoute>
+          <WorkPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/work/quotes/*" element={
+        <ProtectedRoute>
+          <WorkPage />
+        </ProtectedRoute>
+      } />
+      
       <Route path="/group" element={<GroupManagePage />} />
       <Route path="/search-test" element={<SearchTest />} />
       

@@ -25,7 +25,7 @@ const AppLayout = () => {
   useAuthGuard();
 
   // 사이드바 표시 여부 및 타입 결정
-  const showSidebar = path.startsWith('/mail') || path === '/work';
+  const showSidebar = path.startsWith('/mail') || path.startsWith('/work');
   const sidebarType = path.startsWith('/mail') ? 'mail' : 'work';
 
   useEffect(() => {

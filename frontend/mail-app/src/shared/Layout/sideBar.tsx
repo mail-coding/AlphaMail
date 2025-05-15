@@ -15,6 +15,12 @@ interface SideBarProps {
   userId?: number;
 }
 
+const titleToSection: Record<string, string> = {
+  '거래처 관리': 'clients',
+  '발주서 관리': 'orders',
+  '재고 관리': 'products',
+  '견적서 관리': 'quotes'
+};
 
 export const SideBar: React.FC<SideBarProps> = ({ type}) => {
     const navigate = useNavigate();
@@ -113,6 +119,11 @@ export const SideBar: React.FC<SideBarProps> = ({ type}) => {
           navigate('/mail/sent');
         } else if (itemName === "휴지통") {
           navigate('/mail/trash');
+        }
+      } else if (type === 'work') {
+        const section = titleToSection[itemName];
+        if (section) {
+          navigate(`/work/${section}`);
         }
       }
     };
