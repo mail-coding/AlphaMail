@@ -6,7 +6,6 @@ import com.alphamail.api.assistants.presentation.dto.schedule.UpdateTemporarySch
 import com.alphamail.api.email.domain.entity.Email;
 import com.alphamail.common.exception.BadRequestException;
 import com.alphamail.common.exception.ErrorMessage;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -59,6 +58,7 @@ public class TemporarySchedule {
 		validateFutureLimit(newStartTime, newEndTime);
 
 		return TemporarySchedule.builder()
+			.temporaryScheduleId(temporaryScheduleId)
 			.title(this.title)
 			.email(this.email)
 			.userId(this.userId)

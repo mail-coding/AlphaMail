@@ -4,4 +4,5 @@ public record RegisterTemporaryPurchaseOrderProductRequest(
         Integer productId,
         Integer count
 
-) {}
+) {
+}

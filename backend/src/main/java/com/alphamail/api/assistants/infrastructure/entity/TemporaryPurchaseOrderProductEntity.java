@@ -23,7 +23,7 @@ public class TemporaryPurchaseOrderProductEntity {
     @JoinColumn(name = "product_id")
     private ProductEntity productEntity;
 
-    @Column(name = "product_name",length = 255)
+    @Column(name = "product_name", length = 255)
     private String productName;
 
     @Column(name = "count")

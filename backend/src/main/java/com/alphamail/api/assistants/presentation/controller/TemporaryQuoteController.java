@@ -31,12 +31,13 @@ public class TemporaryQuoteController {
         return ResponseEntity.ok("임시 견적서 등록이 완료 되었습니다");
     }
 
-    @PatchMapping("/update")
+    @PatchMapping("/{temporaryQuoteId}")
     public ResponseEntity<TemporaryQuoteResponse> updateTemporaryQuote(
+            @PathVariable Integer temporaryQuoteId,
             @RequestBody UpdateTemporaryQuoteRequest updateTemporaryQuoteRequest,
             @Auth Integer userId) {
 
-        TemporaryQuoteResponse temporaryQuoteResponse = updateTemporaryQuoteUseCase.execute(updateTemporaryQuoteRequest, userId);
+        TemporaryQuoteResponse temporaryQuoteResponse = updateTemporaryQuoteUseCase.execute(temporaryQuoteId,updateTemporaryQuoteRequest, userId);
 
         return ResponseEntity.ok(temporaryQuoteResponse);
     }

@@ -27,7 +27,7 @@ public record TemporaryPurchaseOrderResponse(
         List<TemporaryPurchaseOrderProduct> products
 ) {
 
-    public static TemporaryPurchaseOrderResponse from(TemporaryPurchaseOrder temporaryPurchaseOrder,List<EmailAttachment> newEmailAttachments) {
+    public static TemporaryPurchaseOrderResponse from(TemporaryPurchaseOrder temporaryPurchaseOrder, List<EmailAttachment> newEmailAttachments) {
         return new TemporaryPurchaseOrderResponse(
                 temporaryPurchaseOrder.getId(),
                 temporaryPurchaseOrder.getUser().getName(),
@@ -52,6 +52,9 @@ public record TemporaryPurchaseOrderResponse(
             String clientName
     ) {
         public static ClientDTO from(Client client) {
+            if (client == null) {
+                return null;
+            }
             return new ClientDTO(
                     client.getClientId(),
                     client.getCorpName()

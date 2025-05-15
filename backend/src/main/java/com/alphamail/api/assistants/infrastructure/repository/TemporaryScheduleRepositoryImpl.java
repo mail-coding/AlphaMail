@@ -28,7 +28,7 @@ public class TemporaryScheduleRepositoryImpl implements TemporaryScheduleReposit
     }
 
     @Override
-    public Optional<TemporarySchedule> findByIdAndUserId(Integer scheduleId, Integer userId){
+    public Optional<TemporarySchedule> findByIdAndUserId(Integer scheduleId, Integer userId) {
         return jpaRepository.findByIdAndUserUserId(scheduleId, userId)
                 .map(temporaryScheduleMapper::toDomain);
     }

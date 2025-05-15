@@ -8,6 +8,8 @@ import java.util.Optional;
 public interface TemporaryPurchaseOrderRepository {
 
     TemporaryPurchaseOrder save(TemporaryPurchaseOrder temporaryPurchaseOrder);
+
     Optional<TemporaryPurchaseOrder> findByIdAndUserId(Integer temporaryPurchaseOrderId, Integer userId);
+
     void deleteById(Integer orderId);
 }

@@ -22,7 +22,7 @@ public class TemporaryPurchaseOrderEntity extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;  // 발주서 아이디
 
-    @Column(name = "title",length = 255, nullable = false)
+    @Column(name = "title", length = 255, nullable = false)
     private String title;
 
     @ManyToOne(fetch = FetchType.LAZY)

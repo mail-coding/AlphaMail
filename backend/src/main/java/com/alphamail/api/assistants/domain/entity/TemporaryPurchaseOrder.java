@@ -62,7 +62,7 @@ public class TemporaryPurchaseOrder {
     public TemporaryPurchaseOrder update(UpdateTemporaryPurchaseOrderRequest request, List<TemporaryPurchaseOrderProduct> updateTemporaryPurchaseOrderProduct, Client client) {
 
         return TemporaryPurchaseOrder.builder()
-                .id(request.id())
+                .id(this.id)
                 .title(this.title)
                 .user(this.user)
                 .email(this.email)

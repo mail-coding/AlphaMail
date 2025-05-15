@@ -31,7 +31,7 @@ public class UpdateTemporaryPurchaseOrderUseCase {
     private final ClientReader clientReader;
     private final EmailAttachmentReader emailAttachmentReader;
 
-    public TemporaryPurchaseOrderResponse execute(UpdateTemporaryPurchaseOrderRequest updateTemporaryPurchaseOrderRequest, Integer userId) {
+    public TemporaryPurchaseOrderResponse execute(Integer temporaryPurchaseOrderId,UpdateTemporaryPurchaseOrderRequest updateTemporaryPurchaseOrderRequest, Integer userId) {
 
         Client client = null;
         if(updateTemporaryPurchaseOrderRequest.clientId()!=null) {
@@ -63,7 +63,7 @@ public class UpdateTemporaryPurchaseOrderUseCase {
             }
 
         TemporaryPurchaseOrder temporaryPurchaseOrder = temporaryPurchaseOrderRepository
-                .findByIdAndUserId(updateTemporaryPurchaseOrderRequest.id(), userId)
+                .findByIdAndUserId(temporaryPurchaseOrderId, userId)
                 .orElseThrow(() -> new NotFoundException(ErrorMessage.RESOURCE_NOT_FOUND));
 
         TemporaryPurchaseOrder updateTemporaryPurchaseOrder = temporaryPurchaseOrder.update(updateTemporaryPurchaseOrderRequest,temporaryPurchaseOrderProducts,client);

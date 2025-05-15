@@ -12,5 +12,4 @@ public record CreateTemporaryQuoteRequest(
         String managerNumber,
         List<CreateTemporaryQuoteProductRequest> products
 ) {
-
 }

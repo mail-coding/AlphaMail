@@ -7,7 +7,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 
-@Mapper(componentModel = "spring",uses = {ProductMapper.class})
+@Mapper(componentModel = "spring", uses = {ProductMapper.class})
 public interface TemporaryPurchaseOrderProductMapper {
 
     @Mapping(source = "product", target = "productEntity")

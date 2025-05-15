@@ -31,7 +31,7 @@ public class UpdateTemporaryQuoteUseCase {
     private final ClientReader clientReader;
     private final EmailAttachmentReader emailAttachmentReader;
 
-    public TemporaryQuoteResponse execute(UpdateTemporaryQuoteRequest updateTemporaryQuoteRequest, Integer userId) {
+    public TemporaryQuoteResponse execute(Integer temporaryQuoteId, UpdateTemporaryQuoteRequest updateTemporaryQuoteRequest, Integer userId) {
 
         Client client = null;
         if (updateTemporaryQuoteRequest.clientId() != null) {
@@ -62,7 +62,7 @@ public class UpdateTemporaryQuoteUseCase {
         }
 
 
-        TemporaryQuote temporaryQuote = temporaryQuoteRepository.findByIdAndUserId(updateTemporaryQuoteRequest.id(), userId)
+        TemporaryQuote temporaryQuote = temporaryQuoteRepository.findByIdAndUserId(temporaryQuoteId, userId)
                 .orElseThrow(() -> new NotFoundException(ErrorMessage.RESOURCE_NOT_FOUND));
 
         TemporaryQuote updateTemporaryQuote = temporaryQuote.update(updateTemporaryQuoteRequest, temporaryQuoteProducts, client);

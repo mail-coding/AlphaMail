@@ -31,12 +31,13 @@ public class TemporaryPurchaseOrderController {
         return ResponseEntity.ok("임시 발주서 등록이 완료 되었습니다");
     }
 
-    @PatchMapping("/update")
+    @PatchMapping("/{temporaryPurchaseOrderId}")
     public ResponseEntity<TemporaryPurchaseOrderResponse> updateTemporaryPurchaseOrder(
+            @PathVariable Integer temporaryPurchaseOrderId,
             @RequestBody UpdateTemporaryPurchaseOrderRequest updateTemporaryPurchaseOrderRequest,
             @Auth Integer userId) {
 
-        TemporaryPurchaseOrderResponse temporaryPurchaseOrderResponse = updateTemporaryPurchaseOrderUseCase.execute(updateTemporaryPurchaseOrderRequest, userId);
+        TemporaryPurchaseOrderResponse temporaryPurchaseOrderResponse = updateTemporaryPurchaseOrderUseCase.execute(temporaryPurchaseOrderId, updateTemporaryPurchaseOrderRequest, userId);
 
         return ResponseEntity.ok(temporaryPurchaseOrderResponse);
     }
@@ -44,7 +45,7 @@ public class TemporaryPurchaseOrderController {
 
     @GetMapping("/{temporaryPurchaseOrderId}")
     public ResponseEntity<TemporaryPurchaseOrderResponse> getTemporaryPurchaseOrder(
-            @PathVariable Integer temporaryPurchaseOrderId , @Auth Integer userId) {
+            @PathVariable Integer temporaryPurchaseOrderId, @Auth Integer userId) {
 
         TemporaryPurchaseOrderResponse temporaryPurchaseOrderResponse = getTemporaryPurchaseOrderUseCase.execute(temporaryPurchaseOrderId, userId);
 
@@ -53,7 +54,7 @@ public class TemporaryPurchaseOrderController {
 
     @DeleteMapping("/{temporaryPurchaseOrderId}")
     public ResponseEntity<String> deleteTemporaryPurchaseOrder(
-            @PathVariable Integer temporaryPurchaseOrderId,@Auth Integer userId) {
+            @PathVariable Integer temporaryPurchaseOrderId, @Auth Integer userId) {
 
         deleteTemporaryPurchaseOrderUseCase.execute(temporaryPurchaseOrderId, userId);
 
@@ -69,7 +70,6 @@ public class TemporaryPurchaseOrderController {
 
         return ResponseEntity.ok("발주서 등록이 완료되었습니다");
     }
-
 
 
 }

@@ -47,6 +47,9 @@ public record TemporaryQuoteResponse(
             String clientName
     ) {
         public static TemporaryQuoteResponse.ClientDTO from(Client client) {
+            if (client == null) {
+                return null;
+            }
             return new TemporaryQuoteResponse.ClientDTO(
                     client.getClientId(),
                     client.getCorpName()

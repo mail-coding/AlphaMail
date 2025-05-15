@@ -16,7 +16,7 @@ public class EmailReaderImpl implements EmailReader {
 
     @Override
     public Email findByIdAndUserId(Integer emailId, Integer userId) {
-        return emailRepository.findByIdAndUserId(emailId,userId)
+        return emailRepository.findByIdAndUserId(emailId, userId)
                 .orElseThrow(() -> new NotFoundException(ErrorMessage.RESOURCE_NOT_FOUND));
     }
 }

@@ -16,7 +16,7 @@ public class GetTemporaryScheduleUseCase {
 
     public TemporaryScheduleResponse execute(Integer temporaryScheduleId, Integer userId) {
 
-        TemporarySchedule temporarySchedule = temporaryScheduleRepository.findByIdAndUserId(temporaryScheduleId,userId)
+        TemporarySchedule temporarySchedule = temporaryScheduleRepository.findByIdAndUserId(temporaryScheduleId, userId)
                 .orElseThrow(() -> new NotFoundException(ErrorMessage.RESOURCE_NOT_FOUND));
 
         return TemporaryScheduleResponse.from(temporarySchedule);

@@ -56,7 +56,7 @@ public class TemporaryQuote {
     public TemporaryQuote update(UpdateTemporaryQuoteRequest updateTemporaryQuoteRequest, List<TemporaryQuoteProduct> updateTemporaryQuoteProduct, Client client) {
 
         return TemporaryQuote.builder()
-                .id(updateTemporaryQuoteRequest.id())
+                .id(this.id)
                 .title(this.title)
                 .user(this.user)
                 .email(this.email)

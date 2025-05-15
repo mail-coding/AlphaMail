@@ -3,10 +3,8 @@ package com.alphamail.api.assistants.infrastructure.adapter;
 import com.alphamail.api.assistants.domain.service.EmailAttachmentReader;
 import com.alphamail.api.email.domain.entity.EmailAttachment;
 import com.alphamail.api.email.domain.repository.EmailAttachmentRepository;
-import com.alphamail.api.email.domain.repository.EmailRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 

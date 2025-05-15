@@ -14,4 +14,5 @@ public record RegisterTemporaryPurchaseOrderRequest(
         String managerNumber,
         String paymentTerm,
         List<RegisterTemporaryPurchaseOrderProductRequest> products
-) {}
+) {
+}

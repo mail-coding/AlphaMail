@@ -12,7 +12,7 @@ public record TemporaryScheduleResponse(
         LocalDateTime startTime,
         LocalDateTime endTime,
         String description
-){
+) {
     public static TemporaryScheduleResponse from(TemporarySchedule temporarySchedule) {
         return new TemporaryScheduleResponse(
                 temporarySchedule.getTemporaryScheduleId(),

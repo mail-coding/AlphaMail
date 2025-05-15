@@ -1,12 +1,13 @@
 package com.alphamail.api.assistants.application.usecase.schedule;
 
-import com.alphamail.api.assistants.domain.entity.TemporarySchedule;
 import com.alphamail.api.assistants.domain.repository.TemporaryScheduleRepository;
 import com.alphamail.common.exception.ErrorMessage;
 import com.alphamail.common.exception.NotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+@Transactional
 @Service
 @RequiredArgsConstructor
 public class DeleteTemporaryScheduleUseCase {

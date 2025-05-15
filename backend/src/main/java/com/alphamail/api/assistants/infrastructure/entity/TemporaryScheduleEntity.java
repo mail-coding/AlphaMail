@@ -22,7 +22,7 @@ public class TemporaryScheduleEntity extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "title",length = 255)
+    @Column(name = "title", length = 255)
     private String title;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -39,10 +39,10 @@ public class TemporaryScheduleEntity extends BaseTimeEntity {
     @Column(name = "description", length = 50)
     private String description;
 
-    @Column(name = "start_time",nullable = false)
+    @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;
 
-    @Column(name = "end_time",nullable = false)
+    @Column(name = "end_time", nullable = false)
     private LocalDateTime endTime;
 
 

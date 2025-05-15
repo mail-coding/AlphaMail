@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 public class ProductReaderImpl implements ProductReader {
 
     private final ProductRepository productRepository;
+
     @Override
     public Product findById(Integer productId) {
         return productRepository.findById(productId)

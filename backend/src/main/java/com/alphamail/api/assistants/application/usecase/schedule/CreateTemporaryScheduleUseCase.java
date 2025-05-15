@@ -9,11 +9,11 @@ import com.alphamail.api.user.application.port.LoadUserPort;
 import com.alphamail.api.user.domain.valueobject.UserId;
 import com.alphamail.common.exception.ErrorMessage;
 import com.alphamail.common.exception.NotFoundException;
-
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.stereotype.Service;
 
+@Transactional
 @Service
 @RequiredArgsConstructor
 public class CreateTemporaryScheduleUseCase {

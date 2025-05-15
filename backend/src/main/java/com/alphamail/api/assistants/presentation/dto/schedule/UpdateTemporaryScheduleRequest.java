@@ -8,5 +8,5 @@ public record UpdateTemporaryScheduleRequest(
         LocalDateTime endTime,
         String description,
         Integer temporaryScheduleId
-){
+) {
 }
