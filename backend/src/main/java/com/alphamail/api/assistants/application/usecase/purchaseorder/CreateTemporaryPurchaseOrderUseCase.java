@@ -1,20 +1,17 @@
 package com.alphamail.api.assistants.application.usecase.purchaseorder;
 
-
 import com.alphamail.api.assistants.domain.entity.TemporaryPurchaseOrder;
 import com.alphamail.api.assistants.domain.repository.TemporaryPurchaseOrderRepository;
 import com.alphamail.api.assistants.domain.service.EmailReader;
 import com.alphamail.api.assistants.presentation.dto.purchaseorders.CreateTemporaryPurchaseOrderRequest;
 import com.alphamail.api.email.domain.entity.Email;
-import com.alphamail.api.email.domain.repository.EmailRepository;
 import com.alphamail.api.erp.domain.service.UserReader;
 import com.alphamail.api.user.domain.entity.User;
-import com.alphamail.api.user.domain.repository.UserRepository;
-import com.alphamail.common.exception.ErrorMessage;
-import com.alphamail.common.exception.NotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+@Transactional
 @Service
 @RequiredArgsConstructor
 public class CreateTemporaryPurchaseOrderUseCase {

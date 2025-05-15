@@ -14,12 +14,14 @@ import com.alphamail.api.erp.domain.entity.Product;
 import com.alphamail.api.erp.domain.service.ClientReader;
 import com.alphamail.common.exception.ErrorMessage;
 import com.alphamail.common.exception.NotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Transactional
 @Service
 @RequiredArgsConstructor
 public class UpdateTemporaryPurchaseOrderUseCase {
@@ -42,33 +44,26 @@ public class UpdateTemporaryPurchaseOrderUseCase {
         List<TemporaryPurchaseOrderProduct> temporaryPurchaseOrderProducts = new ArrayList<>();
 
         for(TemporaryPurchaseOrderProductRequest temporaryProduct : updateTemporaryPurchaseOrderRequest.products()){
-            if(temporaryProduct.productId()!=null){
-                Product product = productReader.findById(temporaryProduct.productId());
 
-                if(product==null){
+            Product product = null;
+
+            if (temporaryProduct.productId() != null) {
+                product = productReader.findById(temporaryProduct.productId());
+                if (product == null) {
                     throw new NotFoundException(ErrorMessage.RESOURCE_NOT_FOUND);
                 }
-
+            }
                 temporaryPurchaseOrderProducts.add(
                         TemporaryPurchaseOrderProduct.builder()
                                 .product(product)
                                 .id(temporaryProduct.id())
-
                                 .productName(temporaryProduct.productName())
                                 .count(temporaryProduct.count())
                                 .build());
             }
-            else{
-                temporaryPurchaseOrderProducts.add(
-                        TemporaryPurchaseOrderProduct.builder()
-                                .id(temporaryProduct.id())
-                                .productName(temporaryProduct.productName())
-                                .count(temporaryProduct.count())
-                                .build());
-            }
-            }
 
-        TemporaryPurchaseOrder temporaryPurchaseOrder = temporaryPurchaseOrderRepository.findByIdAndUserId(updateTemporaryPurchaseOrderRequest.id(),userId)
+        TemporaryPurchaseOrder temporaryPurchaseOrder = temporaryPurchaseOrderRepository
+                .findByIdAndUserId(updateTemporaryPurchaseOrderRequest.id(), userId)
                 .orElseThrow(() -> new NotFoundException(ErrorMessage.RESOURCE_NOT_FOUND));
 
         TemporaryPurchaseOrder updateTemporaryPurchaseOrder = temporaryPurchaseOrder.update(updateTemporaryPurchaseOrderRequest,temporaryPurchaseOrderProducts,client);

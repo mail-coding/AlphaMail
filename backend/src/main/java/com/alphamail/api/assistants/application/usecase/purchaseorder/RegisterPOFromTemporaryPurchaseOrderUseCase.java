@@ -18,15 +18,19 @@ import com.alphamail.api.erp.presentation.dto.purchaseorder.RegistPurchaseOrderR
 import com.alphamail.api.organization.domain.entity.Company;
 import com.alphamail.api.organization.domain.entity.Group;
 import com.alphamail.api.user.domain.entity.User;
+import com.alphamail.common.exception.ErrorMessage;
+import com.alphamail.common.exception.NotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Transactional
 @Service
 @RequiredArgsConstructor
-public class RegisterTemporaryPurchaseOrderUseCase {
+public class RegisterPOFromTemporaryPurchaseOrderUseCase {
 
     private final TemporaryPurchaseOrderRepository temporaryPurchaseOrderRepository;
     private final PurchaseOrderStore purchaseOrderStore;
@@ -41,27 +45,30 @@ public class RegisterTemporaryPurchaseOrderUseCase {
         User user = userReader.findById(userId);
         Group group = groupReader.findById(user.getGroupId());
         Client client = clientReader.findById(registerPurchaseOrderFromTemporaryPurchaseOrder.clientId());
-        Company company = companyReader.findById(1);
+        Company company = companyReader.findById(registerPurchaseOrderFromTemporaryPurchaseOrder.companyId());
 
         List<PurchaseOrderProductDto> purchaseOrderProductDtoList = new ArrayList<>();
 
-        for(RegisterTemporaryPurchaseOrderProductRequest request : registerPurchaseOrderFromTemporaryPurchaseOrder.products()){
-            Product product =  productReader.findById(request.productId());
+        for (RegisterTemporaryPurchaseOrderProductRequest request : registerPurchaseOrderFromTemporaryPurchaseOrder.products()) {
+            Product product = productReader.findById(request.productId());
             purchaseOrderProductDtoList.add(
                     new PurchaseOrderProductDto(null, request.productId(), request.count(), product.getOutboundPrice())
             );
         }
 
         RegistPurchaseOrderRequest registPurchaseOrderRequest = new RegistPurchaseOrderRequest
-                (userId,company.getCompanyId(), group.getGroupId(), client.getClientId(),null,registerPurchaseOrderFromTemporaryPurchaseOrder.deliverAt()
-                , registerPurchaseOrderFromTemporaryPurchaseOrder.shippingAddress(), registerPurchaseOrderFromTemporaryPurchaseOrder.manager(),
+                (userId, company.getCompanyId(), group.getGroupId(), client.getClientId(), null, registerPurchaseOrderFromTemporaryPurchaseOrder.deliverAt()
+                        , registerPurchaseOrderFromTemporaryPurchaseOrder.shippingAddress(), registerPurchaseOrderFromTemporaryPurchaseOrder.manager(),
                         registerPurchaseOrderFromTemporaryPurchaseOrder.managerNumber(), registerPurchaseOrderFromTemporaryPurchaseOrder.paymentTerm(),
                         purchaseOrderProductDtoList);
 
-        purchaseOrderStore.save(PurchaseOrder.create(registPurchaseOrderRequest,user,company,group,client));
+        purchaseOrderStore.save(PurchaseOrder.create(registPurchaseOrderRequest, user, company, group, client));
 
-        temporaryPurchaseOrderRepository.findByIdAndUserId(registerPurchaseOrderFromTemporaryPurchaseOrder.id(), userId).ifPresent(
-                temporaryPurchaseOrder-> temporaryPurchaseOrderRepository.deleteById(registerPurchaseOrderFromTemporaryPurchaseOrder.id()));
+
+        temporaryPurchaseOrderRepository.findByIdAndUserId(registerPurchaseOrderFromTemporaryPurchaseOrder.id(), userId)
+                .orElseThrow(() -> new NotFoundException(ErrorMessage.RESOURCE_NOT_FOUND));
+
+        temporaryPurchaseOrderRepository.deleteById(registerPurchaseOrderFromTemporaryPurchaseOrder.id());
     }
 
 

@@ -20,7 +20,7 @@ public class TemporaryPurchaseOrderController {
     private final UpdateTemporaryPurchaseOrderUseCase updateTemporaryPurchaseOrderUseCase;
     private final GetTemporaryPurchaseOrderUseCase getTemporaryPurchaseOrderUseCase;
     private final DeleteTemporaryPurchaseOrderUseCase deleteTemporaryPurchaseOrderUseCase;
-    private final RegisterTemporaryPurchaseOrderUseCase registerTemporaryPurchaseOrderUseCase;
+    private final RegisterPOFromTemporaryPurchaseOrderUseCase registerPOFromTemporaryPurchaseOrderUseCase;
 
     @PostMapping
     public ResponseEntity<String> addTemporaryPurchaseOrder(
@@ -28,14 +28,14 @@ public class TemporaryPurchaseOrderController {
 
         createTemporaryPurchaseOrderUseCase.execute(temporaryPurchaseOrderRequest);
 
-        return ResponseEntity.ok("발주 등록이 완료 되었습니다");
+        return ResponseEntity.ok("임시 발주서 등록이 완료 되었습니다");
     }
 
     @PatchMapping("/update")
     public ResponseEntity<TemporaryPurchaseOrderResponse> updateTemporaryPurchaseOrder(
             @RequestBody UpdateTemporaryPurchaseOrderRequest updateTemporaryPurchaseOrderRequest,
             @Auth Integer userId) {
-        System.out.println("들어오고 있나?? getTemporaryPurchaseOrderId: " + updateTemporaryPurchaseOrderRequest.clientId());
+
         TemporaryPurchaseOrderResponse temporaryPurchaseOrderResponse = updateTemporaryPurchaseOrderUseCase.execute(updateTemporaryPurchaseOrderRequest, userId);
 
         return ResponseEntity.ok(temporaryPurchaseOrderResponse);
@@ -65,7 +65,7 @@ public class TemporaryPurchaseOrderController {
             @RequestBody RegisterTemporaryPurchaseOrderRequest registerTemporaryPurchaseOrderRequest,
             @Auth Integer userId) {
 
-        registerTemporaryPurchaseOrderUseCase.execute(registerTemporaryPurchaseOrderRequest,userId);
+        registerPOFromTemporaryPurchaseOrderUseCase.execute(registerTemporaryPurchaseOrderRequest, userId);
 
         return ResponseEntity.ok("발주서 등록이 완료되었습니다");
     }

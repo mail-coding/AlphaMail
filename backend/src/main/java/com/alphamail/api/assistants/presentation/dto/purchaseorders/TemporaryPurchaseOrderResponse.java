@@ -16,7 +16,7 @@ public record TemporaryPurchaseOrderResponse(
         Email email,
         List<EmailAttachment> emailAttachments,
         String clientName,
-        Client client,
+        ClientDTO client,
         LocalDateTime deliverAt,
         LocalDateTime createdAt,
         String shippingAddress,
@@ -26,6 +26,7 @@ public record TemporaryPurchaseOrderResponse(
         String paymentTerm,
         List<TemporaryPurchaseOrderProduct> products
 ) {
+
     public static TemporaryPurchaseOrderResponse from(TemporaryPurchaseOrder temporaryPurchaseOrder,List<EmailAttachment> newEmailAttachments) {
         return new TemporaryPurchaseOrderResponse(
                 temporaryPurchaseOrder.getId(),
@@ -34,7 +35,7 @@ public record TemporaryPurchaseOrderResponse(
                 temporaryPurchaseOrder.getEmail(),
                 newEmailAttachments,
                 temporaryPurchaseOrder.getClientName(),
-                temporaryPurchaseOrder.getClient(),
+                ClientDTO.from(temporaryPurchaseOrder.getClient()),
                 temporaryPurchaseOrder.getDeliverAt(),
                 temporaryPurchaseOrder.getCreatedAt(),
                 temporaryPurchaseOrder.getShippingAddress(),
@@ -44,5 +45,18 @@ public record TemporaryPurchaseOrderResponse(
                 temporaryPurchaseOrder.getPaymentTerm(),
                 temporaryPurchaseOrder.getTemporaryPurchaseOrderProduct()
         );
+    }
+
+    public record ClientDTO(
+            Integer clientId,
+            String clientName
+    ) {
+        public static ClientDTO from(Client client) {
+            return new ClientDTO(
+                    client.getClientId(),
+                    client.getCorpName()
+            );
+        }
+
     }
 }

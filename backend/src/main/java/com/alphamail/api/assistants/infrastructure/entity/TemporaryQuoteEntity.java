@@ -7,22 +7,21 @@ import com.alphamail.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "temporary_purchase_order")
+@Table(name = "temporary_quote")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TemporaryPurchaseOrderEntity extends BaseTimeEntity {
+public class TemporaryQuoteEntity extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;  // 발주서 아이디
 
-    @Column(name = "title",length = 255, nullable = false)
+    @Column(name = "title", length = 255, nullable = false)
     private String title;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -40,9 +39,6 @@ public class TemporaryPurchaseOrderEntity extends BaseTimeEntity {
     @JoinColumn(name = "client_id")
     private ClientEntity clientEntity;
 
-    @Column(name = "deliver_at")
-    private LocalDateTime deliverAt;
-
     @Column(name = "shipping_address", length = 255)
     private String shippingAddress;
 
@@ -55,10 +51,9 @@ public class TemporaryPurchaseOrderEntity extends BaseTimeEntity {
     @Column(name = "manager_number", length = 13)
     private String managerNumber;
 
-    @Column(name = "payment_term", length = 255)
-    private String paymentTerm;
-
     @Setter
-    @OneToMany(mappedBy = "purchaseOrder", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<TemporaryPurchaseOrderProductEntity> temporaryPurchaseOrderProductEntity;
+    @OneToMany(mappedBy = "temporaryQuoteEntities", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TemporaryQuoteProductEntity> temporaryQuoteProductEntities;
+
+
 }
