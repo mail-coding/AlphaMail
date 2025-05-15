@@ -19,7 +19,10 @@ export const useCalendarSchedules = (selectedMonth: Date) => {
       return response;
     },
     placeholderData: (previousData) => previousData,
-    staleTime: 1000 * 60 * 5, // 5분
+    staleTime: 0, // 즉시 갱신
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    refetchOnReconnect: true,
   });
 
   React.useEffect(() => {

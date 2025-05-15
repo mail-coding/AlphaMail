@@ -8,6 +8,7 @@ interface CalendarGridProps {
   eventsMap?: Record<string, Schedule[]>; // "YYYY-MM-DD" 형태로 매칭
   onMonthChange: (year: number, month: number) => void;
   onEventClick?: (event: Schedule) => void;
+  holidayMap?: Record<string, string>;
 }
 
 export const CalendarGrid: React.FC<CalendarGridProps> = ({ 
@@ -15,7 +16,8 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   month, 
   eventsMap = {}, 
   onMonthChange,
-  onEventClick
+  onEventClick,
+  holidayMap = {},
 }) => {
   const firstDayOfMonth = new Date(year, month, 1);
   const firstDayOfWeek = firstDayOfMonth.getDay(); // 0 = Sunday
@@ -128,6 +130,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
               isToday={isToday}
               isCurrentMonth={isCurrentMonth}
               onEventClick={onEventClick}
+              holidayMap={holidayMap}
             />
           );
         })}

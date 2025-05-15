@@ -14,6 +14,7 @@ import { useLocation } from 'react-router-dom';
 import { Typography } from '@/shared/components/atoms/Typography';
 import { Button } from '@/shared/components/atoms/button';
 import { Spinner } from '@/shared/components/atoms/spinner';
+import { useHolidays } from '../../hooks/useHolidays';
 
 export const MainTemplate: React.FC = () => {
   const { isOpen, isAnimating, openModal, closeModal } = useModalStore();
@@ -25,15 +26,16 @@ export const MainTemplate: React.FC = () => {
   const [currentDate, setCurrentDate] = React.useState(new Date());
   const [selectedWeekDate] = React.useState(new Date());
 
-    // 페이지 이동 시 검색 상태 초기화
-    useEffect(() => {
-      // 페이지가 처음 로드되거나 다른 페이지에서 돌아올 때 검색 상태 초기화
-      setIsSearchMode(false);
-      setSearchKeyword('');
-    }, [location.pathname, setIsSearchMode, setSearchKeyword]);
+  // 페이지 이동 시 검색 상태 초기화
+  useEffect(() => {
+    setIsSearchMode(false);
+    setSearchKeyword('');
+  }, [location.pathname, setIsSearchMode, setSearchKeyword]);
   
   const { data: calendarSchedules, isLoading: isCalendarLoading, isError, error } = useCalendarSchedules(currentDate);
   const { data: weeklySchedules, isLoading: isWeeklyLoading } = useWeeklySchedules(selectedWeekDate);
+  const { data: holidayMap = {}, isLoading: isHolidayLoading } = useHolidays(currentDate.getFullYear(), currentDate.getMonth() + 1);
+  console.log('mainTemplate에서 useHolidays 호출됨', currentDate.getFullYear(), currentDate.getMonth() + 1);
 
   React.useEffect(() => {
     console.log('React Query 상태:', {
@@ -117,7 +119,7 @@ export const MainTemplate: React.FC = () => {
     }, 0);
   };
 
-  if (isCalendarLoading || isWeeklyLoading) {
+  if (isCalendarLoading || isWeeklyLoading || isHolidayLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Spinner size="large" />
@@ -152,6 +154,7 @@ export const MainTemplate: React.FC = () => {
             eventsMap={eventsMap}
             onEventClick={handleEventClick}
             onMonthChange={handleMonthChange}
+            holidayMap={holidayMap}
           />
         </div>
         <div className="w-80">

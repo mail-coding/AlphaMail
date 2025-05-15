@@ -7,5 +7,9 @@ export const useWeeklySchedules = (selectedDate: Date) => {
     queryKey: ['schedules', 'week', selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()],
     queryFn: () => scheduleService.getSchedulesForWeek(selectedDate),
     placeholderData: (previousData) => previousData,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    refetchOnReconnect: true,
   });
 };
