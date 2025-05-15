@@ -104,7 +104,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
       </div>
 
       {/* 요일 헤더 */}
-      <div className="grid grid-cols-7 text-left mb-2 pl-2">
+      <div className="grid grid-cols-7 text-left mb-2 pl-2 border-t-2 border-gray-300 pt-2">
         {weekDays.map((day) => (
           <Typography key={day} variant="titleSmall">
             {day}

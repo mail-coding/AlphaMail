@@ -59,7 +59,7 @@ export const CalendarDayCell: React.FC<CalendarDayCellProps> = ({
 
   return (
     <div
-      className={`min-h-[100px] ${
+      className={`min-h-[100px] border-b border-gray-300 ${
         !isCurrentMonth ? 'text-gray-400 bg-gray-50' : 'bg-white'
       } ${isToday ? 'bg-blue-100' : ''}`}
     >
