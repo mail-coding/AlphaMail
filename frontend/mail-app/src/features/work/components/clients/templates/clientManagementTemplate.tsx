@@ -1,31 +1,25 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ClientTable } from '../organisms/clientTable';
 import { ClientSearchBar } from '../organisms/clientSearchBar';
-import { ClientDetailTemplate } from './clientDetailTemplate';
 import { Client } from '../../../types/clients';
 import { useClients } from '../../../hooks/useClients';
-import { useClient } from '../../../hooks/useClient';
 import { useQueryClient } from '@tanstack/react-query';
 import { clientService } from '../../../services/clientService';
 import { Button } from '@/shared/components/atoms/button';
-import { Typography } from '@/shared/components/atoms/Typography';
-import { Spinner } from '@/shared/components/atoms/spinner';
 
 export const ClientManagementTemplate: React.FC = () => {
+  const navigate = useNavigate();
   const [searchKeyword, setSearchKeyword] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [selectedClientIds, setSelectedClientIds] = useState<Set<number>>(new Set());
-  const [showDetail, setShowDetail] = useState(false);
-  const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
 
   const { data, refetch } = useClients({
     query: searchKeyword,
     page: currentPage,
     size: pageSize,
   });
-
-  const { data: clientDetail, isLoading: isLoadingDetail } = useClient(selectedClientId);
 
   const queryClient = useQueryClient();
 
@@ -51,47 +45,13 @@ export const ClientManagementTemplate: React.FC = () => {
   };
 
   const handleAddClient = () => {
-    setSelectedClientId(null);
-    setShowDetail(true);
+    navigate('/work/clients/new');
   };
 
   const handleClientClick = (client: Client) => {
-    setSelectedClientId(client.id);
-    setShowDetail(true);
     queryClient.invalidateQueries({ queryKey: ['client', client.id] });
+    navigate(`/work/clients/${client.id}`);
   };
-
-  const handleDetailCancel = () => {
-    setShowDetail(false);
-    setSelectedClientId(null);
-  };
-
-  const handleDetailSave = (_data: Partial<Client>) => {
-    setShowDetail(false);
-    setSelectedClientId(null);
-    queryClient.invalidateQueries({ queryKey: ['clients'] });
-    queryClient.invalidateQueries({ queryKey: ['client'] });
-  };
-
-  if (showDetail) {
-    if (isLoadingDetail) {
-      return (
-        <div className="p-8 text-center">
-          <Spinner size="large" />
-          <Typography variant="body" className="mt-4">
-            로딩중...
-          </Typography>
-        </div>
-      );
-    }
-    return (
-      <ClientDetailTemplate
-        client={clientDetail}
-        onSave={handleDetailSave}
-        onCancel={handleDetailCancel}
-      />
-    );
-  }
 
   return (
     <div className="p-4">

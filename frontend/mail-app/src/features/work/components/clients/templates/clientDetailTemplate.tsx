@@ -1,39 +1,66 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ClientDetail } from '../../../types/clients';
 import { clientService } from '../../../services/clientService';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { Button } from '@/shared/components/atoms/button';
 import { Input } from '@/shared/components/atoms/input';
 import { Typography } from '@/shared/components/atoms/Typography';
 import { useUserInfo } from '@/shared/hooks/useUserInfo';
 
 interface ClientDetailTemplateProps {
-  client?: ClientDetail;
   onSave?: (data: ClientDetail) => void;
   onCancel: () => void;
 }
 
 export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
-  client,
   onSave,
   onCancel,
 }) => {
+  const navigate = useNavigate();
+  const { id } = useParams();
   const queryClient = useQueryClient();
   const { data: userInfo } = useUserInfo();
+
+  const { data: clientData } = useQuery({
+    queryKey: ['client', id],
+    queryFn: () => clientService.getClient(id!),
+    enabled: !!id && id !== 'new',
+  });
+
   const [form, setForm] = useState<ClientDetail>({
-    id: client?.id || 1,
-    corpName: client?.corpName || '',
-    representative: client?.representative || '',
-    licenseNum: client?.licenseNum || '',
-    phoneNum: client?.phoneNum || '',
-    email: client?.email || '',
-    address: client?.address || '',
-    businessType: client?.businessType || '',
-    businessItem: client?.businessItem || '',
-    businessLicense: client?.businessLicense || '',
+    id: clientData?.id || 1,
+    corpName: clientData?.corpName || '',
+    representative: clientData?.representative || '',
+    licenseNum: clientData?.licenseNum || '',
+    phoneNum: clientData?.phoneNum || '',
+    email: clientData?.email || '',
+    address: clientData?.address || '',
+    businessType: clientData?.businessType || '',
+    businessItem: clientData?.businessItem || '',
+    businessLicense: clientData?.businessLicense || '',
     createdAt: new Date().toISOString(),
     updatedAt: null
   });
+
+  useEffect(() => {
+    if (clientData) {
+      setForm({
+        id: clientData.id,
+        corpName: clientData.corpName,
+        representative: clientData.representative,
+        licenseNum: clientData.licenseNum,
+        phoneNum: clientData.phoneNum,
+        email: clientData.email,
+        address: clientData.address,
+        businessType: clientData.businessType,
+        businessItem: clientData.businessItem,
+        businessLicense: clientData.businessLicense,
+        createdAt: clientData.createdAt,
+        updatedAt: clientData.updatedAt
+      });
+    }
+  }, [clientData]);
 
   const createMutation = useMutation({
     mutationFn: (data: ClientDetail) => {
@@ -45,6 +72,7 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clients'] });
       if (onSave) onSave(form);
+      navigate('/work/clients', { replace: true });
     },
     onError: () => {
       alert('저장에 실패했습니다.');
@@ -57,6 +85,7 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clients'] });
       if (onSave) onSave(form);
+      navigate('/work/clients', { replace: true });
     },
     onError: () => {
       alert('수정에 실패했습니다.');
@@ -70,8 +99,8 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (client && client.id) {
-      updateMutation.mutate({ id: String(client.id), data: form });
+    if (id && id !== 'new') {
+      updateMutation.mutate({ id, data: form });
     } else {
       createMutation.mutate(form);
     }
@@ -82,7 +111,7 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
   return (
     <form onSubmit={handleSubmit} className="p-8 bg-white rounded shadow max-w-3xl mx-auto">
       <Typography variant="titleLarge" bold className="mb-6">
-        거래처 {client ? '수정' : '등록'}
+        거래처 {id && id !== 'new' ? '수정' : '등록'}
       </Typography>
 
       <div className="mb-4">
@@ -208,7 +237,7 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
           size="large"
           disabled={isSubmitting}
         >
-          {isSubmitting ? '처리중...' : (client ? '수정' : '등록')}
+          {isSubmitting ? '처리중...' : (id && id !== 'new' ? '수정' : '등록')}
         </Button>
         <Button
           type="button"
