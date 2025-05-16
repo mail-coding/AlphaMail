@@ -1,176 +1,152 @@
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useSidebarStore } from '@/shared/stores/useSidebarStore';
-import { Typography } from '@/shared/components/atoms/Typography';
+import { useHeaderStore } from '@/shared/stores/useHeaderStore';
+import { Routes, Route } from 'react-router-dom';
+
+// Work 관련 템플릿 컴포넌트들
+import { ClientManagementTemplate } from '@/features/work/components/clients/templates/clientManagementTemplate';
+import { ClientDetailTemplate } from '@/features/work/components/clients/templates/clientDetailTemplate';
+import OrderManagementTemplate from '@/features/work/components/orders/templates/orderManagementTemplate';
+import OrderDetailTemplate from '@/features/work/components/orders/templates/orderDetailTemplate';
 import { ProductManagementTemplate } from '@/features/work/components/products/templates/productManagementTemplate';
 import { ProductDetailTemplate } from '@/features/work/components/products/templates/productDetailTemplate';
 import { QuoteManagementTemplate } from '@/features/work/components/quotes/templates/quoteManagementTemplate';
 import { QuoteDetailTemplate } from '@/features/work/components/quotes/templates/quoteDetailTemplate';
-import { ClientManagementTemplate } from '@/features/work/components/clients/templates/clientManagementTemplate';
-import { useState, useEffect, useCallback } from 'react';
-import { Product } from '@/features/work/types/product';
-import { QuoteDetail } from '@/features/work/types/quote';
-import OrderManagementTemplate from '@/features/work/components/orders/templates/orderManagementTemplate';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { useHeaderStore } from '@/shared/stores/useHeaderStore';
-import { productService } from '@/features/work/services/productService';
-import { quoteService } from '@/features/work/services/quoteService';
 
-const sectionToTitle: Record<string, string> = {
-  'clients': '거래처 관리',
-  'orders': '발주서 관리',
-  'products': '재고 관리',
-  'quotes': '견적서 관리'
-};
-
-const WorkPage = () => {
+// 각 템플릿을 감싸는 래퍼 컴포넌트들
+const ClientManagementWrapper = () => {
   const { setActiveItem } = useSidebarStore();
   const { setTitle } = useHeaderStore();
-  const location = useLocation();
+
+  useEffect(() => {
+    setActiveItem("거래처 관리");
+    setTitle("거래처 관리");
+  }, [setActiveItem, setTitle]);
+
+  return <ClientManagementTemplate />;
+};
+
+const ClientDetailWrapper = () => {
+  const { setActiveItem } = useSidebarStore();
+  const { setTitle } = useHeaderStore();
   const navigate = useNavigate();
-  const { id } = useParams();
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [selectedQuote, setSelectedQuote] = useState<QuoteDetail | null>(null);
 
-  // activeItem과 title 설정을 위한 콜백 함수
-  const updateActiveItemAndTitle = useCallback(() => {
-    const path = location.pathname;
-    
-    // 기본 경로
-    if (path === '/work') {
-      setTitle('업무 관리');
-      setActiveItem('업무 관리');
-      return;
-    }
-
-    // 섹션 경로 처리
-    const section = path.split('/')[2];
-    if (section) {
-      const title = sectionToTitle[section];
-      if (title) {
-        setTitle(title);
-        setActiveItem(title);
-      }
-    }
-
-    // 상세 페이지 경로 처리
-    if (path.includes('/products/') && id) {
-      setTitle('재고 상세');
-      setActiveItem('재고 관리');
-    } else if (path.includes('/quotes/') && id) {
-      setTitle('견적서 상세');
-      setActiveItem('견적서 관리');
-    }
-  }, [location.pathname, id, setTitle, setActiveItem]);
-
-  // URL 경로에 따라 적절한 타이틀과 activeItem 설정
   useEffect(() => {
-    updateActiveItemAndTitle();
-  }, [updateActiveItemAndTitle]);
+    setActiveItem("거래처 관리");
+    setTitle("거래처 관리");
+  }, [setActiveItem, setTitle]);
 
-  // 상세 데이터 로드
+  return <ClientDetailTemplate onCancel={() => navigate('/work/clients')} />;
+};
+
+const OrderManagementWrapper = () => {
+  const { setActiveItem } = useSidebarStore();
+  const { setTitle } = useHeaderStore();
+
   useEffect(() => {
-    const loadDetail = async () => {
-      if (!id) return;
+    setActiveItem("발주서 관리");
+    setTitle("발주서 관리");
+  }, [setActiveItem, setTitle]);
 
-      const path = location.pathname;
-      if (path.includes('/products/')) {
-        try {
-          const product = await productService.getProduct(id);
-          setSelectedProduct(product);
-        } catch (error) {
-          console.error('상품 상세 정보 로드 실패:', error);
-          navigate('/work/products');
-        }
-      } else if (path.includes('/quotes/')) {
-        try {
-          const quote = await quoteService.getQuoteById(Number(id));
-          setSelectedQuote(quote);
-        } catch (error) {
-          console.error('견적서 상세 정보 로드 실패:', error);
-          navigate('/work/quotes');
-        }
-      }
-    };
+  return <OrderManagementTemplate />;
+};
 
-    loadDetail();
-  }, [id, location.pathname, navigate]);
+const OrderDetailWrapper = () => {
+  const { setActiveItem } = useSidebarStore();
+  const { setTitle } = useHeaderStore();
+  const navigate = useNavigate();
 
-  const handleAddProduct = () => {
-    navigate('/work/products/new');
-  };
+  useEffect(() => {
+    setActiveItem("발주서 관리");
+    setTitle("발주서 관리");
+  }, [setActiveItem, setTitle]);
 
-  const handleAddQuote = () => {
-    navigate('/work/quotes/new');
-  };
+  return (
+    <OrderDetailTemplate 
+      order={null}
+      onBack={() => navigate('/work/orders')}
+      onSave={() => navigate('/work/orders')}
+    />
+  );
+};
 
-  const handleQuoteClick = (quote: QuoteDetail) => {
-    setSelectedQuote(quote);
-    navigate(`/work/quotes/${quote.id}`);
-  };
+const ProductManagementWrapper = () => {
+  const { setActiveItem } = useSidebarStore();
+  const { setTitle } = useHeaderStore();
 
-  const handleProductClick = (product: Product) => {
-    setSelectedProduct(product);
-    navigate(`/work/products/${product.id}`);
-  };
+  useEffect(() => {
+    setActiveItem("재고 관리");
+    setTitle("재고 관리");
+  }, [setActiveItem, setTitle]);
 
-  const handleBack = () => {
-    const path = location.pathname;
-    const section = path.split('/')[2];
-    if (section) {
-      navigate(`/work/${section}`);
-    } else {
-      navigate('/work');
-    }
-  };
+  return <ProductManagementTemplate />;
+};
 
-  const renderTemplate = () => {
-    const path = location.pathname;
-    const section = path.split('/')[2];
+const ProductDetailWrapper = () => {
+  const { setActiveItem } = useSidebarStore();
+  const { setTitle } = useHeaderStore();
 
-    // 상세 템플릿
-    if (path.includes('/products/') && id) {
-      return (
-        <ProductDetailTemplate 
-          product={selectedProduct || undefined}
-          onBack={handleBack}
-        />
-      );
-    }
+  useEffect(() => {
+    setActiveItem("재고 관리");
+    setTitle("재고 관리");
+  }, [setActiveItem, setTitle]);
 
-    if (path.includes('/quotes/') && id) {
-      return (
-        <QuoteDetailTemplate 
-          quote={selectedQuote || null}
-          onBack={handleBack}
-          onSave={handleBack}
-        />
-      );
-    }
+  return <ProductDetailTemplate />;
+};
 
-    // 기본 템플릿
-    switch (section) {
-      case 'clients':
-        return <ClientManagementTemplate />;
-      case 'orders':
-        return <OrderManagementTemplate />;
-      case 'products':
-        return <ProductManagementTemplate onAddProduct={handleAddProduct} onProductClick={handleProductClick} />;
-      case 'quotes':
-        return <QuoteManagementTemplate onAddQuote={handleAddQuote} onQuoteClick={handleQuoteClick} />;
-      default:
-        return (
-          <div className="flex items-center justify-center h-full">
-            <Typography variant="titleMedium" color="text-gray-500">
-              템플릿을 선택해주세요
-            </Typography>
-          </div>
-        );
-    }
-  };
+const QuoteManagementWrapper = () => {
+  const { setActiveItem } = useSidebarStore();
+  const { setTitle } = useHeaderStore();
 
+  useEffect(() => {
+    setActiveItem("견적서 관리");
+    setTitle("견적서 관리");
+  }, [setActiveItem, setTitle]);
+
+  return <QuoteManagementTemplate />;
+};
+
+const QuoteDetailWrapper = () => {
+  const { setActiveItem } = useSidebarStore();
+  const { setTitle } = useHeaderStore();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    setActiveItem("견적서 관리");
+    setTitle("견적서 관리");
+  }, [setActiveItem, setTitle]);
+
+  return (
+    <QuoteDetailTemplate 
+      quote={null}
+      onBack={() => navigate('/work/quotes')}
+      onSave={() => navigate('/work/quotes')}
+    />
+  );
+};
+
+const WorkPage: React.FC = () => {
   return (
     <div className="h-full">
       <div className="p-4">
-        {renderTemplate()}
+        <Routes>
+          {/* Clients Routes */}
+          <Route path="clients" element={<ClientManagementWrapper />} />
+          <Route path="clients/:id" element={<ClientDetailWrapper />} />
+          
+          {/* Orders Routes */}
+          <Route path="orders" element={<OrderManagementWrapper />} />
+          <Route path="orders/:id" element={<OrderDetailWrapper />} />
+          
+          {/* Products Routes */}
+          <Route path="products" element={<ProductManagementWrapper />} />
+          <Route path="products/:id" element={<ProductDetailWrapper />} />
+          
+          {/* Quotes Routes */}
+          <Route path="quotes" element={<QuoteManagementWrapper />} />
+          <Route path="quotes/:id" element={<QuoteDetailWrapper />} />
+        </Routes>
       </div>
     </div>
   );

@@ -125,7 +125,7 @@ export const NavBar = () => {
                     </Link>
                 </li>
                 <li>
-                    <Link to="/work">
+                    <Link to="/work/clients">
                     <div className={cn(
                         "flex items-center h-[40px] px-4 text-white rounded-md transition-colors",
                         isWorkActive ? "bg-[#3E99C6]" : "hover:bg-[#3E99C6]"
