@@ -1,7 +1,6 @@
 import React from 'react';
 import { Client } from '../../../types/clients';
 import { Typography } from '@/shared/components/atoms/Typography';
-import { Button } from '@/shared/components/atoms/button';
 
 interface ClientTableRowProps {
   client: Client;
@@ -31,15 +30,14 @@ export const ClientTableRow: React.FC<ClientTableRowProps> = ({
       </td>
       <td className="p-4">
         {onClientClick ? (
-          <Button
-            variant="text"
-            onClick={() => onClientClick(client)}
-            className="text-left hover:text-blue-600 hover:underline"
+          <a
+            href={`/work/clients/${client.id}`}
+            className="text-left hover:text-blue-600 hover:underline cursor-pointer bg-transparent border-none p-0 m-0"
           >
-            <Typography variant="body">
+            <Typography variant="body" className="bg-transparent p-0 m-0 font-normal">
               {client.corpName}
             </Typography>
-          </Button>
+          </a>
         ) : (
           <Typography variant="body">
             {client.corpName}

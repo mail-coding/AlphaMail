@@ -7,6 +7,7 @@ import { Button } from '@/shared/components/atoms/button';
 import { Input } from '@/shared/components/atoms/input';
 import { Typography } from '@/shared/components/atoms/Typography';
 import { useUserInfo } from '@/shared/hooks/useUserInfo';
+import AddressInput from '@/shared/components/atoms/addressInput';
 
 interface ClientDetailTemplateProps {
   onSave?: (data: ClientDetail) => void;
@@ -42,6 +43,8 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
     createdAt: new Date().toISOString(),
     updatedAt: null
   });
+
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   useEffect(() => {
     if (clientData) {
@@ -99,6 +102,17 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitted(true);
+    if (
+      !form.corpName.trim() ||
+      !form.representative.trim() ||
+      !form.licenseNum.trim() ||
+      !form.businessItem.trim() ||
+      !form.businessType.trim()
+    ) {
+      alert('필수 항목을 모두 입력해 주세요.');
+      return;
+    }
     if (id && id !== 'new') {
       updateMutation.mutate({ id, data: form });
     } else {
@@ -109,124 +123,153 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <form onSubmit={handleSubmit} className="p-8 bg-white rounded shadow max-w-3xl mx-auto">
+    <form onSubmit={handleSubmit} className="p-8 bg-white rounded shadow max-w-5xl mx-auto">
       <Typography variant="titleLarge" bold className="mb-6">
         거래처 {id && id !== 'new' ? '수정' : '등록'}
       </Typography>
 
-      <div className="mb-4">
-        <Typography variant="body" color="text-gray-600" className="mb-2">
-          사업자등록증 첨부
-        </Typography>
-        <Button variant="ghost" size="small">
-          첨부파일
-        </Button>
-      </div>
+      <div className="grid grid-cols-[180px_1fr] gap-y-2 w-full">
+        {/* 사업자등록증 첨부 */}
+        <div className="bg-[#E6F4FB] flex items-center justify-end px-4 h-[40px] border-b border-white">
+          <Typography variant="body" bold>사업자등록증 첨부</Typography>
+        </div>
+        <div className="flex items-center h-[40px] border-b">
+          <Button variant="ghost" size="small">첨부파일</Button>
+        </div>
 
-      <div className="space-y-4">
-        <div>
-          <Typography variant="body" color="text-gray-600" className="mb-2">
-            거래처명 *
-          </Typography>
+        {/* 거래처명 */}
+        <div className="bg-[#E6F4FB] flex items-center justify-end px-4 h-[40px] border-b border-white">
+          <Typography variant="body" bold>거래처명 <span className="text-red-500">*</span></Typography>
+        </div>
+        <div className="h-[40px] border-b w-auto">
           <Input
             name="corpName"
             value={form.corpName}
             onChange={handleChange}
-            required
             placeholder="거래처명을 입력하세요."
             size="large"
+            className="!w-[400px]"
           />
+          {isSubmitted && !form.corpName.trim() && (
+            <span className="text-red-500 text-xs ml-2">거래처명을 입력해 주세요.</span>
+          )}
         </div>
 
-        <div>
-          <Typography variant="body" color="text-gray-600" className="mb-2">
-            대표자명
-          </Typography>
+        {/* 대표자명 */}
+        <div className="bg-[#E6F4FB] flex items-center justify-end px-4 h-[40px] border-b border-white">
+          <Typography variant="body" bold>대표자명 <span className="text-red-500">*</span></Typography>
+        </div>
+        <div className="h-[40px] border-b w-auto">
           <Input
             name="representative"
             value={form.representative}
             onChange={handleChange}
             placeholder="대표자명을 입력하세요."
             size="large"
+            className="!w-[400px]"
           />
+          {isSubmitted && !form.representative.trim() && (
+            <span className="text-red-500 text-xs ml-2">대표자명을 입력해 주세요.</span>
+          )}
         </div>
 
-        <div>
-          <Typography variant="body" color="text-gray-600" className="mb-2">
-            사업자 번호
-          </Typography>
+        {/* 사업자 번호 */}
+        <div className="bg-[#E6F4FB] flex items-center justify-end px-4 h-[40px] border-b border-white">
+          <Typography variant="body" bold>사업자 번호 <span className="text-red-500">*</span></Typography>
+        </div>
+        <div className="h-[40px] border-b w-auto">
           <Input
             name="licenseNum"
             value={form.licenseNum}
             onChange={handleChange}
             placeholder="사업자 번호를 입력하세요."
             size="large"
+            className="!w-[400px]"
           />
+          {isSubmitted && !form.licenseNum.trim() && (
+            <span className="text-red-500 text-xs ml-2">사업자번호를 입력해 주세요.</span>
+          )}
         </div>
 
-        <div>
-          <Typography variant="body" color="text-gray-600" className="mb-2">
-            전화번호
-          </Typography>
-          <Input
-            name="phoneNum"
-            value={form.phoneNum}
-            onChange={handleChange}
-            placeholder="전화번호를 입력하세요."
-            size="large"
-          />
+        {/* 종목 */}
+        <div className="bg-[#E6F4FB] flex items-center justify-end px-4 h-[40px] border-b border-white">
+          <Typography variant="body" bold>종목 <span className="text-red-500">*</span></Typography>
         </div>
-
-        <div>
-          <Typography variant="body" color="text-gray-600" className="mb-2">
-            Email
-          </Typography>
-          <Input
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            placeholder="Email을 입력하세요."
-            size="large"
-          />
-        </div>
-
-        <div>
-          <Typography variant="body" color="text-gray-600" className="mb-2">
-            주소
-          </Typography>
-          <Input
-            name="address"
-            value={form.address}
-            onChange={handleChange}
-            placeholder="주소를 입력하세요."
-            size="large"
-          />
-        </div>
-
-        <div>
-          <Typography variant="body" color="text-gray-600" className="mb-2">
-            업태
-          </Typography>
-          <Input
-            name="businessType"
-            value={form.businessType}
-            onChange={handleChange}
-            placeholder="업태를 입력하세요."
-            size="large"
-          />
-        </div>
-
-        <div>
-          <Typography variant="body" color="text-gray-600" className="mb-2">
-            종목
-          </Typography>
+        <div className="h-[40px] border-b w-auto">
           <Input
             name="businessItem"
             value={form.businessItem}
             onChange={handleChange}
             placeholder="종목을 입력하세요."
             size="large"
+            className="!w-[400px]"
           />
+          {isSubmitted && !form.businessItem.trim() && (
+            <span className="text-red-500 text-xs ml-2">종목을 입력해 주세요.</span>
+          )}
+        </div>
+
+        {/* 업태 */}
+        <div className="bg-[#E6F4FB] flex items-center justify-end px-4 h-[40px] border-b border-white">
+          <Typography variant="body" bold>업태 <span className="text-red-500">*</span></Typography>
+        </div>
+        <div className="h-[40px] border-b w-auto">
+          <Input
+            name="businessType"
+            value={form.businessType}
+            onChange={handleChange}
+            placeholder="업태를 입력하세요."
+            size="large"
+            className="!w-[400px]"
+          />
+          {isSubmitted && !form.businessType.trim() && (
+            <span className="text-red-500 text-xs ml-2">업태를 입력해 주세요.</span>
+          )}
+        </div>
+
+        {/* 담당자 전화번호 */}
+        <div className="bg-[#E6F4FB] flex items-center justify-end px-4 h-[40px] border-b border-white">
+          <Typography variant="body" bold>담당자 전화번호</Typography>
+        </div>
+        <div className="h-[40px] border-b w-auto">
+          <Input
+            name="phoneNum"
+            value={form.phoneNum}
+            onChange={handleChange}
+            placeholder="전화번호"
+            size="large"
+            className="!w-[400px]"
+          />
+        </div>
+
+        {/* 담당자 Email */}
+        <div className="bg-[#E6F4FB] flex items-center justify-end px-4 h-[40px] border-b border-white">
+          <Typography variant="body" bold>담당자 Email</Typography>
+        </div>
+        <div className="h-[40px] border-b w-auto">
+          <Input
+            name="email"
+            value={form.email}
+            onChange={handleChange}
+            placeholder="Email"
+            size="large"
+            className="!w-[400px]"
+          />
+        </div>
+
+        {/* 주소 */}
+        <div className="bg-[#E6F4FB] flex items-center justify-end px-4 h-[40px] border-b border-white">
+          <Typography variant="body" bold>주소</Typography>
+        </div>
+        <div className="flex flex-col gap-2 h-[40px] border-b justify-center w-auto">
+          <div className="flex gap-2">
+            <AddressInput
+              value={form.address}
+              onChange={val => setForm(prev => ({ ...prev, address: val }))}
+              placeholder="주소 검색"
+              className="!w-[400px]"
+            />
+          </div>
         </div>
       </div>
 
@@ -236,6 +279,7 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
           variant="primary"
           size="large"
           disabled={isSubmitting}
+          className="w-[110px] h-[40px]"
         >
           {isSubmitting ? '처리중...' : (id && id !== 'new' ? '수정' : '등록')}
         </Button>
@@ -245,6 +289,7 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
           size="large"
           onClick={onCancel}
           disabled={isSubmitting}
+          className="w-[110px] h-[40px]"
         >
           취소
         </Button>

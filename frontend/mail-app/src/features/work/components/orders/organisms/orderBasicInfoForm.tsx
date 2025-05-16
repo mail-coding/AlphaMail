@@ -235,7 +235,6 @@ const OrderBasicInfoForm: React.FC = () => {
           <AddressInput
             value={formData.shippingAddress}
             onChange={handleAddressChange}
-            onSearchClick={() => setIsAddressModalOpen(true)}
             className="mt-1"
           />
           {errors.shippingAddress && <p className="mt-1 text-sm text-red-500">{errors.shippingAddress}</p>}

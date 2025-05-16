@@ -7,6 +7,7 @@ import { useClients } from '../../../hooks/useClients';
 import { useQueryClient } from '@tanstack/react-query';
 import { clientService } from '../../../services/clientService';
 import { Button } from '@/shared/components/atoms/button';
+import { Typography } from '@/shared/components/atoms/Typography';
 
 export const ClientManagementTemplate: React.FC = () => {
   const navigate = useNavigate();
@@ -65,24 +66,21 @@ export const ClientManagementTemplate: React.FC = () => {
           <div className="flex justify-between items-center mb-4">
             <Button
               onClick={handleAddClient}
-              variant="primary"
+              variant="text"
               size="large"
+              className="flex items-baseline gap-2 p-0 bg-transparent shadow-none border-none text-black font-bold text-xl hover:bg-transparent hover:text-black active:bg-transparent"
             >
-              거래처 등록
+              <span className="text-2xl font-bold leading-none relative -top-[-1px]">+</span>
+              <Typography variant="titleSmall" className="leading-none">거래처 등록하기</Typography>
             </Button>
             <div className="flex gap-2">
               <Button
-                variant="secondary"
-                size="large"
-              >
-                출력
-              </Button>
-              <Button
                 onClick={handleDelete}
-                variant="secondary"
-                size="large"
+                variant="text"
+                size="small"
+                className="min-w-[110px] h-[40px] border border-gray-300 bg-white shadow-none text-black font-normal hover:bg-gray-100 hover:text-black active:bg-gray-200 !rounded-none"
               >
-                삭제
+                <Typography variant="titleSmall">삭제</Typography>
               </Button>
             </div>
           </div>

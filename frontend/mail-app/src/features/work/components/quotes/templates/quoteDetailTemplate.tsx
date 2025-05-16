@@ -317,7 +317,6 @@ export const QuoteDetailTemplate: React.FC<QuoteDetailTemplateProps> = ({
               <AddressInput
                 value={formData.shippingAddress}
                 onChange={handleAddressChange}
-                onSearchClick={() => setIsAddressModalOpen(true)}
                 className="mt-1"
               />
             </div>

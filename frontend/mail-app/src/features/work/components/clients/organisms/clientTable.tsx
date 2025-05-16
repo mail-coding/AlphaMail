@@ -19,11 +19,9 @@ interface ClientTableProps {
 export const ClientTable: React.FC<ClientTableProps> = ({
   clients,
   currentPage,
-  pageSize,
   selectedClientIds,
   onSelectClient,
   setCurrentPage,
-  setPageSize,
   totalCount,
   pageCount,
   onClientClick,
@@ -78,15 +76,13 @@ export const ClientTable: React.FC<ClientTableProps> = ({
                 </td>
                 <td className="p-2">
                   {onClientClick ? (
-                    <Button
-                      variant="text"
-                      onClick={() => onClientClick(client)}
-                      className="text-left hover:text-blue-600 hover:underline"
+                    <a
+                      href={`/work/clients/${client.id}`}
+                      onClick={e => { e.preventDefault(); onClientClick(client); }}
+                      className="text-left hover:text-blue-600 hover:underline cursor-pointer bg-transparent border-none p-0 m-0 font-normal text-[12px] leading-normal"
                     >
-                      <Typography variant="body">
-                        {client.corpName}
-                      </Typography>
-                    </Button>
+                      {client.corpName}
+                    </a>
                   ) : (
                     <Typography variant="body">
                       {client.corpName}
@@ -160,15 +156,6 @@ export const ClientTable: React.FC<ClientTableProps> = ({
         >
           &gt;
         </Button>
-        <select 
-          value={pageSize} 
-          onChange={(e) => setPageSize(Number(e.target.value))}
-          className="ml-4 border rounded p-1"
-        >
-          <option value="10">10개</option>
-          <option value="20">20개</option>
-          <option value="50">50개</option>
-        </select>
         <Typography variant="body" className="ml-4">
           총 {totalCount}개
         </Typography>

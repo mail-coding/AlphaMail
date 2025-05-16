@@ -1,36 +1,50 @@
-import React from 'react';
+import React, { useState } from 'react';
+import KakaoAddressTemplate from '@/shared/components/template/kakaoAddressTemplate';
+import { Input } from '@/shared/components/atoms/input';
 
 interface AddressInputProps {
   value: string;
   onChange: (value: string) => void;
-  onSearchClick: () => void;
   placeholder?: string;
   className?: string;
 }
 
 const AddressInput: React.FC<AddressInputProps> = ({
   value,
-  onSearchClick,
+  onChange,
   placeholder = '주소를 검색하세요',
   className = '',
 }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    onSearchClick();
+    setIsModalOpen(true);
   };
 
   return (
-    <div className="flex">
-      <input
-        type="text"
-        value={value}
-        onClick={handleClick}
-        readOnly
-        placeholder={placeholder}
-        className={`flex-1 border border-gray-300 rounded-l-md shadow-sm p-2 cursor-pointer hover:bg-gray-50 ${className}`}
-      />
-    </div>
+    <>
+      <div className="flex">
+        <Input
+          value={value}
+          readOnly
+          onClick={handleClick}
+          placeholder={placeholder}
+          className={`cursor-pointer ${className}`}
+        />
+      </div>
+      {isModalOpen && (
+        <KakaoAddressTemplate
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSelect={data => {
+            onChange(data.address);
+            setIsModalOpen(false);
+          }}
+        />
+      )}
+    </>
   );
 };
 
