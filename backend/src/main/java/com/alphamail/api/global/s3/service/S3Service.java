@@ -1,4 +1,4 @@
-package com.alphamail.api.email.domain.port;
+package com.alphamail.api.global.s3.service;
 
 import java.io.InputStream;
 import java.util.List;

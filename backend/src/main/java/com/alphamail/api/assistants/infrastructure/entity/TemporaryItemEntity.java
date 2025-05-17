@@ -2,15 +2,14 @@ package com.alphamail.api.assistants.infrastructure.entity;
 
 import java.time.LocalDateTime;
 
-import com.alphamail.common.entity.BaseTimeEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
 import jakarta.persistence.Table;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -24,23 +23,27 @@ import lombok.ToString;
 @AllArgsConstructor
 @Builder
 @ToString
-@EqualsAndHashCode(of = "id")
+@IdClass(TemporaryItemId.class)  // 복합 키 정의
 public class TemporaryItemEntity {
 
 	@Id
-	private Long id;
+	@Column(insertable = false, updatable = false)
+	private Integer id;
 
-	private String type; // 'PURCHASE_ORDER', 'QUOTE', 'CLIENT', 'SCHEDULE'
+	@Id
+	@Column(insertable = false, updatable = false)
+	private String type;  // 이 두 필드를 함께 복합 키로 사용
 
+	@Column(insertable = false, updatable = false)
 	private String title;
 
-	@Column(name = "userId")
+	@Column(name = "user_id", insertable = false, updatable = false)
 	private Integer userId;
 
-	@Column(name = "email_id")
+	@Column(name = "email_id", insertable = false, updatable = false)
 	private Integer emailId;
 
-	@Column(name = "email_time")
+	@Column(name = "email_time", insertable = false, updatable = false)
 	private LocalDateTime emailTime;
-
 }
+

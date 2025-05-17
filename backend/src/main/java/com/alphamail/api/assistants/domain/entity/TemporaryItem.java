@@ -16,7 +16,7 @@ import lombok.ToString;
 @ToString
 @EqualsAndHashCode(of = "id")
 public class TemporaryItem {
-	private Long id;
+	private Integer id;
 	private String type;
 	private String title;
 	private Integer userId;

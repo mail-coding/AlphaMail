@@ -1,7 +1,5 @@
 package com.alphamail.api.erp.presentation.dto.product;
 
-import java.time.LocalDateTime;
-
 import com.alphamail.api.erp.domain.entity.Product;
 
 public record GetProductResponse(
@@ -14,6 +12,10 @@ public record GetProductResponse(
 	String image
 ) {
 	public static GetProductResponse from(Product product) {
+		String imageUrl = product.getImage() != null
+			? "https://alphamailemailbucket.s3.ap-northeast-2.amazonaws.com/sendAttachments/" + product.getImage()
+			: null;
+
 		return new GetProductResponse(
 			product.getProductId(),
 			product.getName(),
@@ -21,7 +23,7 @@ public record GetProductResponse(
 			product.getStock(),
 			product.getInboundPrice(),
 			product.getOutboundPrice(),
-			product.getImage()
+			imageUrl
 		);
 	}
 }

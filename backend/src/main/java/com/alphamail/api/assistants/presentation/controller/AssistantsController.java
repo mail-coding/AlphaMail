@@ -37,7 +37,7 @@ public class AssistantsController {
 	) {
 		// Pageable 객체를 생성
 		Pageable pageable = PageRequest.of(page, size, Sort.by(
-			sort == 0 ? Sort.Order.asc("emailTime") : Sort.Order.desc("emailTime")
+			sort == 0 ? Sort.Order.desc("emailTime") : Sort.Order.asc("emailTime")
 		));
 
 		// 서비스로 전달하여 처리

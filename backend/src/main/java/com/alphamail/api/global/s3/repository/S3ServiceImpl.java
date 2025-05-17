@@ -1,4 +1,4 @@
-package com.alphamail.api.email.infrastructure.adapter;
+package com.alphamail.api.global.s3.repository;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.alphamail.api.email.domain.port.S3Service;
+import com.alphamail.api.global.s3.service.S3Service;
 import com.alphamail.common.exception.ErrorMessage;
 import com.alphamail.common.exception.NotFoundException;
 import com.amazonaws.AmazonServiceException;

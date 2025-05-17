@@ -29,6 +29,7 @@ import com.alphamail.api.erp.presentation.dto.product.RegistProductRequest;
 import com.alphamail.api.global.dto.GetPageResponse;
 import com.alphamail.api.global.dto.RegistErpResponse;
 import com.alphamail.api.global.dto.RemoveAllErpRequest;
+import com.alphamail.api.global.s3.service.S3Service;
 import com.alphamail.common.constants.ApiPaths;
 
 import lombok.RequiredArgsConstructor;
@@ -44,6 +45,7 @@ public class ProductController {
 	private final ModifyProductUseCase modifyProductUseCase;
 	private final RemoveAllProductsUseCase removeAllProductsUseCase;
 	private final RemoveProductUseCase removeProductUseCase;
+	private final S3Service s3Service;
 
 	@GetMapping(ApiPaths.COMPANIES_BASE_API + ApiPaths.PRODUCTS_BASE_API)
 	public ResponseEntity<GetPageResponse<GetAllProductsResponse>> getAll(@PathVariable Integer companyId,
@@ -112,4 +114,5 @@ public class ProductController {
 		return deleted ? ResponseEntity.noContent().build() :
 			ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 	}
+
 }

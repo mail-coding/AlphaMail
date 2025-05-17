@@ -6,10 +6,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alphamail.api.email.domain.entity.EmailAttachment;
-import com.alphamail.api.email.domain.port.S3Service;
 import com.alphamail.api.email.domain.repository.EmailAttachmentRepository;
 import com.alphamail.api.email.domain.repository.EmailRepository;
 import com.alphamail.api.email.presentation.dto.AttachmentDownloadResponse;
+import com.alphamail.api.global.s3.service.S3Service;
 import com.alphamail.api.user.domain.valueobject.UserId;
 import com.alphamail.common.exception.ErrorMessage;
 import com.alphamail.common.exception.ForbiddenException;

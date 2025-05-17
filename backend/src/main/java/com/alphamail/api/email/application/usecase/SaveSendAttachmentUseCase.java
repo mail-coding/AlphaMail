@@ -9,9 +9,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.alphamail.api.email.domain.entity.Email;
 import com.alphamail.api.email.domain.entity.EmailAttachment;
-import com.alphamail.api.email.domain.port.S3Service;
 import com.alphamail.api.email.domain.repository.EmailAttachmentRepository;
 import com.alphamail.api.email.presentation.dto.SendEmailRequest;
+import com.alphamail.api.global.s3.service.S3Service;
 
 import lombok.RequiredArgsConstructor;
 
