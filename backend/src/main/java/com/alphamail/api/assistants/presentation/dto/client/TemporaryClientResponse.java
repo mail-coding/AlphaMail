@@ -1,6 +1,10 @@
 package com.alphamail.api.assistants.presentation.dto.client;
 
+import java.util.List;
+
 import com.alphamail.api.assistants.domain.entity.TemporaryClient;
+import com.alphamail.api.email.domain.entity.Email;
+import com.alphamail.api.email.domain.entity.EmailAttachment;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,12 +25,15 @@ public class TemporaryClientResponse {
 	private String representative;
 	private String businessType;
 	private String businessItem;
-	private String email;
+	private String clientEmail;
 	private String phoneNumber;
 	private String businessLicense;
+	private Email email;
+	private List<EmailAttachment> emailAttachments;
 
 	// 도메인 객체로부터 응답 객체를 생성하는 정적 팩토리 메서드
-	public static TemporaryClientResponse from(TemporaryClient temporaryClient) {
+	public static TemporaryClientResponse from(TemporaryClient temporaryClient,
+		List<EmailAttachment> emailAttachments) {
 		return TemporaryClientResponse.builder()
 			.id(temporaryClient.getId())
 			.userId(temporaryClient.getUserId())
@@ -36,9 +43,11 @@ public class TemporaryClientResponse {
 			.representative(temporaryClient.getRepresentative())
 			.businessType(temporaryClient.getBusinessType())
 			.businessItem(temporaryClient.getBusinessItem())
-			.email(temporaryClient.getClientEmail())
+			.clientEmail(temporaryClient.getClientEmail())
 			.phoneNumber(temporaryClient.getPhoneNumber())
 			.businessLicense(temporaryClient.getBusinessLicense())
+			.email(temporaryClient.getEmail())
+			.emailAttachments(emailAttachments)
 			.build();
 	}
 }
