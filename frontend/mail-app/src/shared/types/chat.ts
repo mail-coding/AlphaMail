@@ -5,6 +5,12 @@ export interface ChatMessage {
   ids: string[];
   type: MessageType;
   isUser: boolean;
+  content?: {
+    name?: string;
+    startTime?: string;
+    endTime?: string | null;
+    description?: string | null;
+  };
 }
 
 export interface ChatState {

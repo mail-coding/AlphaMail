@@ -167,6 +167,8 @@ export const scheduleService = {
       queryKey: ['schedules'],
       refetchType: 'all'
     });
+
+    console.log('scheduleService - 생성 응답 데이터 : ', response.data);
     
     return {
       id: String(response.data.id),

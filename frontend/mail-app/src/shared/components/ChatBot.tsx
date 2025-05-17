@@ -12,6 +12,7 @@ import { useQuotes } from '@/features/work/hooks/useQuote';
 import { useOrderDetail } from '@/features/work/hooks/useOrderDetail';
 import { useQuery } from '@tanstack/react-query';
 import { scheduleService } from '@/features/schedule/services/scheduleService';
+import { Schedule } from '@/features/schedule/types/schedule';
 
 // 스타일 컴포넌트
 const MessageCard = styled.div`
@@ -183,44 +184,174 @@ const ScheduleMessage = ({ id, reply }: { id: string; reply: string }) => {
   );
 };
 
-const TmpScheduleMessage = ({ id, reply }: { id: string; reply: string }) => {
+const TmpScheduleMessage = ({ reply, content }: { reply: string; content?: { name?: string; startTime?: string; endTime?: string | null; description?: string | null } }) => {
   const navigate = useNavigate();
-  const { data: scheduleDetail } = useQuery({
-    queryKey: ['schedule', id],
-    queryFn: () => scheduleService.getSchedulesForWeek(new Date()),
+  const [scheduleForm, setScheduleForm] = useState({
+    name: content?.name || '',
+    startTime: content?.startTime || '',
+    endTime: content?.endTime || '',
+    description: content?.description || ''
   });
-  
-  const schedules = scheduleDetail?.data || [];
-  
+  const [errors, setErrors] = useState<{
+    name?: string;
+    startTime?: string;
+    endTime?: string;
+    submit?: string;
+  }>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [createdSchedule, setCreatedSchedule] = useState<Schedule | null>(null);
+  const { messages, removeMessage } = useChatStore();
+
+  const validateForm = () => {
+    const newErrors: typeof errors = {};
+    
+    if (!scheduleForm.name.trim()) {
+      newErrors.name = '일정명을 입력해주세요.';
+    }
+    if (!scheduleForm.startTime) {
+      newErrors.startTime = '시작 시간을 선택해주세요.';
+    }
+    if (scheduleForm.endTime && new Date(scheduleForm.endTime) < new Date(scheduleForm.startTime)) {
+      newErrors.endTime = '종료 시간은 시작 시간보다 이후여야 합니다.';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async () => {
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await scheduleService.createSchedule({
+        name: scheduleForm.name,
+        start_time: new Date(scheduleForm.startTime),
+        end_time: scheduleForm.endTime ? new Date(scheduleForm.endTime) : new Date(scheduleForm.startTime),
+        description: scheduleForm.description || '',
+        is_done: false,
+        created_at: new Date()
+      });
+      
+      if (response) {
+        setCreatedSchedule(response);
+      }
+    } catch (error) {
+      console.error('일정 생성 실패:', error);
+      setErrors(prev => ({
+        ...prev,
+        submit: '일정 생성에 실패했습니다. 다시 시도해주세요.'
+      }));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCancel = () => {
+    const messageIndex = messages.findIndex(msg => msg.type === 'tmp_schedule');
+    if (messageIndex !== -1) {
+      removeMessage(messageIndex);
+    }
+  };
+
+  if (createdSchedule) {
+    return (
+      <MessageCard>
+        <Typography variant="body" className="mb-4">일정이 성공적으로 추가되었습니다.</Typography>
+        <div className="flex justify-center">
+          <Button
+            onClick={() => navigate('/schedule')}
+            variant="primary"
+            size="large"
+          >
+            일정 페이지로 이동
+          </Button>
+        </div>
+      </MessageCard>
+    );
+  }
+
   return (
     <MessageCard>
       <Typography variant="body" className="mb-2">{reply}</Typography>
-      <Table>
-        <thead>
-          <tr>
-            <Th>일정명</Th>
-            <Th>시작</Th>
-            <Th></Th>
-          </tr>
-        </thead>
-        <tbody>
-          {schedules.map((schedule) => (
-            <Tr key={schedule.id}>
-              <Td>{schedule.name || '-'}</Td>
-              <Td>{schedule.start_time ? formatDateTime(new Date(schedule.start_time)) : '-'}</Td>
-              <Td>
-                <Button 
-                  size="small" 
-                  variant="primary" 
-                  onClick={() => navigate(`/schedule/tmp/${schedule.id}`)}
-                >
-                  보기
-                </Button>
-              </Td>
-            </Tr>
-          ))}
-        </tbody>
-      </Table>
+      <div className="space-y-4">
+        <div>
+          <Typography variant="caption" className="block mb-1">일정명 <span className="text-red-500">*</span></Typography>
+          <Input
+            type="text"
+            value={scheduleForm.name}
+            onChange={(e) => setScheduleForm(prev => ({ ...prev, name: e.target.value }))}
+            placeholder="일정명을 입력하세요"
+            size="small"
+            className={`w-full ${errors.name ? 'border-red-500' : ''}`}
+          />
+          {errors.name && (
+            <Typography variant="caption" color="text-red-500">{errors.name}</Typography>
+          )}
+        </div>
+        <div>
+          <Typography variant="caption" className="block mb-1">시작 시간 <span className="text-red-500">*</span></Typography>
+          <Input
+            type="datetime-local"
+            value={scheduleForm.startTime}
+            onChange={(e) => setScheduleForm(prev => ({ ...prev, startTime: e.target.value }))}
+            size="small"
+            className={`w-full ${errors.startTime ? 'border-red-500' : ''}`}
+          />
+          {errors.startTime && (
+            <Typography variant="caption" color="text-red-500">{errors.startTime}</Typography>
+          )}
+        </div>
+        <div>
+          <Typography variant="caption" className="block mb-1">종료 시간 (선택사항)</Typography>
+          <Input
+            type="datetime-local"
+            value={scheduleForm.endTime}
+            onChange={(e) => setScheduleForm(prev => ({ ...prev, endTime: e.target.value }))}
+            size="small"
+            className={`w-full ${errors.endTime ? 'border-red-500' : ''}`}
+          />
+          {errors.endTime && (
+            <Typography variant="caption" color="text-red-500">{errors.endTime}</Typography>
+          )}
+        </div>
+        <div>
+          <Typography variant="caption" className="block mb-1">설명 (선택사항)</Typography>
+          <textarea
+            value={scheduleForm.description}
+            onChange={(e) => setScheduleForm(prev => ({ ...prev, description: e.target.value }))}
+            placeholder="설명을 입력하세요"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            rows={3}
+          />
+        </div>
+        <div className="flex gap-2">
+          <Button
+            onClick={handleCancel}
+            variant="secondary"
+            size="small"
+            className="flex-1"
+          >
+            취소
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            variant="primary"
+            size="small"
+            className="flex-1"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? '처리중...' : '일정 추가'}
+          </Button>
+        </div>
+        {errors.submit && (
+          <Typography variant="caption" color="text-red-500" className="block text-center">
+            {errors.submit}
+          </Typography>
+        )}
+      </div>
     </MessageCard>
   );
 };
@@ -350,6 +481,11 @@ const ChatBot: React.FC = () => {
   const { messages, isLoading, error, sendMessage } = useChatStore();
   const { data: userInfo } = useUser();
 
+  // 메시지 변경 감지
+  useEffect(() => {
+    console.log('ChatBot - 현재 메시지 목록:', messages);
+  }, [messages]);
+
   const calculateWindowPosition = (botX: number, botY: number) => {
     const windowWidth = 500;
     const windowHeight = 500;
@@ -447,8 +583,13 @@ const ChatBot: React.FC = () => {
 
   const handleSendMessage = async () => {
     if (message.trim() && userInfo?.id) {
-      await sendMessage(message.trim(), userInfo.id.toString());
+      console.log('ChatBot - 메시지 전송:', message.trim());
       setMessage('');
+      await sendMessage(message.trim(), userInfo.id.toString());
+      // 메시지 전송 후 스크롤
+      setTimeout(() => {
+        scrollToBottom();
+      }, 100);
     }
   };
 
@@ -463,6 +604,14 @@ const ChatBot: React.FC = () => {
   }, [messages, isLoading]);
 
   const renderMessage = (msg: ChatMessage) => {
+    console.log('ChatBot - 렌더링할 메시지:', {
+      type: msg.type,
+      reply: msg.reply,
+      ids: msg.ids,
+      content: msg.content,
+      isUser: msg.isUser
+    });
+    
     if (msg.type === 'quote' && msg.ids[0]) {
       return <QuoteMessage id={msg.ids[0]} reply={msg.reply} />;
     }
@@ -472,8 +621,12 @@ const ChatBot: React.FC = () => {
     if (msg.type === 'schedule' && msg.ids[0]) {
       return <ScheduleMessage id={msg.ids[0]} reply={msg.reply} />;
     }
-    if (msg.type === 'tmp_schedule' && msg.ids[0]) {
-      return <TmpScheduleMessage id={msg.ids[0]} reply={msg.reply} />;
+    if (msg.type === 'tmp_schedule') {
+      console.log('ChatBot - tmp_schedule 메시지 상세:', {
+        reply: msg.reply,
+        content: msg.content
+      });
+      return <TmpScheduleMessage reply={msg.reply} content={msg.content} />;
     }
     // 기본 텍스트 메시지
     return <MessageBubble isUser={msg.isUser}>{msg.reply}</MessageBubble>;

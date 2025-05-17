@@ -13,7 +13,7 @@ class ChatService {
 
   async sendMessage(message: string, userId: string): Promise<ChatMessage> {
     try {
-        console.log(message, userId);
+      console.log('chatService - 요청 데이터:', { message, userId });
 
       const response = await api.post('/api/chatbot/message', {
         message,
@@ -21,12 +21,20 @@ class ChatService {
       });
       const data = response.data;
       
-      return {
+      console.log('chatService - API 응답 데이터:', data);
+      console.log('chatService - content 필드 확인:', data.content);
+      
+      const chatMessage: ChatMessage = {
         reply: data.reply,
         ids: data.ids,
         type: data.type,
         isUser: false,
+        content: data.content
       };
+      
+      console.log('chatService - 반환할 메시지:', chatMessage);
+      
+      return chatMessage;
     } catch (error) {
       console.error('챗봇 메시지 전송 중 오류:', error);
       throw error;
