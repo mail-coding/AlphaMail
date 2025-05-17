@@ -1,7 +1,9 @@
+export type MessageType = 'quote' | 'purchaseOrder' | 'schedule' | 'tmp_schedule' | 'text';
+
 export interface ChatMessage {
   reply: string;
   ids: string[];
-  type: string;
+  type: MessageType;
   isUser: boolean;
 }
 
