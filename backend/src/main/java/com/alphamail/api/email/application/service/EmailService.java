@@ -1,6 +1,7 @@
 package com.alphamail.api.email.application.service;
 
 import com.alphamail.api.email.application.usecase.SaveEmailUseCase;
+import com.alphamail.api.email.application.usecase.SaveRecentEmailUseCase;
 import com.alphamail.api.email.application.usecase.SaveSendAttachmentUseCase;
 import com.alphamail.api.email.application.usecase.SendEmailUseCase;
 import com.alphamail.api.email.application.usecase.UpdateEmailUseCase;
@@ -29,9 +30,17 @@ public class EmailService {
 	private final EmailVectorUseCase emailVectorUseCase;
 	private final SaveSendAttachmentUseCase saveSendAttachmentUseCase;
 	private final EmailRepository emailRepository;
+	private final SaveRecentEmailUseCase saveRecentEmailUseCase;
 
 	@Transactional
 	public void sendEmail(SendEmailRequest request, List<MultipartFile> attachments, Integer userId) {
+
+		if (request.recipients() != null && !request.recipients().isEmpty()) {
+			for (String recipient : request.recipients()) {
+				saveRecentEmailUseCase.execute(userId, recipient, "");
+			}
+		}
+
 		String threadId = null;
 
 

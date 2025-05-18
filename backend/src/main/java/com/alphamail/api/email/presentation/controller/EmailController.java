@@ -31,6 +31,7 @@ import com.alphamail.api.email.application.usecase.GetEmailDetailUseCase;
 import com.alphamail.api.email.application.usecase.GetEmailListUseCase;
 import com.alphamail.api.email.application.usecase.GetFolderUseCase;
 import com.alphamail.api.email.application.service.ReceiveEmailService;
+import com.alphamail.api.email.application.usecase.GetRecentEmailUseCase;
 import com.alphamail.api.email.application.usecase.RestoreToOriginUseCase;
 import com.alphamail.api.email.presentation.dto.AttachmentDownloadResponse;
 import com.alphamail.api.email.presentation.dto.DeleteMailsRequest;
@@ -41,10 +42,13 @@ import com.alphamail.api.email.presentation.dto.EmptyTrashRequest;
 import com.alphamail.api.email.presentation.dto.EmptyTrashResponse;
 import com.alphamail.api.email.presentation.dto.FolderResponse;
 import com.alphamail.api.email.presentation.dto.ReceiveEmailRequest;
+import com.alphamail.api.email.presentation.dto.RecentEmailListResponse;
+import com.alphamail.api.email.presentation.dto.RecentEmailResponse;
 import com.alphamail.api.email.presentation.dto.SendEmailRequest;
 import com.alphamail.api.user.domain.valueobject.UserId;
 import com.alphamail.common.annotation.Auth;
 
+import com.amazonaws.Response;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -62,6 +66,7 @@ public class EmailController {
 	private final DownloadAttachmentUseCase downloadAttachmentUseCase;
 	private final EmptyMailUseCase emptyMailUseCase;
 	private final RestoreToOriginUseCase restoreToOriginUseCase;
+	private final GetRecentEmailUseCase getRecentEmailUseCase;
 
 	// 실제 사용자가 첨부파일을 DownLoad하는 API
 	@GetMapping("/{emailId}/attachments/{attachmentId}")
@@ -153,5 +158,11 @@ public class EmailController {
 	public ResponseEntity<Boolean> restoreToOrigin(@RequestBody EmailIdsRestoreRequest emailIds, @Auth Integer userId) {
 		boolean success = restoreToOriginUseCase.execute(emailIds.emailIds(), userId);
 		return ResponseEntity.ok(success);
+	}
+
+	@GetMapping("/recent")
+	public ResponseEntity<RecentEmailListResponse> getRecentEmails(@Auth Integer userId) {
+		RecentEmailListResponse recentEmails = getRecentEmailUseCase.execute(userId);
+		return ResponseEntity.ok(recentEmails);
 	}
 }
