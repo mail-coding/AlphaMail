@@ -104,23 +104,6 @@ public class EmailRepositoryImpl implements EmailRepository {
 	}
 
 	@Override
-	public Email findBySesMessageId(String sesMessageId) {
-		return emailJpaRepository.findBySesMessageId(sesMessageId)
-			.map(emailMapper::toDomain)
-			.orElse(null);
-	}
-
-	@Override
-	public void updateMessageIdAndThreadId(Integer emailId, String sesMessageId, String newThreadId) {
-		emailJpaRepository.updateMessageIdAndThreadId(emailId, sesMessageId, newThreadId);
-	}
-
-	@Override
-	public void updateMessageId(Integer emailId, String sesMessageId) {
-		emailJpaRepository.updateMessageId(emailId, sesMessageId);
-	}
-
-	@Override
 	public void updateSesMessageId(Integer emailId, String sesMessageId) {
 		emailJpaRepository.updateSesMessageId(emailId, sesMessageId);
 	}

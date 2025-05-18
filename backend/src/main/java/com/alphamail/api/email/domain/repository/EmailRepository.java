@@ -35,12 +35,6 @@ public interface EmailRepository {
 
 	List<EmailThreadItem> findByThreadIdAndUserId(String threadId, Integer userId);
 
-	Email findBySesMessageId(String sesMessageId);
-
-	void updateMessageIdAndThreadId(Integer emailId, String actualMessageId, String newThreadId);
-
-	void updateMessageId(Integer emailId, String sesMessageId);
-
 	void updateSesMessageId(Integer emailId, String sesMessageId);
 
 	void updateMessageIdThreadIdAndStatus(Integer emailId, String messageId, String threadId, EmailStatus status);
