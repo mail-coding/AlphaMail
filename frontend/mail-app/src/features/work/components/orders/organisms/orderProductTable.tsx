@@ -23,9 +23,19 @@ const OrderProductTable: React.FC = () => {
 
   return (
     <div className="bg-white rounded shadow p-4">
-      <table className="min-w-full mb-2">
+      <table className="min-w-full mb-2 border-separate border-spacing-0">
         <thead className="bg-gray-100">
           <tr>
+            <th className="p-2 w-[40px] text-center align-middle">
+              <button
+                type="button"
+                onClick={addProduct}
+                className="w-7 h-7 flex items-center justify-center bg-[#3E99C6] text-white rounded hover:bg-blue-600"
+                aria-label="행 추가"
+              >
+                <span className="text-lg font-bold">＋</span>
+              </button>
+            </th>
             <th className="p-2">순번</th>
             <th className="p-2">품목</th>
             <th className="p-2">규격</th>
@@ -34,7 +44,6 @@ const OrderProductTable: React.FC = () => {
             <th className="p-2">세액</th>
             <th className="p-2">공급가액</th>
             <th className="p-2">금액</th>
-            <th className="p-2">삭제</th>
           </tr>
         </thead>
         <tbody>
@@ -50,13 +59,6 @@ const OrderProductTable: React.FC = () => {
           ))}
         </tbody>
       </table>
-      <button
-        type="button"
-        onClick={addProduct}
-        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-      >
-        행 추가
-      </button>
     </div>
   );
 };

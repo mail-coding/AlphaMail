@@ -6,30 +6,19 @@ import { Client } from '../../../types/clients';
 import KakaoAddressTemplate from '../../../../../shared/components/template/kakaoAddressTemplate';
 import { api } from '../../../../../shared/lib/axiosInstance';
 import { useOrderStore } from '../../../stores/orderStore';
+import { Typography } from '@/shared/components/atoms/Typography';
 
 const OrderBasicInfoForm: React.FC = () => {
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const { formData, updateFormField } = useOrderStore();
 
   if (!formData) {
     return null;
   }
 
-  const validateField = (name: string, value: string): string | null => {
-    if (!value) {
-      return `${name}은 필수 입력 항목입니다.`;
-    }
-    return null;
-  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    const error = validateField(name, value);
-    setErrors(prev => ({
-      ...prev,
-      [name]: error || ''
-    }));
     updateFormField(name as keyof OrderDetail, value);
   };
 
@@ -52,8 +41,6 @@ const OrderBasicInfoForm: React.FC = () => {
     try {
       const response = await api.get(`/api/erp/clients/${client.id}`);
       const clientDetail = response.data;
-
-      // 각 필드에 대한 이벤트 생성
       const events = [
         { target: { name: 'clientId', value: client.id } },
         { target: { name: 'clientName', value: clientDetail.corpName } },
@@ -66,8 +53,6 @@ const OrderBasicInfoForm: React.FC = () => {
         { target: { name: 'paymentTerm', value: clientDetail.paymentTerm || '' } },
         { target: { name: 'shippingAddress', value: clientDetail.address || '' } }
       ] as React.ChangeEvent<HTMLInputElement>[];
-
-      // 각 이벤트를 순차적으로 처리
       for (const event of events) {
         handleInputChange(event);
       }
@@ -78,179 +63,202 @@ const OrderBasicInfoForm: React.FC = () => {
   };
 
   return (
-    <>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="orderNo" className="block text-sm font-medium text-gray-700">발주등록번호</label>
-          <input
-            id="orderNo"
-            name="orderNo"
-            type="text"
-            value={formData.orderNo || ''}
-            onChange={handleInputChange}
-            className={`mt-1 block w-full border ${errors.orderNo ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm p-2`}
-            required
-          />
-          {errors.orderNo && <p className="mt-1 text-sm text-red-500">{errors.orderNo}</p>}
-        </div>
-
-        <div>
-          <label htmlFor="createdAt" className="block text-sm font-medium text-gray-700">일자</label>
-          <input
-            id="createdAt"
-            name="createdAt"
-            type="date"
-            value={formData.createdAt ? new Date(formData.createdAt).toISOString().split('T')[0] : ''}
-            onChange={handleInputChange}
-            className={`mt-1 block w-full border ${errors.createdAt ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm p-2`}
-            required
-          />
-          {errors.createdAt && <p className="mt-1 text-sm text-red-500">{errors.createdAt}</p>}
-        </div>
-
-        <div>
-          <label htmlFor="userName" className="block text-sm font-medium text-gray-700">발주담당자</label>
-          <input
-            id="userName"
-            name="userName"
-            type="text"
-            value={formData.userName || ''}
-            onChange={handleInputChange}
-            className={`mt-1 block w-full border ${errors.userName ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm p-2`}
-            required
-          />
-          {errors.userName && <p className="mt-1 text-sm text-red-500">{errors.userName}</p>}
-        </div>
-
-        <div>
-          <label htmlFor="clientName" className="block text-sm font-medium text-gray-700">거래처명</label>
-          <ClientInput
-            value={formData.clientName}
-            onChange={handleClientChange}
-            className="mt-1"
-          />
-          {errors.clientName && <p className="mt-1 text-sm text-red-500">{errors.clientName}</p>}
-        </div>
-
-        <div>
-          <label htmlFor="licenseNumber" className="block text-sm font-medium text-gray-700">사업자등록번호</label>
-          <input
-            id="licenseNumber"
-            name="licenseNumber"
-            type="text"
-            value={formData.licenseNumber || ''}
-            onChange={handleInputChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-gray-50"
-            readOnly
-          />
-        </div>
-
-        <div>
-          <label htmlFor="representative" className="block text-sm font-medium text-gray-700">대표자</label>
-          <input
-            id="representative"
-            name="representative"
-            type="text"
-            value={formData.representative || ''}
-            onChange={handleInputChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-gray-50"
-            readOnly
-          />
-        </div>
-
-        <div>
-          <label htmlFor="businessType" className="block text-sm font-medium text-gray-700">업태</label>
-          <input
-            id="businessType"
-            name="businessType"
-            type="text"
-            value={formData.businessType || ''}
-            onChange={handleInputChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-gray-50"
-            readOnly
-          />
-        </div>
-
-        <div>
-          <label htmlFor="businessItem" className="block text-sm font-medium text-gray-700">종목</label>
-          <input
-            id="businessItem"
-            name="businessItem"
-            type="text"
-            value={formData.businessItem || ''}
-            onChange={handleInputChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-gray-50"
-            readOnly
-          />
-        </div>
-
-        <div>
-          <label htmlFor="manager" className="block text-sm font-medium text-gray-700">거래처담당자</label>
-          <input
-            id="manager"
-            name="manager"
-            type="text"
-            value={formData.manager || ''}
-            onChange={handleInputChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="managerNumber" className="block text-sm font-medium text-gray-700">거래처연락처</label>
-          <input
-            id="managerNumber"
-            name="managerNumber"
-            type="text"
-            value={formData.managerNumber || ''}
-            onChange={handleInputChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="paymentTerm" className="block text-sm font-medium text-gray-700">결제조건</label>
-          <input
-            id="paymentTerm"
-            name="paymentTerm"
-            type="text"
-            value={formData.paymentTerm || ''}
-            onChange={handleInputChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="deliveryAt" className="block text-sm font-medium text-gray-700">납기일자</label>
-          <input
-            id="deliveryAt"
-            name="deliveryAt"
-            type="date"
-            value={formData.deliverAt ? new Date(formData.deliverAt).toISOString().split('T')[0] : ''}
-            onChange={handleInputChange}
-            className={`mt-1 block w-full border ${errors.deliveryAt ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm p-2`}
-            required
-          />
-          {errors.deliveryAt && <p className="mt-1 text-sm text-red-500">{errors.deliveryAt}</p>}
-        </div>
-
-        <div className="col-span-2">
-          <label htmlFor="shippingAddress" className="block text-sm font-medium text-gray-700">주소</label>
-          <AddressInput
-            value={formData.shippingAddress}
-            onChange={handleAddressChange}
-            className="mt-1"
-          />
-          {errors.shippingAddress && <p className="mt-1 text-sm text-red-500">{errors.shippingAddress}</p>}
-        </div>
-      </div>
-
+    <div className="overflow-x-auto">
+      <table className="w-full border-separate border-spacing-0">
+        <colgroup>
+          <col style={{ width: '140px' }} />
+          <col style={{ width: '260px' }} />
+          <col style={{ width: '140px' }} />
+          <col style={{ width: '260px' }} />
+          <col style={{ width: '140px' }} />
+          <col style={{ width: '260px' }} />
+        </colgroup>
+        <tbody>
+          <tr>
+            <td className="bg-[#F9F9F9] h-[44px] border border-[#E5E5E5] text-center align-middle font-medium">
+              <Typography variant="body">발주등록번호<span className="text-red-500 ml-1">*</span></Typography>
+            </td>
+            <td className="bg-white border border-[#E5E5E5] px-2">
+              <input
+                id="orderNo"
+                name="orderNo"
+                type="text"
+                value={formData.orderNo || ''}
+                onChange={handleInputChange}
+                className="w-full h-[32px] px-2 border border-gray-300 bg-white text-sm focus:outline-none"
+                required
+              />
+            </td>
+            <td className="bg-[#F9F9F9] h-[44px] border border-[#E5E5E5] text-center align-middle font-medium">
+              <Typography variant="body">일자<span className="text-red-500 ml-1">*</span></Typography>
+            </td>
+            <td className="bg-white border border-[#E5E5E5] px-2">
+              <input
+                id="createdAt"
+                name="createdAt"
+                type="date"
+                value={formData.createdAt ? new Date(formData.createdAt).toISOString().split('T')[0] : ''}
+                onChange={handleInputChange}
+                className="w-full h-[32px] px-2 border border-gray-300 bg-white text-sm focus:outline-none"
+                required
+              />
+            </td>
+            <td className="bg-[#F9F9F9] h-[44px] border border-[#E5E5E5] text-center align-middle font-medium">
+              <Typography variant="body">발주담당자</Typography>
+            </td>
+            <td className="bg-white border border-[#E5E5E5] px-2">
+              <input
+                id="userName"
+                name="userName"
+                type="text"
+                value={formData.userName || ''}
+                onChange={handleInputChange}
+                className="w-full h-[32px] px-2 border border-gray-300 bg-white text-sm focus:outline-none"
+                required
+              />
+            </td>
+          </tr>
+          <tr>
+            <td className="bg-[#F9F9F9] h-[44px] border border-[#E5E5E5] text-center align-middle font-medium">
+              <Typography variant="body">거래처명<span className="text-red-500 ml-1">*</span></Typography>
+            </td>
+            <td className="bg-white border border-[#E5E5E5] px-2">
+              <ClientInput
+                value={formData.clientName}
+                onChange={handleClientChange}
+                className="w-full h-[32px]"
+              />
+            </td>
+            <td className="bg-[#F9F9F9] h-[44px] border border-[#E5E5E5] text-center align-middle font-medium">
+              <Typography variant="body">사업자등록번호</Typography>
+            </td>
+            <td className="bg-gray-50 border border-[#E5E5E5] px-2">
+              <input
+                id="licenseNumber"
+                name="licenseNumber"
+                type="text"
+                value={formData.licenseNumber || ''}
+                readOnly
+                className="w-full h-[32px] px-2 border border-gray-300 bg-gray-50 text-sm focus:outline-none"
+              />
+            </td>
+            <td className="bg-[#F9F9F9] h-[44px] border border-[#E5E5E5] text-center align-middle font-medium">
+              <Typography variant="body">대표자</Typography>
+            </td>
+            <td className="bg-gray-50 border border-[#E5E5E5] px-2">
+              <input
+                id="representative"
+                name="representative"
+                type="text"
+                value={formData.representative || ''}
+                readOnly
+                className="w-full h-[32px] px-2 border border-gray-300 bg-gray-50 text-sm focus:outline-none"
+              />
+            </td>
+          </tr>
+          <tr>
+            <td className="bg-[#F9F9F9] h-[44px] border border-[#E5E5E5] text-center align-middle font-medium">
+              <Typography variant="body">종목</Typography>
+            </td>
+            <td className="bg-gray-50 border border-[#E5E5E5] px-2">
+              <input
+                id="businessItem"
+                name="businessItem"
+                type="text"
+                value={formData.businessItem || ''}
+                readOnly
+                className="w-full h-[32px] px-2 border border-gray-300 bg-gray-50 text-sm focus:outline-none"
+              />
+            </td>
+            <td className="bg-[#F9F9F9] h-[44px] border border-[#E5E5E5] text-center align-middle font-medium">
+              <Typography variant="body">업태</Typography>
+            </td>
+            <td className="bg-gray-50 border border-[#E5E5E5] px-2">
+              <input
+                id="businessType"
+                name="businessType"
+                type="text"
+                value={formData.businessType || ''}
+                readOnly
+                className="w-full h-[32px] px-2 border border-gray-300 bg-gray-50 text-sm focus:outline-none"
+              />
+            </td>
+            <td className="bg-[#F9F9F9] h-[44px] border border-[#E5E5E5] text-center align-middle font-medium">
+              <Typography variant="body">담당자</Typography>
+            </td>
+            <td className="bg-white border border-[#E5E5E5] px-2">
+              <input
+                id="manager"
+                name="manager"
+                type="text"
+                value={formData.manager || ''}
+                onChange={handleInputChange}
+                className="w-full h-[32px] px-2 border border-gray-300 bg-white text-sm focus:outline-none"
+              />
+            </td>
+          </tr>
+          <tr>
+            <td className="bg-[#F9F9F9] h-[44px] border border-[#E5E5E5] text-center align-middle font-medium">
+              <Typography variant="body">거래처연락처</Typography>
+            </td>
+            <td className="bg-white border border-[#E5E5E5] px-2">
+              <input
+                id="managerNumber"
+                name="managerNumber"
+                type="text"
+                value={formData.managerNumber || ''}
+                onChange={handleInputChange}
+                className="w-full h-[32px] px-2 border border-gray-300 bg-white text-sm focus:outline-none"
+              />
+            </td>
+            <td className="bg-[#F9F9F9] h-[44px] border border-[#E5E5E5] text-center align-middle font-medium">
+              <Typography variant="body">결제조건</Typography>
+            </td>
+            <td className="bg-white border border-[#E5E5E5] px-2">
+              <input
+                id="paymentTerm"
+                name="paymentTerm"
+                type="text"
+                value={formData.paymentTerm || ''}
+                onChange={handleInputChange}
+                className="w-full h-[32px] px-2 border border-gray-300 bg-white text-sm focus:outline-none"
+              />
+            </td>
+            <td className="bg-[#F9F9F9] h-[44px] border border-[#E5E5E5] text-center align-middle font-medium">
+              <Typography variant="body">납기일자</Typography>
+            </td>
+            <td className="bg-white border border-[#E5E5E5] px-2">
+              <input
+                id="deliverAt"
+                name="deliverAt"
+                type="date"
+                value={formData.deliverAt ? new Date(formData.deliverAt).toISOString().split('T')[0] : ''}
+                onChange={handleInputChange}
+                className="w-full h-[32px] px-2 border border-gray-300 bg-white text-sm focus:outline-none"
+                required
+              />
+            </td>
+          </tr>
+          <tr>
+            <td className="bg-[#F9F9F9] h-[44px] border border-[#E5E5E5] text-center align-middle font-medium">
+              <Typography variant="body">주소</Typography>
+            </td>
+            <td colSpan={5} className="bg-white border border-[#E5E5E5] px-2">
+              <AddressInput
+                value={formData.shippingAddress}
+                onChange={handleAddressChange}
+                className="w-full h-[32px]"
+              />
+            </td>
+          </tr>
+        </tbody>
+      </table>
       <KakaoAddressTemplate
         isOpen={isAddressModalOpen}
         onClose={() => setIsAddressModalOpen(false)}
         onSelect={handleAddressSelect}
       />
-    </>
+    </div>
   );
 };
 

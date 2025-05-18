@@ -69,39 +69,38 @@ const OrderDetailTemplate: React.FC = () => {
         </Typography>
         <div className="flex space-x-2">
           {showPdfButton && <PdfButton orderId={Number(id)} />}
-          <Button
-            onClick={handleCancel}
-            variant="secondary"
-            size="large"
-            className="w-[110px] h-[40px]"
-          >
-            <Typography variant="titleSmall">뒤로가기</Typography>
-          </Button>
         </div>
       </div>
       <form onSubmit={handleSubmit} className="space-y-6">
         <OrderBasicInfoForm />
         <OrderProductTable />
-        <div className="flex justify-end gap-2">
+        <div className="flex justify-end space-x-2 mt-8">
           <Button
             type="button"
             variant="secondary"
-            size="large"
+            size="small"
             onClick={handleCancel}
-            className="w-[110px] h-[40px]"
           >
-            <Typography variant="titleSmall">취소</Typography>
+            <Typography variant="titleSmall" className="text-white">취소</Typography>
           </Button>
           <Button
             type="submit"
             variant="primary"
-            size="large"
-            className="w-[110px] h-[40px]"
+            size="small"
           >
-            <Typography variant="titleSmall">{id && id !== 'new' ? '수정' : '등록'}</Typography>
+            <Typography variant="titleSmall" className="text-white">{id && id !== 'new' ? '수정' : '등록'}</Typography>
           </Button>
         </div>
       </form>
+      <div className="flex justify-end mt-4">
+        <button
+          type="button"
+          onClick={handleCancel}
+          className="text-gray-500 hover:text-gray-700 text-sm flex items-center"
+        >
+          ← 목록으로
+        </button>
+      </div>
     </div>
   );
 };
