@@ -56,20 +56,14 @@ const OrderManagementWrapper = () => {
 const OrderDetailWrapper = () => {
   const { setActiveItem } = useSidebarStore();
   const { setTitle } = useHeaderStore();
-  const navigate = useNavigate();
+  const { id } = useParams();
 
   React.useEffect(() => {
     setActiveItem("발주서 관리");
-    setTitle("발주서 관리");
-  }, [setActiveItem, setTitle]);
+    setTitle(id === 'new' ? "발주서 등록" : "발주서 수정");
+  }, [setActiveItem, setTitle, id]);
 
-  return (
-    <OrderDetailTemplate 
-      order={null}
-      onBack={() => navigate('/work/orders', { replace: true })}
-      onSave={() => navigate('/work/orders', { replace: true })}
-    />
-  );
+  return <OrderDetailTemplate />;
 };
 
 const ProductManagementWrapper = () => {

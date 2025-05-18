@@ -8,6 +8,8 @@ export interface Order {
   productName: string;
   productCount: number;
   price: number;
+  totalAmount: number;
+  status: string;
   isSelected?: boolean;
 }
 

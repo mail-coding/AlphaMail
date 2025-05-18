@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { OrderDetail } from '../../../types/order';
+import { useNavigate, useParams } from 'react-router-dom';
 import OrderBasicInfoForm from '../organisms/orderBasicInfoForm';
 import OrderProductTable from '../organisms/orderProductTable';
 import { orderService } from '../../../services/orderService';
@@ -8,25 +8,21 @@ import { useUserInfo } from '@/shared/hooks/useUserInfo';
 import { useOrderDetail } from '../../../hooks/useOrderDetail';
 import { Spinner } from '@/shared/components/atoms/spinner';
 import { PdfButton } from './orderDocumentTemplate';
+import { Button } from '@/shared/components/atoms/button';
+import { Typography } from '@/shared/components/atoms/Typography';
 
-interface OrderDetailTemplateProps {
-  order: OrderDetail | null;
-  onBack: () => void;
-  onSave: (orderData: OrderDetail) => void;
-}
-
-const OrderDetailTemplate: React.FC<OrderDetailTemplateProps> = ({ order, onBack, onSave }) => {
+const OrderDetailTemplate: React.FC = () => {
+  const navigate = useNavigate();
+  const { id } = useParams();
   const { formData, setFormData } = useOrderStore();
   const { data: userInfo } = useUserInfo();
-  const { data: orderDetail, isLoading } = useOrderDetail(order?.id || null);
+  const { data: orderDetail, isLoading } = useOrderDetail(id !== 'new' ? Number(id) : null);
 
   useEffect(() => {
     if (orderDetail) {
       setFormData(orderDetail);
-    } else if (order) {
-      setFormData(order);
     }
-  }, [order, orderDetail, setFormData]);
+  }, [orderDetail, setFormData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,16 +31,24 @@ const OrderDetailTemplate: React.FC<OrderDetailTemplateProps> = ({ order, onBack
         throw new Error('사용자 정보를 찾을 수 없습니다.');
       }
 
-      if (order) {
+      if (!formData) {
+        throw new Error('발주서 데이터가 없습니다.');
+      }
+
+      if (id && id !== 'new') {
         await orderService.updateOrder(formData, userInfo.id, userInfo.companyId, userInfo.groupId);
       } else {
         await orderService.createOrder(formData, userInfo.id, userInfo.companyId, userInfo.groupId);
       }
-      onSave(formData);
+      navigate('/work/orders');
     } catch (error) {
       console.error('Failed to save order:', error);
       alert('발주서 저장에 실패했습니다.');
     }
+  };
+
+  const handleCancel = () => {
+    navigate('/work/orders');
   };
 
   if (isLoading) {
@@ -55,37 +59,47 @@ const OrderDetailTemplate: React.FC<OrderDetailTemplateProps> = ({ order, onBack
     );
   }
 
+  const showPdfButton = id && id !== 'new';
+
   return (
-    <div className="p-4">
-      <div className="mb-4 flex justify-between items-center">
-        <h2 className="text-2xl font-bold">{order ? '발주서 수정' : '발주서 등록'}</h2>
+    <div className="p-8 bg-white rounded shadow max-w-5xl mx-auto">
+      <div className="mb-6 flex justify-between items-center">
+        <Typography variant="titleLarge" bold>
+          발주서 {id && id !== 'new' ? '수정' : '등록'}
+        </Typography>
         <div className="flex space-x-2">
-          {order && <PdfButton data={formData} />}
-          <button
-            onClick={onBack}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+          {showPdfButton && <PdfButton orderId={Number(id)} />}
+          <Button
+            onClick={handleCancel}
+            variant="secondary"
+            size="large"
+            className="w-[110px] h-[40px]"
           >
-            뒤로가기
-          </button>
+            <Typography variant="titleSmall">뒤로가기</Typography>
+          </Button>
         </div>
       </div>
       <form onSubmit={handleSubmit} className="space-y-6">
         <OrderBasicInfoForm />
         <OrderProductTable />
-        <div className="flex justify-end space-x-4">
-          <button
+        <div className="flex justify-end gap-2">
+          <Button
             type="button"
-            onClick={onBack}
-            className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+            variant="secondary"
+            size="large"
+            onClick={handleCancel}
+            className="w-[110px] h-[40px]"
           >
-            취소
-          </button>
-          <button
+            <Typography variant="titleSmall">취소</Typography>
+          </Button>
+          <Button
             type="submit"
-            className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+            variant="primary"
+            size="large"
+            className="w-[110px] h-[40px]"
           >
-            {order ? '수정' : '등록'}
-          </button>
+            <Typography variant="titleSmall">{id && id !== 'new' ? '수정' : '등록'}</Typography>
+          </Button>
         </div>
       </form>
     </div>

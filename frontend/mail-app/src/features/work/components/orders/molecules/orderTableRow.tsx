@@ -1,5 +1,6 @@
 import React from 'react';
 import { Order } from '../../../types/order';
+import { Typography } from '@/shared/components/atoms/Typography';
 import { format } from 'date-fns';
 
 interface OrderTableRowProps {
@@ -16,8 +17,8 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
   isSelected,
 }) => {
   return (
-    <tr className={`border-b hover:bg-gray-50 ${isSelected ? 'bg-blue-50' : ''}`}>
-      <td className="p-4">
+    <tr className="border-t hover:bg-gray-50">
+      <td className="p-2 text-center">
         <input
           type="checkbox"
           checked={isSelected}
@@ -26,25 +27,40 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
           onClick={(e) => e.stopPropagation()}
         />
       </td>
-      <td className="p-4">
-        {onOrderClick ? (
-          <button
-            onClick={() => onOrderClick(order)}
-            className="text-left hover:text-blue-600 hover:underline"
-          >
-            {order.orderNo}
-          </button>
-        ) : (
-          <span>{order.orderNo}</span>
-        )}
+      <td className="p-2">
+        <a
+          href={`/work/orders/${order.id}`}
+          onClick={(e) => { e.preventDefault(); onOrderClick?.(order); }}
+          className="text-left hover:text-blue-600 hover:underline cursor-pointer bg-transparent border-none p-0 m-0 font-normal text-[12px] leading-normal"
+        >
+          {order.orderNo}
+        </a>
       </td>
-      <td className="p-4">{format(new Date(order.createdAt), 'yyyy/MM/dd')}</td>
-      <td className="p-4">{order.userName}</td>
-      <td className="p-4">{order.clientName}</td>
-      <td className="p-4">{format(new Date(order.deliverAt), 'yyyy/MM/dd')}</td>
-      <td className="p-4">{order.productName}</td>
-      <td className="p-4 text-right">{order.productCount.toLocaleString()}개</td>
-      <td className="p-4 text-right">{order.price.toLocaleString()}원</td>
+      <td className="p-2">
+        <Typography variant="body">
+          {order.clientName}
+        </Typography>
+      </td>
+      <td className="p-2">
+        <Typography variant="body">
+          {format(new Date(order.createdAt), 'yyyy/MM/dd')}
+        </Typography>
+      </td>
+      <td className="p-2">
+        <Typography variant="body">
+          {format(new Date(order.deliverAt), 'yyyy/MM/dd')}
+        </Typography>
+      </td>
+      <td className="p-2 text-right">
+        <Typography variant="body">
+          {order.price ? `${order.price.toLocaleString()}원` : '0원'}
+        </Typography>
+      </td>
+      <td className="p-2">
+        <Typography variant="body">
+          {order.status}
+        </Typography>
+      </td>
     </tr>
   );
 };

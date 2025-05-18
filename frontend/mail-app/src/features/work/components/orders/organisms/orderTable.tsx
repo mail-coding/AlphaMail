@@ -1,8 +1,9 @@
 import React from 'react';
 import { Order } from '../../../types/order';
+import { Typography } from '@/shared/components/atoms/Typography';
+import { Button } from '@/shared/components/atoms/button';
+import { Spinner } from '@/shared/components/atoms/spinner';
 import OrderTableRow from '../molecules/orderTableRow';
-import Pagination from '../molecules/pagination';
-import { useOrderStore } from '../../../stores/orderStore';
 
 interface OrderTableProps {
   orders: Order[];
@@ -14,8 +15,10 @@ interface OrderTableProps {
   sortOption: number;
   onSortChange: (option: number) => void;
   totalCount: number;
-  onOrderClick?: (order: Order) => void;
+  onOrderClick: (order: Order) => void;
   isLoading: boolean;
+  selectedOrderIds: Set<number>;
+  onSelectOrder: (id: number) => void;
 }
 
 const OrderTable: React.FC<OrderTableProps> = ({
@@ -23,93 +26,114 @@ const OrderTable: React.FC<OrderTableProps> = ({
   currentPage,
   totalPages,
   onPageChange,
-  pageSize,
-  onSizeChange,
-  sortOption,
-  onSortChange,
   totalCount,
   onOrderClick,
   isLoading,
+  selectedOrderIds,
+  onSelectOrder,
 }) => {
-  const { selectedOrderIds, toggleOrderSelection } = useOrderStore();
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-[400px]">
+        <Spinner size="large" />
+      </div>
+    );
+  }
 
   return (
-    <div className="relative">
-      {isLoading && (
-        <div className="absolute inset-0 bg-white bg-opacity-50 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-        </div>
-      )}
-      <div className="mb-4 flex justify-between items-center">
-        <div className="flex items-center space-x-2">
-          <select
-            value={pageSize}
-            onChange={(e) => onSizeChange(Number(e.target.value))}
-            className="p-2 border rounded"
-          >
-            <option value={10}>10개씩 보기</option>
-            <option value={20}>20개씩 보기</option>
-            <option value={50}>50개씩 보기</option>
-          </select>
-
-          <select
-            value={sortOption}
-            onChange={(e) => onSortChange(Number(e.target.value))}
-            className="p-2 border rounded"
-          >
-            <option value={0}>최신순</option>
-            <option value={1}>발주번호순</option>
-            <option value={2}>거래처순</option>
-          </select>
-        </div>
-
-        <div className="text-sm text-gray-600">
-          총 {totalCount}개의 발주서
-        </div>
-      </div>
-
-      <div className="mt-4 overflow-x-auto">
-        <table className="min-w-full">
-          <thead className="bg-gray-50">
+    <div>
+      <table className="min-w-full border">
+        <thead className="bg-gray-50">
+          <tr>
+            <th className="p-2">
+              <input
+                type="checkbox"
+                checked={orders.length > 0 && orders.every((order) => selectedOrderIds.has(order.id))}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    orders.forEach((order) => onSelectOrder(order.id));
+                  } else {
+                    orders.forEach((order) => onSelectOrder(order.id));
+                  }
+                }}
+                className="rounded border-gray-300"
+              />
+            </th>
+            <th className="p-2">
+              <Typography variant="body" bold>발주번호</Typography>
+            </th>
+            <th className="p-2">
+              <Typography variant="body" bold>거래처명</Typography>
+            </th>
+            <th className="p-2">
+              <Typography variant="body" bold>발주일자</Typography>
+            </th>
+            <th className="p-2">
+              <Typography variant="body" bold>납기일자</Typography>
+            </th>
+            <th className="p-2">
+              <Typography variant="body" bold>총 금액</Typography>
+            </th>
+            <th className="p-2">
+              <Typography variant="body" bold>상태</Typography>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {orders?.length > 0 ? (
+            orders.map((order) => (
+              <OrderTableRow
+                key={order.id}
+                order={order}
+                onSelect={onSelectOrder}
+                onOrderClick={onOrderClick}
+                isSelected={selectedOrderIds.has(order.id)}
+              />
+            ))
+          ) : (
             <tr>
-              <th className="p-4 text-left">선택</th>
-              <th className="p-4 text-left">발주등록번호</th>
-              <th className="p-4 text-left">일자</th>
-              <th className="p-4 text-left">발주담당자</th>
-              <th className="p-4 text-left">거래처명</th>
-              <th className="p-4 text-left">납기일자</th>
-              <th className="p-4 text-left">품목</th>
-              <th className="p-4 text-right">수량</th>
-              <th className="p-4 text-right">금액</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orders.length > 0 ? (
-              orders.map((order) => (
-                <OrderTableRow
-                  key={order.id}
-                  order={order}
-                  onSelect={toggleOrderSelection}
-                  onOrderClick={onOrderClick}
-                  isSelected={selectedOrderIds.has(order.id)}
-                />
-              ))
-            ) : (
-              <tr>
-                <td colSpan={9} className="p-4 text-center">
+              <td colSpan={7} className="p-4 text-center">
+                <Typography variant="body" color="text-gray-500">
                   발주서가 없습니다.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                </Typography>
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+      {/* Pagination */}
+      <div className="flex justify-center items-center mt-4">
+        <Button
+          variant="ghost"
+          size="small"
+          disabled={currentPage === 1}
+          onClick={() => onPageChange(currentPage - 1)}
+        >
+          &lt;
+        </Button>
+        {[...Array(totalPages)].map((_, i) => (
+          <Button
+            key={i}
+            variant="ghost"
+            size="small"
+            onClick={() => onPageChange(i + 1)}
+            className={currentPage === i + 1 ? 'font-bold underline' : ''}
+          >
+            {i + 1}
+          </Button>
+        ))}
+        <Button
+          variant="ghost"
+          size="small"
+          disabled={currentPage === totalPages}
+          onClick={() => onPageChange(currentPage + 1)}
+        >
+          &gt;
+        </Button>
+        <Typography variant="body" className="ml-4">
+          총 {totalCount}개
+        </Typography>
       </div>
-
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={onPageChange}
-      />
     </div>
   );
 };

@@ -3,6 +3,11 @@ import {
     Page, Text, View, Document, StyleSheet, Font,
     PDFDownloadLink
   } from '@react-pdf/renderer';
+import React from 'react';
+import { Button } from '@/shared/components/atoms/button';
+import { Typography } from '@/shared/components/atoms/Typography';
+import { useOrderDetail } from '../../../hooks/useOrderDetail';
+import { Spinner } from '@/shared/components/atoms/spinner';
   
   Font.register({
     family: 'NanumGothic',
@@ -78,7 +83,7 @@ import {
   
         <View style={styles.topContainer}>
           <View style={styles.orderInfoBox}>
-            <Text style={{ marginBottom: 5 }}>발주일: {data.createdAt.toLocaleDateString()}</Text>
+            <Text style={{ marginBottom: 5 }}>발주일: {new Date(data.createdAt).toLocaleDateString()}</Text>
             <Text style={{ marginBottom: 10 }}>{data.manager} 귀하</Text>
             <Text style={{ marginBottom: 3 }}>아래와 같이 발주합니다.</Text>
           </View>
@@ -128,12 +133,55 @@ import {
     </Document>
   );
   
-  export const PdfButton = ({ data }: { data: OrderDetail }) => (
-    <PDFDownloadLink
-      document={<MyPDFDocument data={data} />}
-      fileName={`${data.orderNo}_발주서.pdf`}
-      className="inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-    >
-      {({ loading }) => loading ? 'PDF 생성 중...' : `PDF 다운로드`}
-    </PDFDownloadLink>
-  );
+  interface PdfButtonProps {
+    orderId: number;
+  }
+  
+  export const PdfButton: React.FC<PdfButtonProps> = ({ orderId }) => {
+    const { data: orderDetail, isLoading } = useOrderDetail(orderId);
+  
+    if (isLoading) {
+      return <Spinner size="small" />;
+    }
+  
+    if (!orderDetail) {
+      return null;
+    }
+  
+    return (
+      <PDFDownloadLink
+        document={<MyPDFDocument data={orderDetail} />}
+        fileName={`${orderDetail.orderNo}_발주서.pdf`}
+        className="inline-block"
+      >
+        {({ loading, error }) => {
+          if (error) {
+            console.error('PDF generation error:', error);
+            return (
+              <Button
+                variant="text"
+                size="small"
+                className="min-w-[110px] h-[40px] border border-gray-300 bg-white shadow-none text-black font-normal hover:bg-gray-100 hover:text-black active:bg-gray-200 !rounded-none"
+                disabled
+              >
+                <Typography variant="titleSmall">오류 발생</Typography>
+              </Button>
+            );
+          }
+          
+          return (
+            <Button
+              variant="text"
+              size="small"
+              className="min-w-[110px] h-[40px] border border-gray-300 bg-white shadow-none text-black font-normal hover:bg-gray-100 hover:text-black active:bg-gray-200 !rounded-none"
+              disabled={loading}
+            >
+              <Typography variant="titleSmall">
+                {loading ? '문서 생성 중...' : '문서'}
+              </Typography>
+            </Button>
+          );
+        }}
+      </PDFDownloadLink>
+    );
+  };

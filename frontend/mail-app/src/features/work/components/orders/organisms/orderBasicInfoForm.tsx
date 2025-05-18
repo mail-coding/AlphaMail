@@ -12,6 +12,10 @@ const OrderBasicInfoForm: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { formData, updateFormField } = useOrderStore();
 
+  if (!formData) {
+    return null;
+  }
+
   const validateField = (name: string, value: string): string | null => {
     if (!value) {
       return `${name}은 필수 입력 항목입니다.`;
@@ -136,10 +140,9 @@ const OrderBasicInfoForm: React.FC = () => {
             type="text"
             value={formData.licenseNumber || ''}
             onChange={handleInputChange}
-            className={`mt-1 block w-full border ${errors.licenseNumber ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm p-2`}
-            required
+            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-gray-50"
+            readOnly
           />
-          {errors.licenseNumber && <p className="mt-1 text-sm text-red-500">{errors.licenseNumber}</p>}
         </div>
 
         <div>
@@ -150,10 +153,9 @@ const OrderBasicInfoForm: React.FC = () => {
             type="text"
             value={formData.representative || ''}
             onChange={handleInputChange}
-            className={`mt-1 block w-full border ${errors.representative ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm p-2`}
-            required
+            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-gray-50"
+            readOnly
           />
-          {errors.representative && <p className="mt-1 text-sm text-red-500">{errors.representative}</p>}
         </div>
 
         <div>
@@ -164,7 +166,8 @@ const OrderBasicInfoForm: React.FC = () => {
             type="text"
             value={formData.businessType || ''}
             onChange={handleInputChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-gray-50"
+            readOnly
           />
         </div>
 
@@ -176,7 +179,8 @@ const OrderBasicInfoForm: React.FC = () => {
             type="text"
             value={formData.businessItem || ''}
             onChange={handleInputChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-gray-50"
+            readOnly
           />
         </div>
 

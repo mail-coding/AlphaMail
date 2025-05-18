@@ -27,6 +27,7 @@ interface OrderStore {
   selectedOrderIds: Set<number>;
   toggleOrderSelection: (id: number) => void;
   clearSelection: () => void;
+  setSelectedOrderIds: (ids: Set<number>) => void;
 
   // 상세 보기
   showOrderDetail: boolean;
@@ -35,9 +36,9 @@ interface OrderStore {
   setSelectedOrder: (order: OrderDetail | null) => void;
 
   // 폼 데이터 관리
-  formData: OrderDetail;
-  setFormData: (data: OrderDetail) => void;
-  updateFormField: (field: keyof OrderDetail, value: any) => void;
+  formData: OrderDetail | null;
+  setFormData: (data: OrderDetail | null) => void;
+  updateFormField: <K extends keyof OrderDetail>(field: K, value: OrderDetail[K]) => void;
   updateProduct: (index: number, field: keyof OrderProduct, value: string | number) => void;
   addProduct: () => void;
   removeProduct: (index: number) => void;
@@ -75,7 +76,7 @@ const initialFormData: OrderDetail = {
   }]
 };
 
-export const useOrderStore = create<OrderStore>((set) => ({
+export const useOrderStore = create<OrderStore>()((set) => ({
   // 페이지네이션
   currentPage: 1,
   pageSize: 10,
@@ -103,6 +104,7 @@ export const useOrderStore = create<OrderStore>((set) => ({
       return { selectedOrderIds: newSelectedIds };
     }),
   clearSelection: () => set({ selectedOrderIds: new Set() }),
+  setSelectedOrderIds: (ids) => set({ selectedOrderIds: ids }),
 
   // 상세 보기
   showOrderDetail: false,
@@ -111,14 +113,19 @@ export const useOrderStore = create<OrderStore>((set) => ({
   setSelectedOrder: (order) => set({ selectedOrder: order }),
 
   // 폼 데이터 관리
-  formData: initialFormData,
+  formData: null,
   setFormData: (data) => set({ formData: data }),
   updateFormField: (field, value) => 
-    set((state) => ({
-      formData: { ...state.formData, [field]: value }
-    })),
+    set((state) => {
+      const newFormData = state.formData ? { ...state.formData } : { ...initialFormData };
+      newFormData[field] = value;
+      return { formData: newFormData };
+    }),
   updateProduct: (index, field, value) =>
     set((state) => {
+      if (!state.formData) {
+        return { formData: initialFormData };
+      }
       const newProducts = [...state.formData.products];
       newProducts[index] = {
         ...newProducts[index],
@@ -127,37 +134,30 @@ export const useOrderStore = create<OrderStore>((set) => ({
       if (field === 'count' || field === 'price') {
         newProducts[index].amount = newProducts[index].count * newProducts[index].price;
       }
-      return {
-        formData: {
-          ...state.formData,
-          products: newProducts,
-        },
-      };
+      return { formData: { ...state.formData, products: newProducts } };
     }),
   addProduct: () =>
-    set((state) => ({
-      formData: {
-        ...state.formData,
-        products: [
-          ...state.formData.products,
-          {
-            id: 0,
-            name: '',
-            standard: '',
-            count: 0,
-            price: 0,
-            tax_amount: 0,
-            supply_amount: 0,
-            amount: 0
-          },
-        ],
-      },
-    })),
+    set((state) => {
+      if (!state.formData) {
+        return { formData: initialFormData };
+      }
+      const newProduct: OrderProduct = {
+        id: 0,
+        name: '',
+        standard: '',
+        count: 0,
+        price: 0,
+        tax_amount: 0,
+        supply_amount: 0,
+        amount: 0
+      };
+      return { formData: { ...state.formData, products: [...state.formData.products, newProduct] } };
+    }),
   removeProduct: (index) =>
-    set((state) => ({
-      formData: {
-        ...state.formData,
-        products: state.formData.products.filter((_, i) => i !== index),
-      },
-    })),
+    set((state) => {
+      if (!state.formData) {
+        return { formData: initialFormData };
+      }
+      return { formData: { ...state.formData, products: state.formData.products.filter((_, i) => i !== index) } };
+    }),
 }));

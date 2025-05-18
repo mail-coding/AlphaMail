@@ -1,42 +1,34 @@
+import { useNavigate } from 'react-router-dom';
 import OrderSearchBar from '../organisms/orderSearchBar';
 import OrderTable from '../organisms/orderTable';
 import { Order } from '../../../types/order';
-import OrderDetailTemplate from './orderDetailTemplate';
-import { OrderDetail } from '../../../types/order';
-import { orderService } from '../../../services/orderService';
 import { useOrderStore } from '../../../stores/orderStore';
 import { useOrderManagement } from '../../../hooks/useOrderManagement';
-
-async function orderToOrderDetail(order: Order): Promise<OrderDetail> {
-  const orderDetail = await orderService.getOrderDetail(order.id);
-  return orderDetail;
-}
+import { Button } from '@/shared/components/atoms/button';
+import { Typography } from '@/shared/components/atoms/Typography';
 
 const OrderManagementTemplate: React.FC = () => {
+  const navigate = useNavigate();
   const {
     selectedOrderIds,
     currentPage,
     pageSize,
     sortOption,
-    showOrderDetail,
-    selectedOrder,
     setCurrentPage,
     setPageSize,
     setSortOption,
-    setShowOrderDetail,
-    setSelectedOrder,
     setSearchParams,
+    setSelectedOrderIds,
   } = useOrderStore();
 
-  const { orders, totalPages, isLoading, error, handleDeleteOrders, handleSaveOrder } = useOrderManagement();
+  const { orders, isLoading, error, handleDeleteOrders } = useOrderManagement();
 
   const handleSearch = (params: any) => {
     setSearchParams(params);
   };
 
   const handleAddOrder = () => {
-    setSelectedOrder(null);
-    setShowOrderDetail(true);
+    navigate('/work/orders/new');
   };
 
   const handleDelete = () => {
@@ -61,32 +53,9 @@ const OrderManagementTemplate: React.FC = () => {
     setSortOption(option);
   };
 
-  const handleOrderClick = async (order: Order) => {
-    const orderDetail = await orderToOrderDetail(order);
-    setSelectedOrder(orderDetail);
-    setShowOrderDetail(true);
+  const handleOrderClick = (order: Order) => {
+    navigate(`/work/orders/${order.id}`);
   };
-
-  const handleBack = () => {
-    setShowOrderDetail(false);
-    setSelectedOrder(null);
-  };
-
-  const handleSave = (orderData: OrderDetail) => {
-    handleSaveOrder(orderData);
-    setShowOrderDetail(false);
-    setSelectedOrder(null);
-  };
-
-  if (showOrderDetail) {
-    return (
-      <OrderDetailTemplate
-        order={selectedOrder}
-        onBack={handleBack}
-        onSave={handleSave}
-      />
-    );
-  }
 
   if (error) {
     return <div className="p-4 text-red-500">{error.message}</div>;
@@ -100,27 +69,30 @@ const OrderManagementTemplate: React.FC = () => {
       <div className="bg-white rounded-lg shadow">
         <div className="p-4">
           <div className="flex justify-between items-center mb-4">
-            <button
+            <Button
               onClick={handleAddOrder}
-              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-              disabled={isLoading}
+              variant="text"
+              size="large"
+              className="flex items-baseline gap-2 p-0 bg-transparent shadow-none border-none text-black font-bold text-xl hover:bg-transparent hover:text-black active:bg-transparent"
             >
-              발주서 등록
-            </button>
-            <div className="space-x-2">
-              <button
+              <span className="text-2xl font-bold leading-none relative -top-[-1px]">+</span>
+              <Typography variant="titleSmall" className="leading-none">발주서 등록하기</Typography>
+            </Button>
+            <div className="flex gap-2">
+              <Button
                 onClick={handleDelete}
-                className="px-4 py-2 bg-white border rounded-md hover:bg-gray-50"
-                disabled={isLoading}
+                variant="text"
+                size="small"
+                className="min-w-[110px] h-[40px] border border-gray-300 bg-white shadow-none text-black font-normal hover:bg-gray-100 hover:text-black active:bg-gray-200 !rounded-none"
               >
-                삭제
-              </button>
+                <Typography variant="titleSmall">삭제</Typography>
+              </Button>
             </div>
           </div>
           <OrderTable
             orders={orders}
             currentPage={currentPage}
-            totalPages={totalPages}
+            totalPages={Math.ceil(orders.length / pageSize)}
             onPageChange={handlePageChange}
             pageSize={pageSize}
             onSizeChange={handleSizeChange}
@@ -129,6 +101,16 @@ const OrderManagementTemplate: React.FC = () => {
             totalCount={orders.length}
             onOrderClick={handleOrderClick}
             isLoading={isLoading}
+            selectedOrderIds={selectedOrderIds}
+            onSelectOrder={(id) => {
+              const newSelectedIds = new Set(selectedOrderIds);
+              if (newSelectedIds.has(id)) {
+                newSelectedIds.delete(id);
+              } else {
+                newSelectedIds.add(id);
+              }
+              setSelectedOrderIds(newSelectedIds);
+            }}
           />
         </div>
       </div>

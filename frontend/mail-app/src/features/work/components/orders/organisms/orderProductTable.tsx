@@ -6,6 +6,10 @@ import { useOrderStore } from '../../../stores/orderStore';
 const OrderProductTable: React.FC = () => {
   const { formData, updateProduct, addProduct, removeProduct } = useOrderStore();
 
+  if (!formData) {
+    return null;
+  }
+
   const handleProductSelect = async (index: number, product: Product) => {
     try {
       updateProduct(index, 'id', product.id);
