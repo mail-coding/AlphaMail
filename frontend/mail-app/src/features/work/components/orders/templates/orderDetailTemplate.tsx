@@ -19,10 +19,33 @@ const OrderDetailTemplate: React.FC = () => {
   const { data: orderDetail, isLoading } = useOrderDetail(id !== 'new' ? Number(id) : null);
 
   useEffect(() => {
-    if (orderDetail) {
+    if (id === 'new') {
+      setFormData({
+        id: 0,
+        orderNo: '',
+        createdAt: new Date(),
+        userName: '',
+        userId: 0,
+        groupId: 0,
+        groupName: '',
+        clientId: 0,
+        clientName: '',
+        licenseNumber: '',
+        representative: '',
+        businessType: '',
+        businessItem: '',
+        manager: '',
+        managerNumber: '',
+        paymentTerm: '',
+        deliverAt: new Date(),
+        shippingAddress: '',
+        products: [],
+        updatedAt: new Date(),
+      });
+    } else if (orderDetail) {
       setFormData(orderDetail);
     }
-  }, [orderDetail, setFormData]);
+  }, [id, orderDetail, setFormData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
