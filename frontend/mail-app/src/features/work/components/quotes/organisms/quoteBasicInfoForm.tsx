@@ -159,7 +159,7 @@ const QuoteBasicInfoForm: React.FC = () => {
                 type="text"
                 value={formData.licenseNumber || ''}
                 readOnly
-                className="w-full h-[32px] px-2 border border-gray-300 bg-gray-50 text-sm focus:outline-none"
+                className="w-full h-[32px] px-2 border border-gray-300 bg-gray-100 text-sm focus:outline-none"
               />
             </td>
             <td className="bg-[#F9F9F9] h-[44px] border border-[#E5E5E5] text-center align-middle font-medium">
@@ -172,7 +172,7 @@ const QuoteBasicInfoForm: React.FC = () => {
                 type="text"
                 value={formData.representative || ''}
                 readOnly
-                className="w-full h-[32px] px-2 border border-gray-300 bg-gray-50 text-sm focus:outline-none"
+                className="w-full h-[32px] px-2 border border-gray-300 bg-gray-100 text-sm focus:outline-none"
               />
             </td>
           </tr>
@@ -187,7 +187,7 @@ const QuoteBasicInfoForm: React.FC = () => {
                 type="text"
                 value={formData.businessItem || ''}
                 readOnly
-                className="w-full h-[32px] px-2 border border-gray-300 bg-gray-50 text-sm focus:outline-none"
+                className="w-full h-[32px] px-2 border border-gray-300 bg-gray-100 text-sm focus:outline-none"
               />
             </td>
             <td className="bg-[#F9F9F9] h-[44px] border border-[#E5E5E5] text-center align-middle font-medium">
@@ -200,7 +200,7 @@ const QuoteBasicInfoForm: React.FC = () => {
                 type="text"
                 value={formData.businessType || ''}
                 readOnly
-                className="w-full h-[32px] px-2 border border-gray-300 bg-gray-50 text-sm focus:outline-none"
+                className="w-full h-[32px] px-2 border border-gray-300 bg-gray-100 text-sm focus:outline-none"
               />
             </td>
             <td className="bg-[#F9F9F9] h-[44px] border border-[#E5E5E5] text-center align-middle font-medium">

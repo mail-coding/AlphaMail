@@ -2,6 +2,7 @@ import React from 'react';
 import { Product } from '../../../types/product';
 import OrderProductRow from '../molecules/orderProductRow';
 import { useOrderStore } from '../../../stores/orderStore';
+import { Typography } from '@/shared/components/atoms/Typography';
 
 const OrderProductTable: React.FC = () => {
   const { formData, updateProduct, addProduct, removeProduct } = useOrderStore();
@@ -30,20 +31,19 @@ const OrderProductTable: React.FC = () => {
               <button
                 type="button"
                 onClick={addProduct}
-                className="w-7 h-7 flex items-center justify-center bg-[#3E99C6] text-white rounded hover:bg-blue-600"
+                className="w-6 h-6 flex items-center justify-center bg-[#3E99C6] text-white hover:bg-blue-600"
                 aria-label="행 추가"
               >
                 <span className="text-lg font-bold">＋</span>
               </button>
             </th>
-            <th className="p-2">순번</th>
-            <th className="p-2">품목</th>
-            <th className="p-2">규격</th>
-            <th className="p-2">수량</th>
-            <th className="p-2">단가</th>
-            <th className="p-2">세액</th>
-            <th className="p-2">공급가액</th>
-            <th className="p-2">금액</th>
+            <th className="p-2"><Typography variant="body">순번</Typography></th>
+            <th className="p-2"><Typography variant="body">품목</Typography></th>
+            <th className="p-2"><Typography variant="body">규격</Typography></th>
+            <th className="p-2"><Typography variant="body">수량</Typography></th>
+            <th className="p-2"><Typography variant="body">단가</Typography></th>
+            <th className="p-2"><Typography variant="body">세액</Typography></th>
+            <th className="p-2"><Typography variant="body">공급가액</Typography></th>
           </tr>
         </thead>
         <tbody>

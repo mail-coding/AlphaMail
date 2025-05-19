@@ -87,7 +87,7 @@ const OrderDetailTemplate: React.FC = () => {
   return (
     <div className="p-8 bg-white rounded shadow max-w-5xl mx-auto">
       <div className="mb-6 flex justify-between items-center">
-        <Typography variant="titleLarge" bold>
+        <Typography variant="titleSmall">
           발주서 {id && id !== 'new' ? '수정' : '등록'}
         </Typography>
         <div className="flex space-x-2">

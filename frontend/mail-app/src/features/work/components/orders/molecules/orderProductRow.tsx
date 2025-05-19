@@ -28,7 +28,7 @@ const OrderProductRow: React.FC<OrderProductRowProps> = ({
         <button
           type="button"
           onClick={() => onRemoveProduct(index)}
-          className="w-7 h-7 flex items-center justify-center bg-red-500 text-white rounded hover:bg-red-600"
+          className="w-6 h-6 flex items-center justify-center bg-[#3E99C6] text-white hover:bg-blue-600"
           aria-label="행 삭제"
         >
           <span className="text-lg font-bold">－</span>
@@ -58,34 +58,37 @@ const OrderProductRow: React.FC<OrderProductRowProps> = ({
         />
       </td>
       <td className="border border-[#E5E5E5] bg-white px-2">
-        <input 
-          type="number" 
-          value={product.price} 
-          onChange={e => onProductChange(index, 'price', Number(e.target.value))} 
-          className="w-full h-[32px] px-2 border border-gray-300 bg-white text-sm text-right focus:outline-none"
-        />
-        <span className="ml-1 text-gray-500">원</span>
+        <div className="flex items-center">
+          <input 
+            type="number" 
+            value={product.price} 
+            onChange={e => onProductChange(index, 'price', Number(e.target.value))} 
+            className="w-full h-[32px] px-2 border border-gray-300 bg-white text-sm text-right focus:outline-none"
+          />
+          <span className="ml-1 text-gray-500 whitespace-nowrap">원</span>
+        </div>
       </td>
       <td className="border border-[#E5E5E5] bg-gray-50 px-2">
-        <input 
-          type="number" 
-          value={taxAmount} 
-          readOnly
-          className="w-full h-[32px] px-2 border border-gray-300 bg-gray-50 text-sm text-right focus:outline-none"
-        />
-        <span className="ml-1 text-gray-500">원</span>
+        <div className="flex items-center">
+          <input 
+            type="number" 
+            value={taxAmount} 
+            readOnly
+            className="w-full h-[32px] px-2 border border-gray-300 bg-gray-50 text-sm text-right focus:outline-none"
+          />
+          <span className="ml-1 text-gray-500 whitespace-nowrap">원</span>
+        </div>
       </td>
       <td className="border border-[#E5E5E5] bg-gray-50 px-2">
-        <input 
-          type="number" 
-          value={supplyAmount} 
-          readOnly
-          className="w-full h-[32px] px-2 border border-gray-300 bg-gray-50 text-sm text-right focus:outline-none"
-        />
-        <span className="ml-1 text-gray-500">원</span>
-      </td>
-      <td className="border border-[#E5E5E5] bg-gray-50 px-2 text-right align-middle">
-        {product.price ? product.price.toLocaleString() : ''}원
+        <div className="flex items-center">
+          <input 
+            type="number" 
+            value={supplyAmount} 
+            readOnly
+            className="w-full h-[32px] px-2 border border-gray-300 bg-gray-50 text-sm text-right focus:outline-none"
+          />
+          <span className="ml-1 text-gray-500 whitespace-nowrap">원</span>
+        </div>
       </td>
     </tr>
   );

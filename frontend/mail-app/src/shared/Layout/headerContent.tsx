@@ -72,10 +72,21 @@ export const HeaderContent: React.FC = () => {
         {isSearchablePath && <SearchBar />}
       </div>
     );
-  } else if (path === '/work') {
+  } else if (path.startsWith('/work')) {
+    let workTitle = "견적서 관리";
+    
+    if (path.startsWith('/work/quotes')) {
+      workTitle = "견적서 관리";
+    } else if (path.startsWith('/work/orders')) {
+      workTitle = "주문서 관리";
+    } else if (path.startsWith('/work/clients')) {
+      workTitle = "거래처 관리";
+    } else if (path.startsWith('/work/products')) {
+      workTitle = "재고 관리";
+    }
     return (
       <Typography variant="titleLarge">
-        work
+        {workTitle}
       </Typography>
     );
   }

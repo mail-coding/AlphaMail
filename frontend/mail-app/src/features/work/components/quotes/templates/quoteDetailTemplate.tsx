@@ -47,15 +47,80 @@ export const QuoteDetailTemplate = () => {
     }
   }, [id, quote, setFormData]);
 
+  const MAX_LENGTHS = {
+    quoteNo: 255,
+    shippingAddress: 255,
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       if (!userInfo) {
-        throw new Error('사용자 정보를 찾을 수 없습니다.');
+        alert('사용자 정보를 찾을 수 없습니다.');
+        return;
       }
 
       if (!formData) {
-        throw new Error('견적서 데이터가 없습니다.');
+        alert('견적서 데이터가 없습니다.');
+        return;
+      }
+
+      // 유효성 검사
+      if (!formData.quoteNo) {
+        alert('견적등록번호를 입력해주세요.');
+        return;
+      }
+      if (formData.quoteNo.length > MAX_LENGTHS.quoteNo) {
+        alert(`견적등록번호는 ${MAX_LENGTHS.quoteNo}자까지 입력 가능합니다.`);
+        return;
+      }
+
+      if (!formData.createdAt) {
+        alert('일자를 입력해주세요.'); // HTML input type="date"는 기본적으로 값을 가지거나 빈 문자열임
+        return;
+      }
+
+      if (!formData.clientName) {
+        alert('거래처명을 입력해주세요.');
+        return;
+      }
+
+      if (!formData.shippingAddress) {
+        alert('주소를 입력해주세요.');
+        return;
+      }
+      if (formData.shippingAddress.length > MAX_LENGTHS.shippingAddress) {
+        alert(`주소는 ${MAX_LENGTHS.shippingAddress}자까지 입력 가능합니다.`);
+        return;
+      }
+
+      // 각 제품에 대한 유효성 검사
+      const MAX_PRODUCT_COUNT = 2000000000;
+      const MAX_PRODUCT_PRICE = 9223372036854775807;
+
+      for (let i = 0; i < formData.products.length; i++) {
+        const product = formData.products[i];
+        const productName = product.name || `품목 ${i + 1}`;
+
+        // 수량 유효성 검사
+        if (typeof product.count !== 'number' || product.count < 0) {
+          alert(`${productName}의 수량은 0 이상의 숫자로 입력해주세요.`);
+          return;
+        }
+        if (product.count > MAX_PRODUCT_COUNT) {
+          alert(`${productName}의 수량은 ${MAX_PRODUCT_COUNT.toLocaleString()}을 초과할 수 없습니다.`);
+          return;
+        }
+
+        // 단가 유효성 검사
+        if (typeof product.price !== 'number' || product.price < 0) {
+          alert(`${productName}의 단가는 0 이상의 숫자로 입력해주세요.`);
+          return;
+        }
+        if (product.price > MAX_PRODUCT_PRICE) {
+          alert(`${productName}의 단가는 ${MAX_PRODUCT_PRICE.toLocaleString()}을 초과할 수 없습니다.`);
+          return;
+        }
       }
 
       if (id && id !== 'new') {
@@ -78,16 +143,16 @@ export const QuoteDetailTemplate = () => {
     );
   }
 
-  const showPdfButton = id && id !== 'new';
+  const showPdfButton = id && id !== 'new' && formData;
 
   return (
     <div className="p-8 bg-white rounded shadow max-w-5xl mx-auto">
       <div className="mb-6 flex justify-between items-center">
-        <Typography variant="titleLarge" bold>
+        <Typography variant="titleSmall">
           견적서 {id && id !== 'new' ? '수정' : '등록'}
         </Typography>
         <div className="flex space-x-2">
-          {showPdfButton && <PdfButton data={formData} />}
+          {showPdfButton && formData && <PdfButton data={formData} />}
         </div>
       </div>
 
@@ -150,6 +215,13 @@ export const QuoteDetailTemplate = () => {
         />
 
         <div className="flex justify-end space-x-2 mt-8">
+        <Button
+            type="submit"
+            variant="primary"
+            size="small"
+          >
+            <Typography variant="titleSmall" className="text-white">{id && id !== 'new' ? '수정' : '등록'}</Typography>
+          </Button>
           <Button
             type="button"
             variant="secondary"
@@ -157,13 +229,6 @@ export const QuoteDetailTemplate = () => {
             onClick={() => navigate('/work/quotes')}
           >
             <Typography variant="titleSmall" className="text-white">취소</Typography>
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            size="small"
-          >
-            <Typography variant="titleSmall" className="text-white">{id && id !== 'new' ? '수정' : '등록'}</Typography>
           </Button>
         </div>
       </form>
