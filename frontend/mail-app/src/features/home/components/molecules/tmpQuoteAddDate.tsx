@@ -1,21 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { Input } from '@/shared/components/atoms/input';
 import { Typography } from '@/shared/components/atoms/Typography';
-import { useTmpOrderStore } from '../../stores/useTmpOrderStore';
+import { useTmpQuoteStore } from '../../stores/useTmpQuoteStore';
 
-interface TmpOrderAddDateProps {
+interface TmpQuoteAddDateProps {
   initialDate?: string;
 }
 
-export const TmpOrderAddDate: React.FC<TmpOrderAddDateProps> = ({ initialDate }) => {
+export const TmpQuoteAddDate: React.FC<TmpQuoteAddDateProps> = ({ initialDate }) => {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const { deliverAt, setDeliverAt } = useTmpOrderStore();
+  const { deliveryDate, setDeliveryDate } = useTmpQuoteStore();
   
   useEffect(() => {
     if (initialDate) {
-      setDeliverAt(initialDate);
+      setDeliveryDate(initialDate);
     }
-  }, [initialDate, setDeliverAt]);
+  }, [initialDate, setDeliveryDate]);
 
   // 오늘 날짜 계산 (YYYY-MM-DD 형식)
   const today = new Date().toISOString().split('T')[0];
@@ -29,7 +29,7 @@ export const TmpOrderAddDate: React.FC<TmpOrderAddDateProps> = ({ initialDate })
   };
 
   const handleDateSelect = (date: string) => {
-    setDeliverAt(date);
+    setDeliveryDate(date);
     setIsCalendarOpen(false);
   };
 
@@ -37,7 +37,7 @@ export const TmpOrderAddDate: React.FC<TmpOrderAddDateProps> = ({ initialDate })
     <div className="w-full">
       <Input
         type="text"
-        value={deliverAt}
+        value={deliveryDate}
         onClick={handleClick}
         readOnly
         className="cursor-pointer w-full !h-8 !text-sm !rounded-none"
@@ -73,7 +73,7 @@ export const TmpOrderAddDate: React.FC<TmpOrderAddDateProps> = ({ initialDate })
               </button>
               <button 
                 className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-                onClick={() => handleDateSelect(deliverAt)}
+                onClick={() => handleDateSelect(deliveryDate)}
               >
                 확인
               </button>

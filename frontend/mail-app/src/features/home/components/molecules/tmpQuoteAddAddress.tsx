@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { useTmpOrderStore } from '../../stores/useTmpOrderStore';
+import { useTmpQuoteStore } from '../../stores/useTmpQuoteStore';
 import AddressInput from '@/shared/components/atoms/addressInput';
 import KakaoAddressTemplate from '@/shared/components/template/kakaoAddressTemplate';
 
-interface TmpOrderAddAddressProps {
+interface TmpQuoteAddAddressProps {
   initialAddress?: string;
+  showValidationErrors?: boolean;
 }
 
-export const TmpOrderAddAddress: React.FC<TmpOrderAddAddressProps> = ({ initialAddress }) => {
-
+export const TmpQuoteAddAddress: React.FC<TmpQuoteAddAddressProps> = ({ 
+  initialAddress,
+  showValidationErrors = false
+}) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { shippingAddress, setShippingAddress } = useTmpOrderStore();
+  const { shippingAddress, setShippingAddress } = useTmpQuoteStore();
 
   useEffect(() => {
     if (initialAddress) {
@@ -42,8 +45,14 @@ export const TmpOrderAddAddress: React.FC<TmpOrderAddAddressProps> = ({ initialA
       <AddressInput
         value={shippingAddress}
         onChange={setShippingAddress}
-        className="w-full !h-8 !text-sm !rounded-none"
+        className={`w-full !h-8 !text-sm !rounded-none ${
+          showValidationErrors && !shippingAddress ? 'border-red-500' : ''
+        }`}
       />
+      
+      {showValidationErrors && !shippingAddress && (
+        <p className="text-red-500 text-xs mt-1">배송지 주소를 입력해주세요</p>
+      )}
       
       <KakaoAddressTemplate
         isOpen={isModalOpen}

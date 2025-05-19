@@ -1,184 +1,123 @@
 import { create } from 'zustand';
-
-interface OrderItem {
-  id: number;
-  name: string;
-  spec: string;
-  quantity: string;
-  price: string;
-  tax: string;
-  total: string;
-}
+import { TemporaryPurchaseOrderDetail } from '../types/home';
 
 interface TmpOrderState {
   // 기본 정보
   orderNo: string;
   orderDate: string;
-  clientName: string; 
+  
+  // 거래처 정보
+  clientId: number | null;
+  clientName: string;
   licenseNumber: string;
   representative: string;
   businessType: string;
   businessItem: string;
+  
+  // 담당자 정보
   manager: string;
   managerContact: string;
-  address: string;
-  deliveryDate: string;
+  clientContact: string;
+  setClientContact: (contact: string) => void;
+
+  // 결제 조건
   paymentTerm: string;
   
+  // 배송 정보
+  shippingAddress: string;
+  hasShippingAddress: boolean;
+  
+  // 납기일자
+  deliverAt: string;
+  
   // 품목 정보
-  items: OrderItem[];
+  products: {
+    id: number;
+    productId: number | null;
+    productName: string;
+    standard?: string;
+    price?: number;
+    count: number;
+    maxStock?: number;
+  }[];
   
   // 액션
-  setOrderNo: (value: string) => void;
-  setOrderDate: (value: string) => void;
-  setClientName: (value: string) => void;
-  setLicenseNumber: (value: string) => void;
-  setRepresentative: (value: string) => void;
-  setBusinessType: (value: string) => void;
-  setBusinessItem: (value: string) => void;
-  setManager: (value: string) => void;
-  setManagerContact: (value: string) => void;
-  setAddress: (value: string) => void;
-  setDeliveryDate: (value: string) => void;
-  setPaymentTerm: (value: string) => void;
-  
-  addItem: () => void;
-  removeItem: (id: number) => void;
-  updateItem: (id: number, field: keyof OrderItem, value: string) => void;
-  setItemName: (id: number, name: string) => void;
-  
-  // 계산
-  getTotalAmount: () => number;
+  setClientInfo: (info: {
+    clientId: number | null;
+    clientName: string;
+    licenseNumber: string;
+    representative: string;
+    businessType: string;
+    businessItem: string;
+  }) => void;
+  setManager: (manager: string) => void;
+  setManagerContact: (contact: string) => void;
+  setPaymentTerm: (term: string) => void;
+  setShippingAddress: (address: string) => void;
+  setHasShippingAddress: (has: boolean) => void;
+  setDeliverAt: (date: string) => void;
+  setProducts: (products: {
+    id: number;
+    productId: number | null;
+    productName: string;
+    standard?: string;
+    price?: number;
+    count: number;
+    maxStock?: number;
+  }[]) => void;
   reset: () => void;
+  
+  // API 응답으로부터 스토어 상태 설정
+  setFromApiResponse: (data: TemporaryPurchaseOrderDetail) => void;
 }
 
-// 초기 상태
-const initialItems: OrderItem[] = [
-  { id: 1, name: '', spec: '', quantity: '', price: '', tax: '', total: '' },
-  { id: 2, name: '', spec: '', quantity: '', price: '', tax: '', total: '' },
-  { id: 3, name: '', spec: '', quantity: '', price: '', tax: '', total: '' },
-];
-
-// 현재 날짜를 YYYY-MM-DD 형식으로 반환하는 함수
-const getCurrentDate = (): string => {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
-
-// 발주서 번호 생성 함수
-const generateOrderNo = (): string => {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-  return `PO-${year}${month}${day}-${random}`;
-};
-
 export const useTmpOrderStore = create<TmpOrderState>((set, get) => ({
-  // 기본 정보 초기값
-  orderNo: generateOrderNo(),
-  orderDate: getCurrentDate(),
+  // 기본 정보
+  orderNo: '자동생성',
+  orderDate: new Date().toISOString().split('T')[0],
+  
+  // 거래처 정보
+  clientId: null,
   clientName: '',
+  clientContact: '',
+
   licenseNumber: '',
   representative: '',
   businessType: '',
   businessItem: '',
+  
+  // 담당자 정보
   manager: '',
   managerContact: '',
-  address: '',
-  deliveryDate: '',
+  
+  // 결제 조건
   paymentTerm: '',
   
-  // 품목 정보 초기값
-  items: initialItems,
+  // 배송 정보
+  shippingAddress: '',
+  hasShippingAddress: false,
   
-  // 액션 구현
-  setOrderNo: (value) => set({ orderNo: value }),
-  setOrderDate: (value) => set({ orderDate: value }),
-  setClientName: (value) => set({ clientName: value }),
-  setLicenseNumber: (licenseNumber) => set({ licenseNumber: licenseNumber }),
-  setRepresentative: (representative) => set({ representative: representative }),
-  setBusinessType: (businessType) => set({ businessType: businessType }),
-  setBusinessItem: (businessItem) => set({ businessItem: businessItem }),
-  setManager: (manager) => set({ manager: manager }),
-  setManagerContact: (managerContact) => set({ managerContact: managerContact }),
-  setAddress: (address) => set({ address: address }),
-  setDeliveryDate: (deliveryDate) => set({ deliveryDate: deliveryDate }),
-  setPaymentTerm: (paymentTerm) => set({ paymentTerm: paymentTerm }),
+  // 납기일자
+  deliverAt: '',
   
-  addItem: () => set((state) => {
-    const newId = state.items.length > 0 
-      ? Math.max(...state.items.map(item => item.id)) + 1 
-      : 1;
-    return { 
-      items: [...state.items, { id: newId, name: '', spec: '', quantity: '', price: '', tax: '', total: '' }] 
-    };
-  }),
+  // 품목 정보
+  products: [],
   
-  removeItem: (id) => set((state) => ({
-    items: state.items.filter(item => item.id !== id)
-  })),
-  
-  updateItem: (id, field, value) => set((state) => {
-    const updatedItems = state.items.map(item => {
-      if (item.id === id) {
-        const updatedItem = { ...item, [field]: value };
-        
-        // 수량이 변경된 경우 세액과 합계 재계산
-        if (field === 'quantity') {
-          const quantity = parseInt(value) || 0;
-          const price = parseInt(item.price.replace(/,/g, '')) || 0;
-          
-          const tax = Math.round(price * quantity * 0.1);
-          const total = price * quantity;
-          
-          updatedItem.tax = tax.toLocaleString();
-          updatedItem.total = total.toLocaleString();
-        }
-        
-        return updatedItem;
-      }
-      return item;
-    });
-    
-    return { items: updatedItems };
-  }),
-  
-  setItemName: (id, name) => set((state) => {
-    const updatedItems = state.items.map(item => {
-      if (item.id === id) {
-        // 품목 선택 시 규격과 단가 자동 설정 (실제로는 API에서 가져올 값)
-        return { 
-          ...item, 
-          name, 
-          spec: '1EA', 
-          price: '90,000',
-          quantity: item.quantity || '1',
-          tax: '9,000',
-          total: '90,000'
-        };
-      }
-      return item;
-    });
-    
-    return { items: updatedItems };
-  }),
-  
-  getTotalAmount: () => {
-    const { items } = get();
-    return items.reduce((sum, item) => {
-      const total = parseInt(item.total.replace(/,/g, '')) || 0;
-      return sum + total;
-    }, 0);
-  },
+  // 액션
+  setClientInfo: (info) => set(info),
+  setManager: (manager) => set({ manager }),
+  setManagerContact: (contact) => set({ managerContact: contact }),
+  setClientContact: (contact: string) => set({ clientContact: contact }),
+  setPaymentTerm: (term) => set({ paymentTerm: term }),
+  setShippingAddress: (address) => set({ shippingAddress: address }),
+  setHasShippingAddress: (has) => set({ hasShippingAddress: has }),
+  setDeliverAt: (date) => set({ deliverAt: date }),
+  setProducts: (products) => set({ products }),
   
   reset: () => set({
-    orderNo: generateOrderNo(),
-    orderDate: getCurrentDate(),
+    orderNo: '자동생성',
+    orderDate: new Date().toISOString().split('T')[0],
+    clientId: null,
     clientName: '',
     licenseNumber: '',
     representative: '',
@@ -186,9 +125,62 @@ export const useTmpOrderStore = create<TmpOrderState>((set, get) => ({
     businessItem: '',
     manager: '',
     managerContact: '',
-    address: '',
-    deliveryDate: '',
     paymentTerm: '',
-    items: initialItems
-  })
+    shippingAddress: '',
+    hasShippingAddress: false,
+    deliverAt: '',
+    products: []
+  }),
+  
+  // API 응답으로부터 스토어 상태 설정
+  setFromApiResponse: (data) => {
+    if (!data) return;
+    
+    set({
+      orderNo: `PO-${data.id}`,
+      orderDate: data.createdAt ? data.createdAt.split('T')[0] : new Date().toISOString().split('T')[0],
+      
+      // 거래처 정보 설정 - 추가 필드 포함
+      clientId: data.client?.clientId || null,
+      clientName: data.client?.clientName || data.clientName || '', // 검색된 거래처명 우선
+      licenseNumber: data.client?.licenseNum || '', // 추가 필드
+      representative: data.client?.representative || '', // 추가 필드
+      businessType: data.client?.businessType || '', // 추가 필드
+      businessItem: data.client?.businessItem || '', // 추가 필드
+      
+      // 담당자 정보
+      manager: data.userName || '', // 발주 담당자는 유저의 이름
+      managerContact: data.manager || '', // 거래처 담당자
+      clientContact: data.managerNumber || '', // 거래처 연락처
+      
+      // 결제 조건
+      paymentTerm: data.paymentTerm || '',
+      
+      // 배송 정보
+      shippingAddress: data.shippingAddress || '',
+      hasShippingAddress: data.hasShippingAddress || false,
+      
+      // 납기일자
+      deliverAt: data.deliverAt ? data.deliverAt.split('T')[0] : '',
+      
+      // 품목 정보
+      products: data.products ? data.products.map((item) => {
+        // 서버에서 product 객체가 null인 경우, 기존 products 배열에서 해당 제품 정보 찾기
+        const existingProduct = get().products.find(p => 
+          p.productName === item.productName || 
+          (item.product?.productId && p.productId === item.product.productId)
+        );
+        
+        return {
+          id: item.id,
+          productId: item.product?.productId || existingProduct?.productId || null,
+          productName: item.product?.name || item.productName || '',
+          standard: item.product?.standard || existingProduct?.standard || '',
+          price: item.product?.inboundPrice || existingProduct?.price || 0,
+          count: item.count || 0,
+          maxStock: item.product?.stock || existingProduct?.maxStock || 0
+        };
+      }) : []
+    });
+  }
 }));

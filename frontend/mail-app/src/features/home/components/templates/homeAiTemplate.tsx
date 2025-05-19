@@ -3,7 +3,7 @@ import { Typography } from '@/shared/components/atoms/Typography';
 import { AiAssistantRow } from '../organisms/aiAssistantRow';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { useHome } from '../../hooks/useHome';
-import { assistantTypeMap } from '../../types/home';
+import { AssistantType, assistantTypeMap } from '../../types/home';
 import { format } from 'date-fns';
 import { Spinner } from '@/shared/components/atoms/spinner';
 
@@ -12,8 +12,7 @@ const ITEMS_PER_PAGE = 10;
 export const HomeAiTemplate: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(0); // API는 0부터 시작하는 페이지 인덱스 사용
   
-  const { useAssistants, useDeleteAssistant } = useHome();
-  const deleteAssistant = useDeleteAssistant();
+  const { useAssistants } = useHome();
   
   // API에서 데이터 가져오기
   const { data, isLoading, isError } = useAssistants({
@@ -22,11 +21,7 @@ export const HomeAiTemplate: React.FC = () => {
   });
   
   const totalPages = data?.pageCount || 0;
-  
-  const handleDelete = (id: string) => {
-    deleteAssistant.mutate(Number(id));
-  };
-  
+    
   const handlePageChange = (page: number) => {
     setCurrentPage(page - 1); // UI는 1부터 시작하는 페이지 번호 사용
   };
@@ -81,10 +76,9 @@ export const HomeAiTemplate: React.FC = () => {
                 <AiAssistantRow
                   key={`${item.id}-${index}`}
                   id={item.id.toString()}
-                  type={assistantTypeMap[item.type]}
+                  type={item.type as AssistantType}
                   title={item.title || `${assistantTypeMap[item.type]} 항목`}
                   date={formatDate(item.emailTime)}
-                  onDelete={handleDelete}
                 />
               ))
             ) : (

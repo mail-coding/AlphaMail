@@ -14,6 +14,7 @@ export const AiAssistantRowButton: React.FC<AiAssistantRowButtonProps> = ({
   onView, 
   onDelete 
 }) => {
+
   return (
     <div className="flex space-x-2">
       <Button

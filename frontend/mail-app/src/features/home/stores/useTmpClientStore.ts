@@ -23,7 +23,8 @@ interface TmpClientStore {
   setManagerPhone: (phone: string) => void;
   setManagerEmail: (email: string) => void;
   setBusinessLicense: (file: File | null) => void;
-  
+  setBusinessLicenseFileName: (fileName: string) => void;
+
   // 초기화
   reset: () => void;
 }
@@ -54,7 +55,8 @@ export const useTmpClientStore = create<TmpClientStore>((set) => ({
     businessLicense: file,
     businessLicenseFileName: file ? file.name : ''
   }),
-  
+  setBusinessLicenseFileName: (fileName) => set({ businessLicenseFileName: fileName }),
+
   // 초기화
   reset: () => set({
     clientName: '',

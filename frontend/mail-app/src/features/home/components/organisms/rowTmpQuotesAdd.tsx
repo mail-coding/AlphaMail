@@ -1,14 +1,21 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Typography } from '@/shared/components/atoms/Typography';
 import { Input } from '@/shared/components/atoms/input';
 import { Button } from '@/shared/components/atoms/button';
-import { TmpOrderAddAddress } from '../molecules/tmpOrderAddAddress';
-import { TmpOrderAddDate } from '../molecules/tmpOrderAddDate';
-import { TmpOrderAddRow } from '../molecules/tmpOrderAddRow';
+import { TmpQuoteAddAddress } from '../molecules/tmpQuoteAddAddress';
+import { TmpQuoteAddDate } from '../molecules/tmpQuoteAddDate';
 import { useTmpQuoteStore } from '../../stores/useTmpQuoteStore';
 import { TmpQuoteAddClient } from '../molecules/tmpQuoteAddClient';
+import { useHome } from '../../hooks/useHome';
+import { useUser } from '@/features/auth/hooks/useUser';
+import { toast } from 'react-toastify';
+import { TmpQuoteAddRow } from '../molecules/tmpQuoteAddRow';
 
-export const RowTmpQuotesAdd: React.FC = () => {
+interface RowTmpQuotesAddProps {
+  temporaryQuoteId?: number;
+}
+
+export const RowTmpQuotesAdd: React.FC<RowTmpQuotesAddProps> = ({ temporaryQuoteId }) => {
   const { 
     quoteNo, 
     licenseNumber, 
@@ -21,25 +28,110 @@ export const RowTmpQuotesAdd: React.FC = () => {
     setManagerContact,
     validityPeriod,
     setValidityPeriod,
-    reset
+    clientId,
+    clientName,
+    products,
+    shippingAddress,
+    initFromApiData
   } = useTmpQuoteStore();
   
+  const [showValidationErrors, setShowValidationErrors] = useState(false);
+  const { useTemporaryQuote, useUpdateTemporaryQuote, useRegisterQuote } = useHome();
+  const { data: user } = useUser();
+
+  // 임시 견적서 데이터 조회
+  const { data: quoteData, isLoading } = useTemporaryQuote(temporaryQuoteId || null);
+
+  // API 데이터로 스토어 초기화
+  useEffect(() => {
+    if (quoteData) {
+      console.log('견적서 데이터 로드:', quoteData);
+      initFromApiData(quoteData);
+    }
+  }, [quoteData, initFromApiData]);
+  
+  const updateQuoteMutation = useUpdateTemporaryQuote();
+  const registerQuoteMutation = useRegisterQuote();
+
   const handleTempSave = () => {
-    // 임시저장 로직 구현
-    console.log('임시저장');
-    alert('임시저장 되었습니다.');
+    if (!temporaryQuoteId) return;
+    
+    // 임시저장 데이터 구성
+    const updateData = {
+      clientId: clientId || undefined,
+      clientName: clientId ? undefined : clientName,
+      manager: manager || undefined,
+      managerNumber: managerContact || undefined,
+      shippingAddress: shippingAddress || undefined,
+      hasShippingAddress: !!shippingAddress,
+      products: products.map(product => ({
+        productId: product.productId || undefined,
+        productName: product.productId ? undefined : product.productName,
+        count: product.count || 0
+      }))
+    };
+    console.log('임시저장 전 products:', products);
+    console.log('임시저장 요청 데이터:', updateData);
+    // 임시저장 API 호출
+    updateQuoteMutation.mutate({ 
+      id: temporaryQuoteId, 
+      data: updateData 
+    });
   };
   
   const handleApply = () => {
-    // 적용 로직 구현
-    console.log('적용');
-    alert('견적서가 적용되었습니다.');
-    reset();
+    if (!temporaryQuoteId) return;
+    
+    // 유효성 검사
+    if (!clientId) {
+      setShowValidationErrors(true);
+      toast.error('거래처를 선택해주세요.');
+      return;
+    }
+    
+    if (!products || products.length === 0) {
+      setShowValidationErrors(true);
+      toast.error('최소 1개 이상의 품목을 추가해주세요.');
+      return;
+    }
+    
+    const invalidProducts = products.filter(product => !product.productId);
+    if (invalidProducts.length > 0) {
+      setShowValidationErrors(true);
+      toast.error('모든 품목은 검색을 통해 등록해야 합니다.');
+      return;
+    }
+    
+    // 회사 ID (전역 변수 또는 사용자 정보에서 가져옴)
+    const companyId = user?.companyId || 1;
+    
+    // 견적서 등록 데이터 구성
+    const registerData = {
+      id: temporaryQuoteId,
+      clientId: clientId as number,
+      companyId: companyId,
+      manager: manager || undefined,
+      managerNumber: managerContact || undefined,
+      shippingAddress: shippingAddress || undefined,
+      products: products
+        .filter(product => product.productId)
+        .map(product => ({
+          productId: product.productId as number,
+          count: product.count || 0
+        }))
+    };
+    
+    // 견적서 등록 API 호출
+    registerQuoteMutation.mutate(registerData);
   };
   
   // 입력 필드 높이를 일관되게 유지하기 위한 스타일
   const inputStyle = "h-8 text-sm";
   
+  if (isLoading) {
+    return <div className="p-4">로딩 중...</div>;
+  }
+
   return (
     <div className="mt-4 border-t border-gray-200 pt-4 bg-white rounded-sm p-4">
       <Typography variant="titleMedium" className="font-medium mb-4">
@@ -63,7 +155,7 @@ export const RowTmpQuotesAdd: React.FC = () => {
         </div>
         <div className="col-span-2">
           <div className="w-full">
-            <TmpOrderAddDate />
+            <TmpQuoteAddDate />
           </div>
         </div>
         
@@ -97,6 +189,9 @@ export const RowTmpQuotesAdd: React.FC = () => {
           <Typography variant="caption" className="text-gray-700">
             거래처명
           </Typography>
+          {showValidationErrors && !clientId && (
+            <span className="text-red-500 text-xs ml-1">* 필수</span>
+          )}
         </div>
         <div className="col-span-5">
           <div className="w-full">
@@ -169,12 +264,12 @@ export const RowTmpQuotesAdd: React.FC = () => {
         </div>
         <div className="col-span-5">
           <div className="w-full">
-            <TmpOrderAddAddress />
+            <TmpQuoteAddAddress />
           </div>
         </div>
       </div>
       
-      <TmpOrderAddRow />
+      <TmpQuoteAddRow showValidationErrors={showValidationErrors} />
       
       <div className="flex justify-end space-x-2 mt-6">
         <Button variant="secondary" size="small" onClick={handleTempSave}>

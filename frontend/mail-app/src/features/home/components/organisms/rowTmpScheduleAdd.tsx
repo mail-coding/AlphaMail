@@ -1,34 +1,146 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Typography } from '@/shared/components/atoms/Typography';
 import { Input } from '@/shared/components/atoms/input';
 import { Button } from '@/shared/components/atoms/button';
 import { TmpScheduleDate } from '../molecules/tmpScheduleDate';
 import { useHomeStore } from '../../stores/useHomeStore';
+import { useHome } from '../../hooks/useHome';
+import { toast } from 'react-toastify';
 
-export const RowTmpScheduleAdd: React.FC = () => {
+interface RowTmpScheduleAddProps {
+  temporaryScheduleId: number;
+}
+
+export const RowTmpScheduleAdd: React.FC<RowTmpScheduleAddProps> = ({ temporaryScheduleId }) => {
   const { 
     schedule, 
     scheduleErrors,
     setScheduleTitle,
+    setScheduleStartDate,
+    setScheduleEndDate,
     setScheduleDescription,
+    setScheduleStartTime,
+    setScheduleEndTime,
     validateSchedule,
-    resetSchedule
+    resetSchedule,
+    setActiveRowId
   } = useHomeStore();
+  
+  const { useTemporarySchedule, useUpdateTemporarySchedule, useRegisterSchedule } = useHome();
+  const { data: scheduleDetail, isLoading } = useTemporarySchedule(temporaryScheduleId);
+  const updateScheduleMutation = useUpdateTemporarySchedule();
+  const registerScheduleMutation = useRegisterSchedule();
 
-  const handleApply = () => {
-    if (validateSchedule()) {
-      // 여기서 일정 저장 로직 구현
-      console.log('일정 저장:', schedule);
-      resetSchedule();
+  // API에서 데이터를 가져오면 스토어에 설정
+  useEffect(() => {
+    if (scheduleDetail) {
+      setScheduleTitle(scheduleDetail.name);
+      setScheduleDescription(scheduleDetail.description);
+      
+      // 시작 시간과 종료 시간 설정 (날짜와 시간 분리)
+      if (scheduleDetail.startTime) {
+        const startDateTime = new Date(scheduleDetail.startTime);
+        const startDate = startDateTime.toISOString().split('T')[0]; // YYYY-MM-DD
+        const startTime = startDateTime.toTimeString().slice(0, 5); // HH:MM
+        
+        setScheduleStartDate(startDate);
+        setScheduleStartTime(startTime);
+      }
+      
+      if (scheduleDetail.endTime) {
+        const endDateTime = new Date(scheduleDetail.endTime);
+        const endDate = endDateTime.toISOString().split('T')[0]; // YYYY-MM-DD
+        const endTime = endDateTime.toTimeString().slice(0, 5); // HH:MM
+        
+        setScheduleEndDate(endDate);
+        setScheduleEndTime(endTime);
+      }
     }
-  };
+  }, [scheduleDetail, setScheduleTitle, setScheduleDescription, setScheduleStartDate, setScheduleStartTime, setScheduleEndDate, setScheduleEndTime]);
 
+    // 날짜와 시간을 ISO 형식으로 결합
+    const combineDateTime = (date: string, time: string): string => {
+      return `${date}T${time}:00`;
+    };
+  
+    const handleApply = () => {
+      if (validateSchedule()) {
+        // 시작 시간과 종료 시간이 설정되어 있는지 확인
+        if (!schedule.startDate || !schedule.startTime || !schedule.endDate || !schedule.endTime) {
+          toast.error('시작 시간과 종료 시간을 모두 설정해주세요.');
+          return;
+        }
+  
+        // 종료 시간이 시작 시간보다 이후인지 확인
+        const startDateTime = new Date(combineDateTime(schedule.startDate, schedule.startTime));
+        const endDateTime = new Date(combineDateTime(schedule.endDate, schedule.endTime));
+        
+        if (endDateTime <= startDateTime) {
+          toast.error('종료 시간은 시작 시간보다 이후여야 합니다.');
+          return;
+        }
+  
+        // API 요청 데이터 구성
+        const scheduleData = {
+          name: schedule.title,
+          startTime: combineDateTime(schedule.startDate, schedule.startTime),
+          endTime: combineDateTime(schedule.endDate, schedule.endTime),
+          description: schedule.description,
+          temporaryScheduleId: temporaryScheduleId
+        };
+  
+        // 일정 등록 API 호출
+        registerScheduleMutation.mutate(scheduleData, {
+          onSuccess: () => {
+            // 성공 시 현재 열린 행 닫기
+            setActiveRowId(null);
+            // 스토어 상태 초기화
+            resetSchedule();
+          }
+        });
+      }
+    };
+  
   const handleTempSave = () => {
     if (validateSchedule()) {
-      // 여기서 임시 저장 로직 
-      console.log('임시 저장:', schedule);
+      // 시작 시간과 종료 시간이 설정되어 있는지 확인
+      if (!schedule.startDate || !schedule.startTime || !schedule.endDate || !schedule.endTime) {
+        toast.error('시작 시간과 종료 시간을 모두 설정해주세요.');
+        return;
+      }
+
+      // 종료 시간이 시작 시간보다 이후인지 확인
+      const startDateTime = new Date(combineDateTime(schedule.startDate, schedule.startTime));
+      const endDateTime = new Date(combineDateTime(schedule.endDate, schedule.endTime));
+      
+      if (endDateTime <= startDateTime) {
+        toast.error('종료 시간은 시작 시간보다 이후여야 합니다.');
+        return;
+      }
+
+      // API 요청 데이터 구성
+      const scheduleData = {
+        name: schedule.title,
+        startTime: combineDateTime(schedule.startDate, schedule.startTime),
+        endTime: combineDateTime(schedule.endDate, schedule.endTime),
+        description: schedule.description,
+        temporaryScheduleId: temporaryScheduleId
+      };
+
+      // 임시 저장 API 호출
+      updateScheduleMutation.mutate(scheduleData);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="mt-4 border-t border-gray-200 pt-4 bg-white rounded-md p-4">
+        <Typography variant="titleMedium" className="font-medium mb-4">
+          일정 로딩 중...
+        </Typography>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-4 border-t border-gray-200 pt-4 bg-white rounded-md p-4">
@@ -82,11 +194,21 @@ export const RowTmpScheduleAdd: React.FC = () => {
         </div>
         
         <div className="flex justify-end space-x-2">
-          <Button variant="secondary" size="small" onClick={handleTempSave}>
-            임시저장
+          <Button 
+            variant="secondary" 
+            size="small" 
+            onClick={handleTempSave}
+            disabled={updateScheduleMutation.isPending}
+          >
+            {updateScheduleMutation.isPending ? '저장 중...' : '임시저장'}
           </Button>
-          <Button variant="primary" size="small" onClick={handleApply}>
-            적용
+          <Button 
+            variant="primary" 
+            size="small" 
+            onClick={handleApply}
+            disabled={registerScheduleMutation.isPending}
+          >
+            {registerScheduleMutation.isPending ? '적용 중...' : '적용'}
           </Button>
         </div>
       </div>

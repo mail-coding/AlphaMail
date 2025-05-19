@@ -1,13 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Typography } from '@/shared/components/atoms/Typography';
 import { Input } from '@/shared/components/atoms/input';
-import { useTmpOrderStore } from '../../stores/useTmpOrderStore';
+import { useTmpQuoteStore } from '../../stores/useTmpQuoteStore';
 import ProductInput from '@/shared/components/atoms/productInput';
 import { Product } from '@/features/work/types/product';
 import { toast } from 'react-toastify';
 import { FaSearch } from 'react-icons/fa';
 
-interface TmpOrderAddRowProps {
+interface TmpQuoteAddRowProps {
   showValidationErrors?: boolean;
 }
 
@@ -23,10 +23,10 @@ interface OrderItem {
   maxStock?: number; 
 }
 
-export const TmpOrderAddRow: React.FC<TmpOrderAddRowProps> = ({ showValidationErrors = false }) => {
+export const TmpQuoteAddRow: React.FC<TmpQuoteAddRowProps> = ({ showValidationErrors = false }) => {
   // 로컬 상태로 품목 관리
   const [items, setItems] = useState<OrderItem[]>([]);
-  const { products, setProducts } = useTmpOrderStore();
+  const { products, setProducts } = useTmpQuoteStore();
   const productsString = useMemo(() => JSON.stringify(products), [products]);
   const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
 
@@ -38,10 +38,10 @@ export const TmpOrderAddRow: React.FC<TmpOrderAddRowProps> = ({ showValidationEr
         id: index + 1,
         name: product.productName || '',
         spec: product.standard || '',
-        quantity: product.count.toString(),
+        quantity: product.count?.toString() || '0',
         price: (product.price || 0).toLocaleString(),
-        tax: Math.round((product.price || 0) * product.count * 0.1).toLocaleString(),
-        total: ((product.price || 0) * product.count).toLocaleString(),
+        tax: Math.round((product.price || 0) * (product.count || 0) * 0.1).toLocaleString(),
+        total: ((product.price || 0) * (product.count || 0)).toLocaleString(),
         maxStock: product.maxStock
       }));
       
@@ -129,7 +129,7 @@ export const TmpOrderAddRow: React.FC<TmpOrderAddRowProps> = ({ showValidationEr
     const quantity = '0';
     
     // 가격 설정 (outboundPrice가 0이면 inboundPrice 사용)
-    const price = product.inboundPrice || 0;
+    const price = product.outboundPrice || product.inboundPrice || 0;
     const count = parseInt(quantity) || 1;
     
     // 공급가액 계산 (단가 × 수량)
@@ -257,7 +257,7 @@ export const TmpOrderAddRow: React.FC<TmpOrderAddRowProps> = ({ showValidationEr
           value={item.name}
           onChange={(product) => handleProductSelect(item.id, product)}
           placeholder="품목 검색"
-          className={`w-full !h-7 !text-sm !rounded-none pl-8 `}
+          className={`w-full !h-7 !text-sm !rounded-none pl-8`}
         />
         <div className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500">
           <FaSearch size={14} />

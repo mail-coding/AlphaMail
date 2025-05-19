@@ -32,6 +32,8 @@ interface HomeState {
   
   // AI 어시스턴트 관련 상태
   activeRowId: string | null;
+  activeRowType: string | null;
+  setActiveRow: (id: string | null, type: string | null) => void;
   setActiveRowId: (id: string | null) => void;
 }
 
@@ -163,5 +165,7 @@ export const useHomeStore = create<HomeState>((set, get) => ({
   
   // AI 어시스턴트 관련 상태
   activeRowId: null,
+  activeRowType: null,
+  setActiveRow: (id, type) => set({ activeRowId: id, activeRowType: type }),
   setActiveRowId: (id) => set({ activeRowId: id })
 }));
