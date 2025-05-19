@@ -26,11 +26,20 @@ export const useOrderManagement = () => {
       }
       console.log(userInfo.companyId);
       console.log(currentPage)
-      const response = await orderService.getOrders(userInfo.companyId, {
+      const params: any = {
         page: currentPage - 1,
         size: pageSize,
         ...searchParams,
-      }); 
+      };
+
+      if (searchParams.startDate) {
+        params.startDate = new Date(searchParams.startDate).toISOString();
+      }
+      if (searchParams.endDate) {
+        params.endDate = new Date(searchParams.endDate).toISOString();
+      }
+
+      const response = await orderService.getOrders(userInfo.companyId, params); 
 
       console.log(response);
 

@@ -78,7 +78,7 @@ export const HeaderContent: React.FC = () => {
     if (path.startsWith('/work/quotes')) {
       workTitle = "견적서 관리";
     } else if (path.startsWith('/work/orders')) {
-      workTitle = "주문서 관리";
+      workTitle = "발주서 관리";
     } else if (path.startsWith('/work/clients')) {
       workTitle = "거래처 관리";
     } else if (path.startsWith('/work/products')) {
