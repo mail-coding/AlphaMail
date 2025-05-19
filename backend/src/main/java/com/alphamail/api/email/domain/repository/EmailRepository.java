@@ -42,4 +42,7 @@ public interface EmailRepository {
 	void updateThreadId(Integer emailId, String threadId);
 
 	Email findByMessageId(String messageId);
+
+	void updateReadStatus(Integer emailId, Boolean readStatus);
+
 }

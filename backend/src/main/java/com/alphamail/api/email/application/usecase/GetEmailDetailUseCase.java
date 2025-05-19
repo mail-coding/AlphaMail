@@ -41,7 +41,7 @@ public class GetEmailDetailUseCase {
 
 		// 읽음 표시가 필요한 경우에만 업데이트
 		if (email.getReadStatus() == null || !email.getReadStatus()) {
-			email = emailRepository.save(email.markAsRead());
+			emailRepository.updateReadStatus(emailId, true);
 		}
 
 		return EmailDetailResponse.from(email, attachments, threadList);

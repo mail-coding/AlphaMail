@@ -54,28 +54,30 @@ public interface EmailJpaRepository extends JpaRepository<EmailEntity, Integer> 
 	List<EmailEntity> findAllWithAttachmentsByFolderIdAndUserId(@Param("folderId") Integer folderId,
 		@Param("userId") Integer userId);
 
-
 	List<EmailEntity> findByThreadIdAndUserUserIdOrderByReceivedDateTimeAsc(String threadId, Integer userId);
-
 
 	@Modifying(clearAutomatically = true)
 	@Query("UPDATE EmailEntity e SET e.sesMessageId = :sesMessageId "
 		+ "WHERE e.emailId = :emailId")
 	void updateSesMessageId(Integer emailId, String sesMessageId);
 
-
 	@Modifying(clearAutomatically = true)
 	@Query("UPDATE EmailEntity e "
 		+ "SET e.messageId = :messageId, e.threadId = :threadId, e.emailStatus = :status "
 		+ "WHERE e.emailId = :emailId")
-	void updateMessageIdThreadIdAndStatus(  @Param("emailId") Integer emailId,
-											@Param("messageId") String messageId,
-											@Param("threadId") String threadId,
-											@Param("status") EmailStatus status);
+	void updateMessageIdThreadIdAndStatus(@Param("emailId") Integer emailId,
+		@Param("messageId") String messageId,
+		@Param("threadId") String threadId,
+		@Param("status") EmailStatus status);
 
 	@Modifying(clearAutomatically = true)
 	@Query("UPDATE EmailEntity e SET e.threadId = :threadId WHERE e.emailId = :emailId")
 	void updateThreadId(@Param("emailId") Integer emailId, @Param("threadId") String threadId);
 
 	Optional<EmailEntity> findByMessageId(String messageId);
+
+	@Modifying
+	@Query("UPDATE EmailEntity e SET e.readStatus = :readStatus WHERE e.emailId = :emailId")
+	void updateReadStatusById(@Param("emailId") Integer emailId, @Param("readStatus") Boolean readStatus);
+
 }
