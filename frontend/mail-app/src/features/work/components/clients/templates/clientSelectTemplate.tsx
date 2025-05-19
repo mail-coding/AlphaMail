@@ -3,6 +3,8 @@ import { Client } from '../../../types/clients';
 import { ClientSearchBar } from '../molecules/clientSearchBar';
 import { ClientSelectTable } from '../organisms/clientSelectTable';
 import { useClientsSelectQuery } from '../../../hooks/useClientsSelectQuery';
+import { Typography } from '@/shared/components/atoms/Typography';
+import { Button } from '@/shared/components/atoms/button';
 
 interface ClientSelectTemplateProps {
   isOpen: boolean;
@@ -39,31 +41,32 @@ export const ClientSelectTemplate: React.FC<ClientSelectTemplateProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* 오버레이 */}
       <div className="fixed inset-0 bg-gray-500 opacity-50" onClick={onClose}></div>
-      {/* 모달 */}
-      <div className="relative bg-white rounded-lg shadow-xl w-full max-w-3xl mx-4">
+      <div className="relative bg-white rounded-lg shadow-xl w-[800px] h-[600px] mx-4 flex flex-col">
         <div className="flex justify-between items-center p-4 border-b">
-          <h2 className="font-bold">거래처 선택</h2>
+          <Typography variant="titleMedium">거래처 선택</Typography>
           <button onClick={onClose} className="text-2xl">&times;</button>
         </div>
-        <div className="p-4">
-          <div className="mb-2">
-            <ClientSearchBar onSearch={handleSearch} />
+        <div className="p-4 flex-1 flex flex-col overflow-hidden">
+          <ClientSearchBar onSearch={handleSearch} />
+          <div className="overflow-x-auto overflow-y-auto flex-1">
+            <ClientSelectTable
+              clients={data?.contents || []}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+              page={currentPage}
+              pageCount={data ? Math.ceil(data.totalCount / pageSize) : 1}
+              onPageChange={setCurrentPage}
+            />
           </div>
-          <ClientSelectTable
-            clients={data?.contents || []}
-            selectedId={selectedId}
-            onSelect={setSelectedId}
-          />
           <div className="flex justify-end mt-4">
-            <button
-              className="bg-blue-500 text-white px-6 py-2 rounded"
+            <Button
+              variant="primary"
               disabled={selectedId === null}
               onClick={handleSelect}
             >
               선택
-            </button>
+            </Button>
           </div>
         </div>
       </div>
