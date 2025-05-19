@@ -196,7 +196,7 @@ export const MailQuillEditor: React.FC<MailQuillEditorProps> = ({
         onChange={onChange}
         modules={modules}
         formats={formats}
-        placeholder="내용을 입력하세요..."
+        placeholder=""
         style={customStyles.editor}
       />
     </div>
