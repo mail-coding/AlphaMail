@@ -4,6 +4,7 @@ import { Typography } from '@/shared/components/atoms/Typography';
 import { useNavbarStore } from '../stores/useNavbarStore';
 import { useUserStore } from '../stores/useUserStore';
 import { useEffect } from 'react';
+import { api } from '@/shared/lib/axiosInstance';
 
 export const NavBar = () => {
     const location = useLocation();
@@ -34,8 +35,12 @@ export const NavBar = () => {
         navigate('/login');
     };
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
         if (window.confirm('로그아웃 하시겠습니까?')) {
+            try {
+                await api.post('/api/logout');
+            } catch (error) {
+            }
             logoutStore();
             navigate('/login');
         }

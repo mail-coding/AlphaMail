@@ -100,25 +100,31 @@ export const QuoteDetailTemplate = () => {
 
       for (let i = 0; i < formData.products.length; i++) {
         const product = formData.products[i];
-        const productName = product.name || `품목 ${i + 1}`;
+        const productNameForAlert = product.name || `품목 ${i + 1}`;
+
+        // 품목 이름 유효성 검사
+        if (!product.name) {
+          alert(`품목 ${i + 1}의 이름을 입력해주세요.`);
+          return;
+        }
 
         // 수량 유효성 검사
         if (typeof product.count !== 'number' || product.count < 0) {
-          alert(`${productName}의 수량은 0 이상의 숫자로 입력해주세요.`);
+          alert(`${productNameForAlert}의 수량은 0 이상의 숫자로 입력해주세요.`);
           return;
         }
         if (product.count > MAX_PRODUCT_COUNT) {
-          alert(`${productName}의 수량은 ${MAX_PRODUCT_COUNT.toLocaleString()}을 초과할 수 없습니다.`);
+          alert(`${productNameForAlert}의 수량은 ${MAX_PRODUCT_COUNT.toLocaleString()}을 초과할 수 없습니다.`);
           return;
         }
 
         // 단가 유효성 검사
         if (typeof product.price !== 'number' || product.price < 0) {
-          alert(`${productName}의 단가는 0 이상의 숫자로 입력해주세요.`);
+          alert(`${productNameForAlert}의 단가는 0 이상의 숫자로 입력해주세요.`);
           return;
         }
         if (product.price > MAX_PRODUCT_PRICE) {
-          alert(`${productName}의 단가는 ${MAX_PRODUCT_PRICE.toLocaleString()}을 초과할 수 없습니다.`);
+          alert(`${productNameForAlert}의 단가는 ${MAX_PRODUCT_PRICE.toLocaleString()}을 초과할 수 없습니다.`);
           return;
         }
       }
