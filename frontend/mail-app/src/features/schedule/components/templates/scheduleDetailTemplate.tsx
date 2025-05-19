@@ -272,7 +272,23 @@ export const ScheduleDetailTemplate: React.FC<ScheduleDetailTemplateProps> = ({
                     value={format(new Date(schedule.start_time), "yyyy-MM-dd'T'HH:mm")}
                     onChange={(e) => {
                       const value = e.target.value;
-                      if (value) setSchedule({ ...schedule, start_time: new Date(value) });
+                      if (value) {
+                        const newStartTime = new Date(value);
+                        const currentEndTime = new Date(schedule.end_time);
+                        
+                        if (newStartTime >= currentEndTime) {
+                          // 종료 시간을 시작 시간 + 1시간으로 자동 조정
+                          const newEndTime = new Date(newStartTime.getTime() + 60 * 60 * 1000);
+                          setSchedule({ 
+                            ...schedule, 
+                            start_time: newStartTime,
+                            end_time: newEndTime
+                          });
+                          toast.info('종료 시간이 시작 시간 이후로 자동 조정되었습니다.');
+                        } else {
+                          setSchedule({ ...schedule, start_time: newStartTime });
+                        }
+                      }
                     }}
                     size="medium"
                     className={errors.start_time ? 'border-red-500' : ''}
@@ -291,8 +307,19 @@ export const ScheduleDetailTemplate: React.FC<ScheduleDetailTemplateProps> = ({
                     value={format(new Date(schedule.end_time), "yyyy-MM-dd'T'HH:mm")}
                     onChange={(e) => {
                       const value = e.target.value;
-                      if (value) setSchedule({ ...schedule, end_time: new Date(value) });
+                      if (value) {
+                        const newEndTime = new Date(value);
+                        if (newEndTime < schedule.start_time) {
+                          // 시작 시간 이후로 종료 시간 자동 조정 (시작 시간 + 1시간)
+                          const adjustedEndTime = new Date(schedule.start_time.getTime() + 60 * 60 * 1000);
+                          setSchedule({ ...schedule, end_time: adjustedEndTime });
+                          toast.info('종료 시간이 시작 시간 이후로 자동 조정되었습니다.');
+                        } else {
+                          setSchedule({ ...schedule, end_time: newEndTime });
+                        }
+                      }
                     }}
+                    min={format(new Date(schedule.start_time), "yyyy-MM-dd'T'HH:mm")}
                     size="medium"
                     className={errors.end_time ? 'border-red-500' : ''}
                     required
