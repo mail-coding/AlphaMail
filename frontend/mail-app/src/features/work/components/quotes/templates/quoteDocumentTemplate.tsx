@@ -3,6 +3,9 @@ import {
     Page, Text, View, Document, StyleSheet, Font,
     PDFDownloadLink
   } from '@react-pdf/renderer';
+import React from 'react';
+import { Button } from '@/shared/components/atoms/button';
+import { Typography } from '@/shared/components/atoms/Typography';
   
   Font.register({
     family: 'NanumGothic',
@@ -27,7 +30,7 @@ import {
     section: {
       marginBottom: 10,
     },
-    clientBox: {
+    supplierBox: {
       border: '1pt solid black',
       padding: 5,
       width: '45%',
@@ -78,12 +81,12 @@ import {
   
         <View style={styles.topContainer}>
           <View style={styles.quoteInfoBox}>
-            <Text style={{ marginBottom: 5 }}>견적일: {data.createdAt.toLocaleDateString()}</Text>
+            <Text style={{ marginBottom: 5 }}>견적일: {new Date(data.createdAt).toLocaleDateString()}</Text>
             <Text style={{ marginBottom: 10 }}>{data.manager} 귀하</Text>
-            <Text style={{ marginBottom: 3 }}>아래와 같이 견적드립니다.</Text>
+            <Text style={{ marginBottom: 3 }}>아래와 같이 견적합니다.</Text>
           </View>
   
-          <View style={[styles.section, styles.clientBox]}>
+          <View style={[styles.section, styles.supplierBox]}>
             {[
               ['등록번호', data.licenseNumber],
               ['상호명', data.clientName],
@@ -128,12 +131,45 @@ import {
     </Document>
   );
   
-  export const PdfButton = ({ data }: { data: QuoteDetail }) => (
-    <PDFDownloadLink
-      document={<MyPDFDocument data={data} />}
-      fileName={`${data.quoteNo}_견적서.pdf`}
-      className="inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-    >
-      {({ loading }) => loading ? 'PDF 생성 중...' : `PDF 다운로드`}
-    </PDFDownloadLink>
-  );
+  interface PdfButtonProps {
+    data: QuoteDetail;
+  }
+  
+  export const PdfButton: React.FC<PdfButtonProps> = ({ data }) => {
+    return (
+      <PDFDownloadLink
+        document={<MyPDFDocument data={data} />}
+        fileName={`${data.quoteNo}_견적서.pdf`}
+        className="inline-block"
+      >
+        {({ loading, error }) => {
+          if (error) {
+            console.error('PDF generation error:', error);
+            return (
+              <Button
+                variant="text"
+                size="small"
+                className="min-w-[110px] h-[40px] border border-gray-300 bg-white shadow-none text-black font-normal hover:bg-gray-100 hover:text-black active:bg-gray-200 !rounded-none"
+                disabled
+              >
+                <Typography variant="titleSmall">오류 발생</Typography>
+              </Button>
+            );
+          }
+          
+          return (
+            <Button
+              variant="text"
+              size="small"
+              className="min-w-[110px] h-[40px] border border-gray-300 bg-white shadow-none text-black font-normal hover:bg-gray-100 hover:text-black active:bg-gray-200 !rounded-none"
+              disabled={loading}
+            >
+              <Typography variant="titleSmall">
+                {loading ? '문서 생성 중...' : '문서'}
+              </Typography>
+            </Button>
+          );
+        }}
+      </PDFDownloadLink>
+    );
+  };

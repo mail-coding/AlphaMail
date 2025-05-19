@@ -105,7 +105,6 @@ const QuoteManagementWrapper = () => {
 const QuoteDetailWrapper = () => {
   const { setActiveItem } = useSidebarStore();
   const { setTitle } = useHeaderStore();
-  const navigate = useNavigate();
 
   React.useEffect(() => {
     setActiveItem("견적서 관리");
@@ -113,11 +112,7 @@ const QuoteDetailWrapper = () => {
   }, [setActiveItem, setTitle]);
 
   return (
-    <QuoteDetailTemplate 
-      quote={null}
-      onBack={() => navigate('/work/quotes', { replace: true })}
-      onSave={() => navigate('/work/quotes', { replace: true })}
-    />
+    <QuoteDetailTemplate />
   );
 };
 

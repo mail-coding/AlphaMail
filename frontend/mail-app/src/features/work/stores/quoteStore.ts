@@ -15,6 +15,8 @@ interface QuoteState {
   currentPage: number;
   pageSize: number;
   sortOption: number;
+  formData: QuoteDetail;
+  setFormData: (data: QuoteDetail | ((prev: QuoteDetail) => QuoteDetail)) => void;
   fetchQuotes: (params?: QuoteQueryParams) => Promise<void>;
   fetchQuoteById: (id: number) => Promise<void>;
   deleteQuote: (id: number) => Promise<void>;
@@ -40,6 +42,29 @@ export const useQuoteStore = create<QuoteState>((set) => ({
   currentPage: 1,
   pageSize: 10,
   sortOption: 0,
+  formData: {
+    id: 0,
+    userId: 0,
+    userName: '',
+    groupId: 0,
+    groupName: '',
+    clientId: 0,
+    clientName: '',
+    manager: '',
+    managerNumber: '',
+    licenseNumber: '',
+    businessType: '',
+    businessItem: '',
+    shippingAddress: '',
+    quoteNo: '',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    representative: '',
+    products: [],
+  },
+  setFormData: (data) => set((state) => ({
+    formData: typeof data === 'function' ? data(state.formData) : data,
+  })),
 
   fetchQuotes: async (params) => {
     try {
