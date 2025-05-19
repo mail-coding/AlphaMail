@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useRef } from 'react';
+import { Typography } from '@/shared/components/atoms/Typography';
 
 interface QuoteSearchBarProps {
   onSearch: (params: QuoteSearchParams) => void;
@@ -14,100 +15,98 @@ export interface QuoteSearchParams {
 }
 
 export const QuoteSearchBar: React.FC<QuoteSearchBarProps> = ({ onSearch }) => {
-  const [searchParams, setSearchParams] = useState<QuoteSearchParams>({
-    keyword: '',
-    receiverCompany: '',
-    sender: '',
-    startDate: '',
-    endDate: '',
-    product: ''
-  });
+  const clientRef = useRef<HTMLInputElement>(null);
+  const quoteNoRef = useRef<HTMLInputElement>(null);
+  const managerRef = useRef<HTMLInputElement>(null);
+  const itemRef = useRef<HTMLInputElement>(null);
+  const startDateRef = useRef<HTMLInputElement>(null);
+  const endDateRef = useRef<HTMLInputElement>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSearch(searchParams);
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setSearchParams(prev => ({
-      ...prev,
-      [name]: value
-    }));
+  const handleSearch = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const params = {
+      keyword: clientRef.current?.value || '',
+      receiverCompany: quoteNoRef.current?.value || '',
+      sender: managerRef.current?.value || '',
+      startDate: startDateRef.current?.value || '',
+      endDate: endDateRef.current?.value || '',
+      product: itemRef.current?.value || '',
+    };
+    onSearch(params);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-3 gap-4">
-        <div className="flex items-center space-x-2">
-          <label className="w-24 text-sm text-gray-600">거래처명</label>
+    <form
+      onSubmit={handleSearch}
+      className="w-full bg-white p-4 border border-gray-200 rounded mb-4"
+    >
+      {/* 1st row: 거래처, 견적번호, 담당자 */}
+      <div className="flex flex-wrap gap-x-6 gap-y-2 items-center mb-2">
+        <div className="flex items-center gap-2">
+          <label className="text-sm text-gray-600 min-w-[56px] text-right">거래처</label>
           <input
-            type="text"
-            name="keyword"
-            value={searchParams.keyword}
-            onChange={handleChange}
+            ref={clientRef}
+            className="w-[240px] h-[30px] px-2 bg-white text-base placeholder-gray-400 border border-gray-300 focus:outline-none pr-8 rounded-none"
             placeholder="거래처명/사업자등록번호"
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-        <div className="flex items-center space-x-2">
-          <label className="w-24 text-sm text-gray-600">발주번호</label>
+        <div className="flex items-center gap-2">
+          <label className="text-sm text-gray-600 min-w-[56px] text-right">견적번호</label>
           <input
-            type="text"
-            name="receiverCompany"
-            value={searchParams.receiverCompany}
-            onChange={handleChange}
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            ref={quoteNoRef}
+            className="w-[140px] h-[30px] px-2 bg-white text-base placeholder-gray-400 border border-gray-300 focus:outline-none pr-8 rounded-none"
+            placeholder="견적번호"
           />
         </div>
-        <div className="flex items-center space-x-2">
-          <label className="w-24 text-sm text-gray-600">담당자</label>
+        <div className="flex items-center gap-2">
+          <label className="text-sm text-gray-600 min-w-[56px] text-right">담당자</label>
           <input
-            type="text"
-            name="sender"
-            value={searchParams.sender}
-            onChange={handleChange}
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            ref={managerRef}
+            className="w-[140px] h-[30px] px-2 bg-white text-base placeholder-gray-400 border border-gray-300 focus:outline-none pr-8 rounded-none"
+            placeholder="담당자"
           />
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="flex items-center space-x-2">
-          <label className="w-24 text-sm text-gray-600">등록일자</label>
-          <div className="flex items-center space-x-2 flex-1">
-            <input
-              type="date"
-              name="startDate"
-              value={searchParams.startDate}
-              onChange={handleChange}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <span className="text-gray-500">~</span>
-            <input
-              type="date"
-              name="endDate"
-              value={searchParams.endDate}
-              onChange={handleChange}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-        </div>
-        <div className="flex items-center space-x-2">
-          <label className="w-24 text-sm text-gray-600">품목</label>
+      {/* 2nd row: 견적일자, 품목, 검색버튼 */}
+      <div className="flex flex-wrap gap-x-6 gap-y-2 items-center mt-2">
+        <div className="flex items-center gap-2">
+          <label className="text-sm text-gray-600 min-w-[56px] text-right">견적일자</label>
           <input
-            type="text"
-            name="product"
-            value={searchParams.product}
-            onChange={handleChange}
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            ref={startDateRef}
+            type="date"
+            className="w-[140px] h-[30px] px-2 bg-white text-base border border-gray-300 focus:outline-none rounded-none"
           />
-          <button
-            type="submit"
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            검색
-          </button>
+          <span className="mx-1 text-gray-400">-</span>
+          <input
+            ref={endDateRef}
+            type="date"
+            className="w-[140px] h-[30px] px-2 bg-white text-base border border-gray-300 focus:outline-none rounded-none"
+          />
         </div>
+        <div className="flex items-center gap-2 relative">
+          <label className="text-sm text-gray-600 min-w-[40px] text-right">품목</label>
+          <input
+            ref={itemRef}
+            className="w-[140px] h-[30px] px-2 bg-white text-base placeholder-gray-400 border border-gray-300 focus:outline-none pr-8 rounded-none"
+            placeholder="품목"
+          />
+          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+              <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" fill="none" />
+              <line x1="16.5" y1="16.5" x2="21" y2="21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </span>
+        </div>
+        <button
+          type="submit"
+          className="w-[110px] h-[40px] bg-[#3E99C6] text-white rounded-lg font-semibold flex items-center justify-center gap-2 ml-2"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+            <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" fill="none" />
+            <line x1="16.5" y1="16.5" x2="21" y2="21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+          <Typography variant="titleSmall" className="text-white">검색</Typography>
+        </button>
       </div>
     </form>
   );

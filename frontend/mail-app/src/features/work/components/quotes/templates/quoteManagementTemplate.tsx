@@ -1,21 +1,15 @@
 import React, { useState } from 'react';
-import { Quote, QuoteDetail } from '../../../types/quote';
+import { useNavigate } from 'react-router-dom';
+import { Quote } from '../../../types/quote';
 import { QuoteSearchBar, QuoteSearchParams } from '../molecules/quoteSearchBar';
 import { QuoteTable } from '../organisms/quoteTable';
 import { useQuotes } from '../../../hooks/useQuote';
 import { quoteService } from '../../../services/quoteService';
+import { Button } from '@/shared/components/atoms/button';
+import { Typography } from '@/shared/components/atoms/Typography';
 
-interface QuoteManagementTemplateProps {
-  onAddQuote?: () => void;
-  onQuoteClick?: (quote: QuoteDetail) => void;
-  companyId?: number;
-}
-
-export const QuoteManagementTemplate: React.FC<QuoteManagementTemplateProps> = ({
-  onAddQuote,
-  onQuoteClick,
-  companyId = 1,
-}) => {
+export const QuoteManagementTemplate: React.FC = () => {
+  const navigate = useNavigate();
   const [selectedQuoteIds, setSelectedQuoteIds] = useState<Set<number>>(new Set());
   const [keyword, setKeyword] = useState<string>('');
 
@@ -29,14 +23,12 @@ export const QuoteManagementTemplate: React.FC<QuoteManagementTemplateProps> = (
     setKeyword(params.keyword);
   };
 
-  const handleQuoteClick = async (quote: Quote) => {
-    try {
-      const quoteDetail = await quoteService.getQuoteById(quote.id);
-      onQuoteClick?.(quoteDetail);
-    } catch (error) {
-      console.error('견적서 상세 조회 실패:', error);
-      alert('견적서 상세 정보를 불러오는데 실패했습니다.');
-    }
+  const handleAddQuote = () => {
+    navigate('/work/quotes/new');
+  };
+
+  const handleQuoteClick = (quote: Quote) => {
+    navigate(`/work/quotes/${quote.id}`);
   };
 
   const toggleQuoteSelection = (quoteId: number) => {
@@ -82,23 +74,27 @@ export const QuoteManagementTemplate: React.FC<QuoteManagementTemplateProps> = (
       <div className="bg-white rounded-lg shadow">
         <div className="p-4">
           <div className="flex justify-between items-center mb-4">
-            <button
-              onClick={onAddQuote}
-              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+            <Button
+              onClick={handleAddQuote}
+              variant="text"
+              size="large"
+              className="flex items-baseline gap-2 p-0 bg-transparent shadow-none border-none text-black font-bold text-xl hover:bg-transparent hover:text-black active:bg-transparent"
             >
-              견적서 등록
-            </button>
-            <div className="space-x-2">
-              <button
+              <span className="text-2xl font-bold leading-none relative -top-[-1px]">+</span>
+              <Typography variant="titleSmall" className="leading-none">견적서 등록하기</Typography>
+            </Button>
+            <div className="flex gap-2">
+              <Button
                 onClick={handleDelete}
-                className="px-4 py-2 bg-white border rounded-md hover:bg-gray-50"
+                variant="text"
+                size="small"
+                className="min-w-[110px] h-[40px] border border-gray-300 bg-white shadow-none text-black font-normal hover:bg-gray-100 hover:text-black active:bg-gray-200 !rounded-none"
               >
-                삭제
-              </button>
+                <Typography variant="titleSmall">삭제</Typography>
+              </Button>
             </div>
           </div>
           <QuoteTable
-            companyId={companyId}
             quotes={quoteResponse?.contents || []}
             onQuoteClick={handleQuoteClick}
             onSelectQuote={toggleQuoteSelection}

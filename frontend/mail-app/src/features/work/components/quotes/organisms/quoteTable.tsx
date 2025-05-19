@@ -1,11 +1,12 @@
 import React from 'react';
 import { Quote } from '../../../types/quote';
 import { QuoteTableRow } from '../molecules/quoteTableRow';
-import { Pagination } from '../../products/molecules/pagination';
 import { useQuoteStore } from '../../../stores/quoteStore';
+import { Typography } from '@/shared/components/atoms/Typography';
+import { Button } from '@/shared/components/atoms/button';
 
 interface QuoteTableProps {
-  companyId: number;
+  companyId?: number;
   quotes: Quote[];
   onQuoteClick?: (quote: Quote) => void;
   onSelectQuote?: (id: number) => void;
@@ -21,10 +22,7 @@ export const QuoteTable: React.FC<QuoteTableProps> = ({
   const {
     currentPage,
     pageSize,
-    sortOption,
     setCurrentPage,
-    setPageSize,
-    setSortOption,
   } = useQuoteStore();
 
   const totalCount = quotes.length;
@@ -34,89 +32,99 @@ export const QuoteTable: React.FC<QuoteTableProps> = ({
     setCurrentPage(page);
   };
 
-  const handleSizeChange = (size: number) => {
-    setPageSize(size);
-    setCurrentPage(1);
-  };
-
-  const handleSortChange = (sort: number) => {
-    setSortOption(sort);
-    setCurrentPage(1);
-  };
-
   return (
     <div>
-      <div className="mb-4 flex justify-between items-center">
-        <div className="flex items-center space-x-2">
-          <select
-            value={pageSize}
-            onChange={(e) => handleSizeChange(Number(e.target.value))}
-            className="p-2 border rounded"
-          >
-            <option value={10}>10개씩 보기</option>
-            <option value={20}>20개씩 보기</option>
-            <option value={50}>50개씩 보기</option>
-          </select>
-
-          <select
-            value={sortOption}
-            onChange={(e) => handleSortChange(Number(e.target.value))}
-            className="p-2 border rounded"
-          >
-            <option value={0}>최신순</option>
-            <option value={1}>견적번호순</option>
-            <option value={2}>금액순</option>
-          </select>
-        </div>
-
-        <div className="text-sm text-gray-600">
-          총 {totalCount}개의 견적서
-        </div>
-      </div>
-
-      <div className="mt-4 overflow-x-auto">
-        <table className="min-w-full">
-          <thead className="bg-gray-50">
+      <table className="min-w-full border">
+        <thead className="bg-gray-50">
+          <tr>
+            <th className="p-2">
+              <input
+                type="checkbox"
+                checked={quotes.length > 0 && quotes.every((quote) => selectedQuoteIds.has(quote.id))}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    quotes.forEach((quote) => onSelectQuote?.(quote.id));
+                  } else {
+                    quotes.forEach((quote) => onSelectQuote?.(quote.id));
+                  }
+                }}
+                className="rounded border-gray-300"
+              />
+            </th>
+            <th className="p-2">
+              <Typography variant="body" bold>견적번호</Typography>
+            </th>
+            <th className="p-2">
+              <Typography variant="body" bold>거래처명</Typography>
+            </th>
+            <th className="p-2">
+              <Typography variant="body" bold>견적일자</Typography>
+            </th>
+            <th className="p-2">
+              <Typography variant="body" bold>담당자</Typography>
+            </th>
+            <th className="p-2">
+              <Typography variant="body" bold>총 금액</Typography>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {quotes.length > 0 ? (
+            quotes.map((quote) => (
+              <QuoteTableRow
+                key={quote.id}
+                quote={{
+                  ...quote,
+                  isSelected: selectedQuoteIds.has(quote.id),
+                }}
+                onSelect={(id) => onSelectQuote?.(id)}
+                onQuoteClick={onQuoteClick}
+              />
+            ))
+          ) : (
             <tr>
-              <th className="p-4 text-left">선택</th>
-              <th className="p-4 text-left">순번</th>
-              <th className="p-4 text-left">견적번호</th>
-              <th className="p-4 text-left">일자</th>
-              <th className="p-4 text-left">발주담당자</th>
-              <th className="p-4 text-left">거래처명</th>
-              <th className="p-4 text-left">품목</th>
-              <th className="p-4 text-right">금액</th>
-            </tr>
-          </thead>
-          <tbody>
-            {quotes.length > 0 ? (
-              quotes.map((quote) => (
-                <QuoteTableRow
-                  key={quote.id}
-                  quote={{
-                    ...quote,
-                    isSelected: selectedQuoteIds.has(quote.id),
-                  }}
-                  onSelect={onSelectQuote}
-                  onQuoteClick={onQuoteClick}
-                />
-              ))
-            ) : (
-              <tr>
-                <td colSpan={8} className="p-4 text-center">
+              <td colSpan={6} className="p-4 text-center">
+                <Typography variant="body" color="text-gray-500">
                   견적서가 없습니다.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                </Typography>
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+      {/* Pagination */}
+      <div className="flex justify-center items-center mt-4">
+        <Button
+          variant="ghost"
+          size="small"
+          disabled={currentPage === 1}
+          onClick={() => handlePageChange(currentPage - 1)}
+        >
+          &lt;
+        </Button>
+        {[...Array(pageCount)].map((_, i) => (
+          <Button
+            key={i}
+            variant="ghost"
+            size="small"
+            onClick={() => handlePageChange(i + 1)}
+            className={currentPage === i + 1 ? 'font-bold underline' : ''}
+          >
+            {i + 1}
+          </Button>
+        ))}
+        <Button
+          variant="ghost"
+          size="small"
+          disabled={currentPage === pageCount}
+          onClick={() => handlePageChange(currentPage + 1)}
+        >
+          &gt;
+        </Button>
+        <Typography variant="body" className="ml-4">
+          총 {totalCount}개
+        </Typography>
       </div>
-
-      <Pagination
-        currentPage={currentPage}
-        totalPages={pageCount}
-        onPageChange={handlePageChange}
-      />
     </div>
   );
 }; 

@@ -1,9 +1,11 @@
 import React from 'react';
 import { Quote } from '../../../types/quote';
+import { Typography } from '@/shared/components/atoms/Typography';
+import { format } from 'date-fns';
 
 interface QuoteTableRowProps {
   quote: Quote;
-  onSelect?: (id: number) => void;
+  onSelect: (id: number) => void;
   onQuoteClick?: (quote: Quote) => void;
 }
 
@@ -12,31 +14,46 @@ export const QuoteTableRow: React.FC<QuoteTableRowProps> = ({
   onSelect,
   onQuoteClick,
 }) => {
-  const handleClick = () => {
-    if (onQuoteClick) {
-      onQuoteClick(quote);
-    }
-  };
-
   return (
-    <tr className="hover:bg-gray-50">
-      <td className="p-4">
+    <tr className="border-t hover:bg-gray-50">
+      <td className="p-2 text-center">
         <input
           type="checkbox"
           checked={quote.isSelected}
-          onChange={() => onSelect?.(quote.id)}
-          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          onChange={() => onSelect(quote.id)}
+          className="rounded border-gray-300"
+          onClick={(e) => e.stopPropagation()}
         />
       </td>
-      <td className="p-4">{quote.id}</td>
-      <td className="p-4 cursor-pointer hover:text-blue-600" onClick={handleClick}>
-        {quote.quoteNo}
+      <td className="p-2">
+        <a
+          href={`/work/quotes/${quote.id}`}
+          onClick={(e) => { e.preventDefault(); onQuoteClick?.(quote); }}
+          className="text-left hover:text-blue-600 hover:underline cursor-pointer bg-transparent border-none p-0 m-0 font-normal text-[12px] leading-normal"
+        >
+          {quote.quoteNo}
+        </a>
       </td>
-      <td className="p-4">{quote.createdAt.toLocaleDateString()}</td>
-      <td className="p-4">{quote.userName}</td>
-      <td className="p-4">{quote.clientName}</td>
-      <td className="p-4">{quote.productName} 외 {quote.productCount - 1}개</td>
-      <td className="p-4 text-right">{quote.price.toLocaleString()}원</td>
+      <td className="p-2">
+        <Typography variant="body">
+          {quote.clientName}
+        </Typography>
+      </td>
+      <td className="p-2">
+        <Typography variant="body">
+          {format(new Date(quote.createdAt), 'yyyy/MM/dd')}
+        </Typography>
+      </td>
+      <td className="p-2">
+        <Typography variant="body">
+          {quote.userName}
+        </Typography>
+      </td>
+      <td className="p-2 text-right">
+        <Typography variant="body">
+          {quote.price ? `${quote.price.toLocaleString()}원` : '0원'}
+        </Typography>
+      </td>
     </tr>
   );
 }; 
