@@ -65,8 +65,8 @@ async def process_query(request: QueryRequest):
             return QueryResponse(error=result["error"])
             
         return QueryResponse(
-            response=result["response"],
-            tool_calls=result["tool_calls"]
+            response=result.get("llm_response"),  # "response" 대신 "llm_response" 사용
+            tool_calls=result.get("tool_results", [])  # "tool_calls" 대신 "tool_results" 사용
         )
     except Exception as e:
         logger.error(f"쿼리 처리 중 오류 발생: {str(e)}")

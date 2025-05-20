@@ -58,11 +58,7 @@ class MCPClientManager:
                     }
                 )
                 
-                # 클라이언트 연결
-                await self.client.__aenter__()
-                
-                # 도구 가져오기
-                self.tools = self.client.get_tools()
+                self.tools = await self.client.get_tools()
                 logger.info(f"사용 가능한 도구: {[tool.name for tool in self.tools]}")
                 
                 if not self.tools:
@@ -78,14 +74,14 @@ class MCPClientManager:
                 
             except Exception as e:
                 logger.error(f"MCP 클라이언트 초기화 오류: {str(e)}")
-                if self.client:
-                    await self.client.__aexit__(None, None, None)
+                self.is_initialized = False
                 raise e
     
     async def cleanup(self):
         if self.client:
             try:
-                await self.client.__aexit__(None, None, None)
+                # 컨텍스트 매니저 종료 코드 제거
+                # MultiServerMCPClient는 더 이상 컨텍스트 매니저가 아님
                 self.is_initialized = False
                 logger.info("MCP 클라이언트 종료됨")
                 if self._reconnect_task:
@@ -93,7 +89,7 @@ class MCPClientManager:
                     self._reconnect_task = None
             except Exception as e:
                 logger.error(f"MCP 클라이언트 종료 오류: {str(e)}")
-    
+        
     async def process_query(self, query: str) -> Dict[str, Any]:
         now_kst = datetime.now(pytz.timezone('Asia/Seoul'))
         now_kst_str = now_kst.strftime('%Y-%m-%d %H:%M:%S KST')
