@@ -12,8 +12,10 @@ import com.alphamail.api.email.domain.repository.EmailRepository;
 import com.alphamail.api.email.domain.valueobject.ThreadId;
 import com.alphamail.api.email.presentation.dto.SendEmailRequest;
 import com.alphamail.api.email.presentation.dto.VectorDBRequest;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -43,7 +45,6 @@ public class EmailService {
 
 		String threadId = null;
 
-
 		// 답장인 경우 원본 이메일의 스레드 ID 찾기
 		if (request.inReplyTo() != null && !request.inReplyTo().isEmpty()) {
 			log.info("inReplyTo에서 원본 이메일 찾기: {}", request.inReplyTo());
@@ -71,7 +72,7 @@ public class EmailService {
 		if (attachments != null && !attachments.isEmpty()
 			&& request.attachments() != null && !request.attachments().isEmpty()
 			&& attachments.size() == request.attachments().size()) {
-			saveSendAttachmentUseCase.execute(attachments, request.attachments(), email);
+			saveSendAttachmentUseCase.execute(attachments, email);
 		}
 
 		try {
@@ -102,7 +103,6 @@ public class EmailService {
 				EmailStatus.SENT
 			);
 
-
 		} catch (Exception e) {
 			updateEmailUseCase.execute(email.getEmailId(), EmailStatus.FAILED);
 			throw e;
@@ -111,9 +111,8 @@ public class EmailService {
 
 	private void saveVectorAsync(SendEmailRequest request, Integer userId, String threadId) {
 		emailVectorUseCase.execute(VectorDBRequest.fromSendEmailRequest(request), userId, threadId)
-				.onErrorContinue((error, item) -> log.warn("벡터 저장 실패 : {}", item, error))
-				.subscribe();
+			.onErrorContinue((error, item) -> log.warn("벡터 저장 실패 : {}", item, error))
+			.subscribe();
 	}
-
 
 }

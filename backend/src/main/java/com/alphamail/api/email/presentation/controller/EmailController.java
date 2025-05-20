@@ -1,6 +1,8 @@
 package com.alphamail.api.email.presentation.controller;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -49,6 +51,7 @@ import com.alphamail.api.user.domain.valueobject.UserId;
 import com.alphamail.common.annotation.Auth;
 
 import com.amazonaws.Response;
+
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -96,11 +99,47 @@ public class EmailController {
 	}
 
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<Void> sendEmail(@RequestPart("data") SendEmailRequest emailRequest,
-		@RequestPart(value = "files", required = false) List<MultipartFile> attachments,
+
+	public ResponseEntity<Void> sendEmail(
+		@RequestPart("sender") String sender,
+		@RequestParam("recipients") List<String> recipients,
+		@RequestPart("subject") String subject,
+		@RequestPart("bodyText") String bodyText,
+		@RequestPart(value = "bodyHtml", required = false) String bodyHtml,
+		@RequestPart(value = "inReplyTo", required = false) String inReplyTo,
+		@RequestPart(value = "references", required = false) String references,
+		@RequestPart(value = "files", required = false) List<MultipartFile> attachmentFiles,
 		@Auth Integer userId) {
 
-		emailService.sendEmail(emailRequest, attachments, userId);
+		// null 처리
+		String safeBodyHtml = bodyHtml != null ? bodyHtml : "";
+		String safeInReplyTo = inReplyTo != null ? inReplyTo : "";
+		String safeReferences = references != null ? references : "";
+
+		// MultipartFile에서 Attachment 객체 생성
+		List<SendEmailRequest.Attachment> attachmentInfos =
+			attachmentFiles != null ?
+				attachmentFiles.stream()
+					.map(file -> new SendEmailRequest.Attachment(
+						file.getOriginalFilename(), // 파일 원본 이름
+						file.getSize(),             // 파일 크기
+						file.getContentType()))     // 파일 타입
+					.collect(Collectors.toList())
+				: Collections.emptyList();
+
+		// SendEmailRequest 생성
+		SendEmailRequest emailRequest = new SendEmailRequest(
+			sender,
+			recipients,
+			subject,
+			bodyText,
+			safeBodyHtml,
+			safeInReplyTo,
+			safeReferences,
+			attachmentInfos);
+
+		// 서비스 호출
+		emailService.sendEmail(emailRequest, attachmentFiles, userId);
 		return ResponseEntity.ok().build();
 	}
 
