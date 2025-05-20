@@ -29,6 +29,11 @@ export const QuoteTableRow: React.FC<QuoteTableRowProps> = ({
         />
       </td>
       <td className="p-2 text-center border-r border-gray-200">
+        <Typography variant="body">
+          {quote.id}
+        </Typography>
+      </td>
+      <td className="p-2 text-center border-r border-gray-200">
         <a
           href={`/work/quotes/${quote.id}`}
           onClick={e => { e.preventDefault(); onQuoteClick?.(quote); }}
@@ -39,17 +44,22 @@ export const QuoteTableRow: React.FC<QuoteTableRowProps> = ({
       </td>
       <td className="p-2 text-center border-r border-gray-200">
         <Typography variant="body">
-          {quote.clientName}
-        </Typography>
-      </td>
-      <td className="p-2 text-center border-r border-gray-200">
-        <Typography variant="body">
           {format(new Date(quote.createdAt), 'yyyy/MM/dd')}
         </Typography>
       </td>
       <td className="p-2 text-center border-r border-gray-200">
         <Typography variant="body">
           {quote.userName}
+        </Typography>
+      </td>
+      <td className="p-2 text-center border-r border-gray-200">
+        <Typography variant="body">
+          {quote.clientName}
+        </Typography>
+      </td>
+      <td className="p-2 text-center border-r border-gray-200">
+        <Typography variant="body">
+          {quote.productCount > 1 ? `${quote.productName}외 ${quote.productCount - 1}개` : quote.productName}
         </Typography>
       </td>
       <td className="p-2 text-center">

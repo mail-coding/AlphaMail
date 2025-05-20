@@ -54,19 +54,25 @@ export const QuoteTable: React.FC<QuoteTableProps> = ({
               />
             </th>
             <th className="p-2 text-center border-r border-gray-200">
-              <Typography variant="body" bold>견적번호</Typography>
+              <Typography variant="body" bold>순번</Typography>
+            </th>
+            <th className="p-2 text-center border-r border-gray-200">
+              <Typography variant="body" bold>등록번호</Typography>
+            </th>
+            <th className="p-2 text-center border-r border-gray-200">
+              <Typography variant="body" bold>일자</Typography>
+            </th>
+            <th className="p-2 text-center border-r border-gray-200">
+              <Typography variant="body" bold>담당자</Typography>
             </th>
             <th className="p-2 text-center border-r border-gray-200">
               <Typography variant="body" bold>거래처명</Typography>
             </th>
             <th className="p-2 text-center border-r border-gray-200">
-              <Typography variant="body" bold>견적일자</Typography>
-            </th>
-            <th className="p-2 text-center border-r border-gray-200">
-              <Typography variant="body" bold>담당자</Typography>
+              <Typography variant="body" bold>품목</Typography>
             </th>
             <th className="p-2 text-center">
-              <Typography variant="body" bold>총 금액</Typography>
+              <Typography variant="body" bold>금액</Typography>
             </th>
           </tr>
         </thead>

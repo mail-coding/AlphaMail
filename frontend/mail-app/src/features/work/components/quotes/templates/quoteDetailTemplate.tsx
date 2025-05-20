@@ -149,7 +149,7 @@ export const QuoteDetailTemplate = () => {
     );
   }
 
-  const showPdfButton = id && id !== 'new' && formData;
+  const showPdfButton = id && id !== 'new' && formData && formData.quoteNo && formData.products && formData.products.length > 0;
 
   return (
     <div className="p-8 bg-white rounded shadow max-w-5xl mx-auto">
@@ -158,7 +158,7 @@ export const QuoteDetailTemplate = () => {
           견적서 {id && id !== 'new' ? '수정' : '등록'}
         </Typography>
         <div className="flex space-x-2">
-          {showPdfButton && formData && <PdfButton data={formData} />}
+          {showPdfButton && <PdfButton data={formData} />}
         </div>
       </div>
 
