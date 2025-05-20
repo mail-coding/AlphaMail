@@ -34,6 +34,7 @@ export const NavBar = () => {
         }
     }, [isCollapsed, setContentVisible]);
 
+
     const handleLogin = () => {
         navigate('/login');
     };
@@ -98,15 +99,25 @@ export const NavBar = () => {
 
             {/* 로고 영역 */}
             <div className="h-[120px] relative">
-                <div className="absolute left-1/2 transform -translate-x-1/2 top-0 cursor-pointer"
-                    onClick={navigateToHome}
-                >
-                    <div className="w-16 h-16 flex-shrink-0">
+                    <div className={cn(
+                        "absolute left-1/2 transform -translate-x-1/2 cursor-pointer transition-all duration-300",
+                        isCollapsed ? "top-[17px]" : "top-0"  
+                    )}
+                        onClick={navigateToHome}
+                    >
+                    {/* 로고 크기를 NavBar의 isCollapsed 상태에 따라 조정 */}
+                    <div className={cn(
+                        "flex-shrink-0 transition-all duration-300",
+                        isCollapsed ? "w-10 h-10" : "w-16 h-16"
+                    )}>
                         <img src="/logo.png" alt="ALPHAMAIL 로고" className="w-full h-full" />
                     </div>
                 </div>
                 {!isCollapsed && contentVisible && (
-                    <div className="absolute left-1/2 transform -translate-x-1/2 top-[70px] text-white text-xl font-light whitespace-nowrap cursor-pointer"
+                    <div className={cn(
+                        "absolute left-1/2 transform -translate-x-1/2 top-[70px] text-white font-light whitespace-nowrap cursor-pointer transition-all duration-300",
+                        isCollapsed ? "text-lg" : "text-xl"
+                    )}
                         onClick={navigateToHome}
                     >
                         ALPHAMAIL
