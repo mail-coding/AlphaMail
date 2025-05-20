@@ -35,7 +35,8 @@ export const useUnreadMails = (limit: number = 10) => {
       };
     },
     enabled: !!inboxFolderId && !!userId,
-    staleTime: 1000 * 60, // 1분으로 줄임
+    staleTime: 0,
+    refetchInterval: 20000,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
   });

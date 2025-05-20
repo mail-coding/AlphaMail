@@ -16,7 +16,8 @@ export const useHome = () => {
       // 쿼리 키에 사용자 ID 포함
       queryKey: [...homeQueryKeys.assistants, user?.id, params],
       queryFn: () => homeService.getAssistants(params),
-      staleTime: 1000 * 60 * 5, // 5분
+      staleTime: 0,
+      refetchInterval: 20000,
     });
   };
 
@@ -29,31 +30,31 @@ export const useHome = () => {
     });
   };
 
-    // 임시 일정 저장 뮤테이션
-    const useUpdateTemporarySchedule = () => {
-      return useMutation({
-        mutationFn: (scheduleData: {
-          name: string;
-          startTime: string;
-          endTime: string;
-          description: string;
-          temporaryScheduleId: number;
-        }) => homeService.updateTemporarySchedule(scheduleData),
-        onSuccess: (data) => {
-          // 저장 성공 시 해당 일정 쿼리 무효화
-          queryClient.invalidateQueries({ 
-            queryKey: homeQueryKeys.temporarySchedule(data.temporaryScheduleId) 
-          });
-          toast.success('일정이 임시저장되었습니다.');
-        },
-        onError: () => {
-          toast.error('일정 임시저장에 실패했습니다.');
-        }
-      });
-    };
+  // 임시 일정 저장 뮤테이션
+  const useUpdateTemporarySchedule = () => {
+    return useMutation({
+      mutationFn: (scheduleData: {
+        name: string;
+        startTime: string;
+        endTime: string;
+        description: string;
+        temporaryScheduleId: number;
+      }) => homeService.updateTemporarySchedule(scheduleData),
+      onSuccess: (data) => {
+        // 저장 성공 시 해당 일정 쿼리 무효화
+        queryClient.invalidateQueries({ 
+          queryKey: homeQueryKeys.temporarySchedule(data.temporaryScheduleId) 
+        });
+        toast.success('일정이 임시저장되었습니다.');
+      },
+      onError: () => {
+        toast.error('일정 임시저장에 실패했습니다.');
+      }
+    });
+  };
   
 
-      // 일정 등록 뮤테이션
+  // 일정 등록 뮤테이션
   const useRegisterSchedule = () => {
     return useMutation({
       mutationFn: (scheduleData: {

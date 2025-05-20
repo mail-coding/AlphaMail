@@ -201,21 +201,40 @@ export const mailService = {
     // FormData 객체 생성
     const formData = new FormData();
     
-    // JSON 데이터를 Blob으로 변환하여 FormData에 추가 (명시적으로 application/json 타입 지정)
-    const jsonBlob = new Blob([JSON.stringify(mailData)], { type: 'application/json' });
-    formData.append('data', jsonBlob);
+    // JSON 데이터를 개별 필드로 추가
+    formData.append('sender', mailData.sender);
+    
+    // recipients 배열 처리
+    if (mailData.recipients && mailData.recipients.length > 0) {
+      mailData.recipients.forEach((recipient, index) => {
+        formData.append(`recipients[${index}]`, recipient);
+      });
+    }
+    
+    formData.append('subject', mailData.subject || '');
+    formData.append('bodyText', mailData.bodyText || '');
+    formData.append('bodyHtml', mailData.bodyHtml || '');
+    
+    // 선택적 필드들
+    if (mailData.inReplyTo) {
+      formData.append('inReplyTo', mailData.inReplyTo);
+    }
+    
+    if (mailData.references) {
+      formData.append('references', mailData.references);
+    }
+    
     // 첨부파일이 있으면 FormData에 추가
     if (files && files.length > 0) {
       files.forEach(file => {
         formData.append('files', file);
       });
     }
-    
+  
     console.log('첨부파일 정보:', files?.map(file => ({
       name: file.name,
       size: file.size,
       type: file.type,
-      byte: file.bytes,
       lastModified: new Date(file.lastModified).toISOString()
     })));
   
@@ -237,7 +256,7 @@ export const mailService = {
       throw error;
     }
   },
-
+  
   // 폴더 조회 기능 추가
   async getFolders(): Promise<FolderResponse[]> {
     const endpoint = `/api/mails/folders`;

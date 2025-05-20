@@ -29,6 +29,15 @@ export const HomeAiTemplate: React.FC = () => {
 
   const totalPages = data?.pageCount || 0;
   
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      console.log('AI 데이터 갱신');
+      refetch();
+    }, 10000); // 10초마다 갱신
+    
+    return () => clearInterval(intervalId);
+  }, [refetch]);
+
   // 페이지 포커스 시 데이터 갱신
   useEffect(() => {
     // 페이지가 포커스될 때 데이터 다시 가져오기

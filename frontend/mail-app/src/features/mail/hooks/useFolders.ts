@@ -12,7 +12,7 @@ export const useFolders = () => {
   const query = useQuery({
     queryKey: ['folders', userId],
     queryFn: () => mailService.getFolders(),
-    staleTime: 5 * 60 * 1000, // 5분 동안 캐시 유지
+    staleTime: 10 * 60 * 1000, // 10분 동안 캐시 유지
     enabled: !!userId,
   });
   
