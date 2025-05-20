@@ -195,6 +195,7 @@ export const MailQuillEditor: React.FC<MailQuillEditorProps> = ({
         </div>
         <span className={`${isAtLimit ? 'text-red-500' : isNearLimit ? 'text-yellow-500' : 'text-gray-500'}`}>
           {(contentSize / (1024 * 1024)).toFixed(2)}MB / 1MB
+          {isMaxSizeReached && ' (용량 초과)'}
         </span>
       </div>
     );
