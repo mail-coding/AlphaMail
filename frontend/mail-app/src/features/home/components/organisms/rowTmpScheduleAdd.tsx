@@ -23,7 +23,8 @@ export const RowTmpScheduleAdd: React.FC<RowTmpScheduleAddProps> = ({ temporaryS
     setScheduleEndTime,
     validateSchedule,
     resetSchedule,
-    setActiveRowId
+    setActiveRowId,
+    validateAndAdjustDateTime 
   } = useHomeStore();
   
   const { useTemporarySchedule, useUpdateTemporarySchedule, useRegisterSchedule } = useHome();
@@ -58,78 +59,68 @@ export const RowTmpScheduleAdd: React.FC<RowTmpScheduleAddProps> = ({ temporaryS
     }
   }, [scheduleDetail, setScheduleTitle, setScheduleDescription, setScheduleStartDate, setScheduleStartTime, setScheduleEndDate, setScheduleEndTime]);
 
-    // 날짜와 시간을 ISO 형식으로 결합
-    const combineDateTime = (date: string, time: string): string => {
-      return `${date}T${time}:00`;
+  // 날짜와 시간을 ISO 형식으로 결합
+  const combineDateTime = (date: string, time: string): string => {
+    const [year, month, day] = date.split('-').map(Number);
+    const [hours, minutes] = time.split(':').map(Number);
+    
+    const dateObj = new Date(year, month - 1, day, hours, minutes);
+    
+    return dateObj.toISOString().replace('Z', '');
+  };
+
+  const handleApply = () => {
+    validateAndAdjustDateTime();
+
+    if (!validateSchedule()) {
+      return; 
+    }
+
+    if (!schedule.startDate || !schedule.startTime || !schedule.endDate || !schedule.endTime) {
+      toast.error('시작 시간과 종료 시간을 모두 설정해주세요.');
+      return;
+    }
+    
+    // API 요청 데이터 구성 - 로컬 시간대로 설정
+    const scheduleData = {
+      name: schedule.title,
+      startTime: combineDateTime(schedule.startDate, schedule.startTime),
+      endTime: combineDateTime(schedule.endDate, schedule.endTime),
+      description: schedule.description,
+      temporaryScheduleId: temporaryScheduleId
     };
-  
-    const handleApply = () => {
-      if (validateSchedule()) {
-        // 시작 시간과 종료 시간이 설정되어 있는지 확인
-        if (!schedule.startDate || !schedule.startTime || !schedule.endDate || !schedule.endTime) {
-          toast.error('시작 시간과 종료 시간을 모두 설정해주세요.');
-          return;
-        }
-  
-        // 종료 시간이 시작 시간보다 이후인지 확인
-        const startDateTime = new Date(combineDateTime(schedule.startDate, schedule.startTime));
-        const endDateTime = new Date(combineDateTime(schedule.endDate, schedule.endTime));
-        
-        if (endDateTime <= startDateTime) {
-          toast.error('종료 시간은 시작 시간보다 이후여야 합니다.');
-          return;
-        }
-  
-        // API 요청 데이터 구성
-        const scheduleData = {
-          name: schedule.title,
-          startTime: combineDateTime(schedule.startDate, schedule.startTime),
-          endTime: combineDateTime(schedule.endDate, schedule.endTime),
-          description: schedule.description,
-          temporaryScheduleId: temporaryScheduleId
-        };
-  
-        // 일정 등록 API 호출
-        registerScheduleMutation.mutate(scheduleData, {
-          onSuccess: () => {
-            // 성공 시 현재 열린 행 닫기
-            setActiveRowId(null);
-            // 스토어 상태 초기화
-            resetSchedule();
-          }
-        });
+
+    registerScheduleMutation.mutate(scheduleData, {
+      onSuccess: () => {
+        // 성공 시 현재 열린 행 닫기
+        setActiveRowId(null);
+        resetSchedule();
       }
-    };
+    });
+  };
   
   const handleTempSave = () => {
-    if (validateSchedule()) {
-      // 시작 시간과 종료 시간이 설정되어 있는지 확인
-      if (!schedule.startDate || !schedule.startTime || !schedule.endDate || !schedule.endTime) {
-        toast.error('시작 시간과 종료 시간을 모두 설정해주세요.');
-        return;
-      }
+    validateAndAdjustDateTime();
 
-      // 종료 시간이 시작 시간보다 이후인지 확인
-      const startDateTime = new Date(combineDateTime(schedule.startDate, schedule.startTime));
-      const endDateTime = new Date(combineDateTime(schedule.endDate, schedule.endTime));
-      
-      if (endDateTime <= startDateTime) {
-        toast.error('종료 시간은 시작 시간보다 이후여야 합니다.');
-        return;
-      }
-
-      // API 요청 데이터 구성
-      const scheduleData = {
-        name: schedule.title,
-        startTime: combineDateTime(schedule.startDate, schedule.startTime),
-        endTime: combineDateTime(schedule.endDate, schedule.endTime),
-        description: schedule.description,
-        temporaryScheduleId: temporaryScheduleId
-      };
-
-      // 임시 저장 API 호출
-      updateScheduleMutation.mutate(scheduleData);
+    if (!validateSchedule()) {
+      return; 
     }
+
+    if (!schedule.startDate || !schedule.startTime || !schedule.endDate || !schedule.endTime) {
+      toast.error('시작 시간과 종료 시간을 모두 설정해주세요.');
+      return;
+    }
+
+    // API 요청 데이터 구성 - 로컬 시간대로 설정
+    const scheduleData = {
+      name: schedule.title,
+      startTime: combineDateTime(schedule.startDate, schedule.startTime),
+      endTime: combineDateTime(schedule.endDate, schedule.endTime),
+      description: schedule.description,
+      temporaryScheduleId: temporaryScheduleId
+    };
+
+    updateScheduleMutation.mutate(scheduleData);
   };
 
   if (isLoading) {
