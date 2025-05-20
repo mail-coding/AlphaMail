@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, RefObject } from 'react';
 import { useQuoteStore } from '../../../stores/quoteStore';
 import AddressInput from '@/shared/components/atoms/addressInput';
 import ClientInput from '@/shared/components/atoms/clientInput';
@@ -6,6 +6,9 @@ import KakaoAddressTemplate from '@/shared/components/template/kakaoAddressTempl
 import { api } from '@/shared/lib/axiosInstance';
 import { Client } from '../../../types/clients';
 import { Typography } from '@/shared/components/atoms/Typography';
+import { useUserInfo } from '@/shared/hooks/useUserInfo';
+import { PhoneInput } from '@/shared/components/atoms/phoneInput';
+import { useParams } from 'react-router-dom';
 
 const MAX_LENGTHS = {
   quoteNo: 255,
@@ -14,10 +17,24 @@ const MAX_LENGTHS = {
   shippingAddress: 255,
 };
 
-const QuoteBasicInfoForm: React.FC = () => {
+interface QuoteBasicInfoFormProps {
+  clientNameRef?: RefObject<HTMLInputElement>;
+  managerNumberRef?: RefObject<HTMLInputElement>;
+  shippingAddressRef?: RefObject<HTMLInputElement>;
+  onInputFocus?: () => void;
+}
+
+const QuoteBasicInfoForm: React.FC<QuoteBasicInfoFormProps> = ({
+  clientNameRef,
+  managerNumberRef,
+  shippingAddressRef,
+  onInputFocus,
+}) => {
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { formData, setFormData } = useQuoteStore();
+  const { id } = useParams();
+  const { data: userInfo } = useUserInfo();
 
   if (!formData) return null;
 
@@ -90,51 +107,34 @@ const QuoteBasicInfoForm: React.FC = () => {
         </colgroup>
         <tbody>
           <tr>
+            {id !== 'new' && (
+            <>
             <td className="bg-[#F9F9F9] h-[44px] border border-[#E5E5E5] text-center align-middle font-medium">
-              <Typography variant="body">견적등록번호<span className="text-red-500 ml-1">*</span></Typography>
+              <Typography variant="body">견적등록번호</Typography>
             </td>
             <td className="bg-white border border-[#E5E5E5] px-2">
-              <input
-                id="quoteNo"
-                name="quoteNo"
-                type="text"
-                value={formData.quoteNo || ''}
-                onChange={handleInputChange}
-                className="w-full h-[32px] px-2 border border-gray-300 bg-white text-sm focus:outline-none"
-                required
-                maxLength={255}
-              />
-              {errors.quoteNo && <p className="mt-1 text-xs text-red-500">{errors.quoteNo}</p>}
+              <span className="text-sm"><Typography variant="body">{formData.quoteNo || '-'}</Typography></span>
             </td>
+            </>
+            )}
             <td className="bg-[#F9F9F9] h-[44px] border border-[#E5E5E5] text-center align-middle font-medium">
-              <Typography variant="body">일자<span className="text-red-500 ml-1">*</span></Typography>
+              <Typography variant="body">일자</Typography>
             </td>
             <td className="bg-white border border-[#E5E5E5] px-2">
-              <input
-                id="createdAt"
-                name="createdAt"
-                type="date"
-                value={formData.createdAt ? new Date(formData.createdAt).toISOString().split('T')[0] : ''}
-                onChange={handleInputChange}
-                className="w-full h-[32px] px-2 border border-gray-300 bg-white text-sm focus:outline-none"
-                required
-              />
-              {errors.createdAt && <p className="mt-1 text-xs text-red-500">{errors.createdAt}</p>}
+              <span className="text-sm">
+              <Typography variant="body">{(() => {
+                  const date = formData.createdAt ? new Date(formData.createdAt) : new Date();
+                  return date.toLocaleDateString('ko-KR');
+                })()}</Typography>
+              </span>
             </td>
             <td className="bg-[#F9F9F9] h-[44px] border border-[#E5E5E5] text-center align-middle font-medium">
               <Typography variant="body">담당자</Typography>
             </td>
             <td className="bg-white border border-[#E5E5E5] px-2">
-              <input
-                id="manager"
-                name="manager"
-                type="text"
-                value={formData.manager || ''}
-                onChange={handleInputChange}
-                className="w-full h-[32px] px-2 border border-gray-300 bg-white text-sm focus:outline-none"
-                maxLength={30}
-              />
-              {errors.manager && <p className="mt-1 text-xs text-red-500">{errors.manager}</p>}
+              <span className="text-sm">
+                <Typography variant="body">{userInfo?.name || '-'}</Typography>
+              </span>
             </td>
           </tr>
           <tr>
@@ -143,9 +143,12 @@ const QuoteBasicInfoForm: React.FC = () => {
             </td>
             <td className="bg-white border border-[#E5E5E5] px-2">
               <ClientInput
+                ref={clientNameRef}
                 value={formData.clientName}
                 onChange={handleClientChange}
                 className="w-full h-[32px]"
+                onFocus={onInputFocus}
+                onClick={onInputFocus}
               />
               {errors.clientName && <p className="mt-1 text-xs text-red-500">{errors.clientName}</p>}
             </td>
@@ -153,27 +156,13 @@ const QuoteBasicInfoForm: React.FC = () => {
               <Typography variant="body">사업자등록번호</Typography>
             </td>
             <td className="bg-gray-50 border border-[#E5E5E5] px-2">
-              <input
-                id="licenseNumber"
-                name="licenseNumber"
-                type="text"
-                value={formData.licenseNumber || ''}
-                readOnly
-                className="w-full h-[32px] px-2 border border-gray-300 bg-gray-100 text-sm focus:outline-none"
-              />
+              <span className="text-sm"><Typography variant="body">{formData.licenseNumber || '-'}</Typography></span>
             </td>
             <td className="bg-[#F9F9F9] h-[44px] border border-[#E5E5E5] text-center align-middle font-medium">
               <Typography variant="body">대표자</Typography>
             </td>
             <td className="bg-gray-50 border border-[#E5E5E5] px-2">
-              <input
-                id="representative"
-                name="representative"
-                type="text"
-                value={formData.representative || ''}
-                readOnly
-                className="w-full h-[32px] px-2 border border-gray-300 bg-gray-100 text-sm focus:outline-none"
-              />
+              <span className="text-sm"><Typography variant="body">{formData.representative || '-'}</Typography></span>
             </td>
           </tr>
           <tr>
@@ -181,42 +170,29 @@ const QuoteBasicInfoForm: React.FC = () => {
               <Typography variant="body">종목</Typography>
             </td>
             <td className="bg-gray-50 border border-[#E5E5E5] px-2">
-              <input
-                id="businessItem"
-                name="businessItem"
-                type="text"
-                value={formData.businessItem || ''}
-                readOnly
-                className="w-full h-[32px] px-2 border border-gray-300 bg-gray-100 text-sm focus:outline-none"
-              />
+            <span className="text-sm"><Typography variant="body">{formData.businessItem || '-'}</Typography></span>
             </td>
             <td className="bg-[#F9F9F9] h-[44px] border border-[#E5E5E5] text-center align-middle font-medium">
               <Typography variant="body">업태</Typography>
             </td>
             <td className="bg-gray-50 border border-[#E5E5E5] px-2">
-              <input
-                id="businessType"
-                name="businessType"
-                type="text"
-                value={formData.businessType || ''}
-                readOnly
-                className="w-full h-[32px] px-2 border border-gray-300 bg-gray-100 text-sm focus:outline-none"
-              />
+            <span className="text-sm"><Typography variant="body">{formData.businessType || '-'}</Typography></span>
             </td>
             <td className="bg-[#F9F9F9] h-[44px] border border-[#E5E5E5] text-center align-middle font-medium">
               <Typography variant="body">거래처연락처</Typography>
             </td>
             <td className="bg-white border border-[#E5E5E5] px-2">
-              <input
+              <PhoneInput
+                ref={managerNumberRef}
                 id="managerNumber"
                 name="managerNumber"
-                type="text"
                 value={formData.managerNumber || ''}
                 onChange={handleInputChange}
-                className="w-full h-[32px] px-2 border border-gray-300 bg-white text-sm focus:outline-none"
                 maxLength={13}
+                errorMessage={errors.managerNumber}
+                className="w-full h-[32px] px-2 border border-gray-300 bg-white text-sm focus:outline-none"
+                onFocus={onInputFocus}
               />
-              {errors.managerNumber && <p className="mt-1 text-xs text-red-500">{errors.managerNumber}</p>}
             </td>
           </tr>
           <tr>
@@ -225,9 +201,12 @@ const QuoteBasicInfoForm: React.FC = () => {
             </td>
             <td colSpan={5} className="bg-white border border-[#E5E5E5] px-2">
               <AddressInput
+                ref={shippingAddressRef}
                 value={formData.shippingAddress}
                 onChange={handleAddressChange}
                 className="w-full h-[32px]"
+                onFocus={onInputFocus}
+                onClick={onInputFocus}
               />
               {errors.shippingAddress && <p className="mt-1 text-xs text-red-500">{errors.shippingAddress}</p>}
             </td>

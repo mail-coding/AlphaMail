@@ -74,6 +74,7 @@ export const useQuoteStore = create<QuoteState>((set) => ({
     representative: '',
     products: [],
   },
+  
   setFormData: (data) => set((state) => ({
     formData: typeof data === 'function' ? data(state.formData) : data,
   })),

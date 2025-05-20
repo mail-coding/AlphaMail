@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { QuoteProductTable } from '../organisms/quoteProductTable';
 import { useUserInfo } from '@/shared/hooks/useUserInfo';
@@ -11,6 +11,10 @@ import { Spinner } from '@/shared/components/atoms/spinner';
 import { useQuoteStore } from '../../../stores/quoteStore';
 import { useQuoteDetail } from '../../../hooks/useQuoteDetail';
 import QuoteBasicInfoForm from '../organisms/quoteBasicInfoForm';
+import { TooltipPortal } from '@/shared/components/atoms/TooltipPortal';
+import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export const QuoteDetailTemplate = () => {
   const navigate = useNavigate();
@@ -19,6 +23,17 @@ export const QuoteDetailTemplate = () => {
   const { data: userInfo } = useUserInfo();
   const { data: quote, isLoading } = useQuoteDetail(id ? parseInt(id) : null);
   const { handleCreateQuote, handleUpdateQuote } = useQuotes({});
+  const queryClient = useQueryClient();
+
+  const clientNameRef = useRef<HTMLInputElement>(null!);
+  const managerNumberRef = useRef<HTMLInputElement>(null!);
+  const shippingAddressRef = useRef<HTMLInputElement>(null!);
+
+  const [tooltip, setTooltip] = useState<{
+    key: string;
+    message: string;
+    position: { top: number; left: number };
+  } | null>(null);
 
   useEffect(() => {
     if (id === 'new') {
@@ -43,54 +58,64 @@ export const QuoteDetailTemplate = () => {
         products: [],
       });
     } else if (quote) {
-      setFormData(quote);
+      setFormData(() => quote);
     }
   }, [id, quote, setFormData]);
 
-  const MAX_LENGTHS = {
-    quoteNo: 255,
-    shippingAddress: 255,
-  };
+  // formData 변경 감지를 위한 useEffect
+  useEffect(() => {
+    if (formData) {
+      console.log("formData updated:", formData);
+    }
+  }, [formData]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       if (!userInfo) {
-        alert('사용자 정보를 찾을 수 없습니다.');
+        toast.error('사용자 정보를 찾을 수 없습니다.');
         return;
       }
 
       if (!formData) {
-        alert('견적서 데이터가 없습니다.');
+        toast.error('견적서 데이터가 없습니다.');
         return;
       }
 
-      // 유효성 검사
-      if (!formData.quoteNo) {
-        alert('견적등록번호를 입력해주세요.');
-        return;
-      }
-      if (formData.quoteNo.length > MAX_LENGTHS.quoteNo) {
-        alert(`견적등록번호는 ${MAX_LENGTHS.quoteNo}자까지 입력 가능합니다.`);
+      if (!formData.products || formData.products.length === 0) {
+        toast.error('최소 1개의 품목을 추가해야 합니다.');
         return;
       }
 
-      if (!formData.createdAt) {
-        alert('일자를 입력해주세요.'); // HTML input type="date"는 기본적으로 값을 가지거나 빈 문자열임
+      // 거래 담당자 10자 이내
+      if (!formData.clientName || formData.clientName.trim() === '') {
+        const rect = clientNameRef.current?.getBoundingClientRect();
+        if (rect) setTooltip({
+          key: 'clientName',
+          message: '거래처명을 입력해주세요.',
+          position: { top: rect.top + window.scrollY, left: rect.left + window.scrollX + rect.width / 2 }
+        });
         return;
       }
-
-      if (!formData.clientName) {
-        alert('거래처명을 입력해주세요.');
+      // 거래처 연락처: 비어있거나, phoneInput의 정규식과 일치
+      const phoneRegex = /^((010-\d{4}-\d{4})|(01[1|6|7|8|9]-\d{3,4}-\d{4})|(0[2-9]{1,2}-\d{3,4}-\d{4}))$/;
+      if (formData.managerNumber && !phoneRegex.test(formData.managerNumber)) {
+        const rect = managerNumberRef.current?.getBoundingClientRect();
+        if (rect) setTooltip({
+          key: 'managerNumber',
+          message: '거래처 연락처 형식이 올바르지 않습니다.',
+          position: { top: rect.top + window.scrollY, left: rect.left + window.scrollX + rect.width / 2 }
+        });
         return;
       }
-
-      if (!formData.shippingAddress) {
-        alert('주소를 입력해주세요.');
-        return;
-      }
-      if (formData.shippingAddress.length > MAX_LENGTHS.shippingAddress) {
-        alert(`주소는 ${MAX_LENGTHS.shippingAddress}자까지 입력 가능합니다.`);
+      // 주소 필수
+      if (!formData.shippingAddress || formData.shippingAddress.trim() === '') {
+        const rect = shippingAddressRef.current?.getBoundingClientRect();
+        if (rect) setTooltip({
+          key: 'shippingAddress',
+          message: '주소를 입력해주세요.',
+          position: { top: rect.top + window.scrollY, left: rect.left + window.scrollX + rect.width / 2 }
+        });
         return;
       }
 
@@ -104,40 +129,45 @@ export const QuoteDetailTemplate = () => {
 
         // 품목 이름 유효성 검사
         if (!product.name) {
-          alert(`품목 ${i + 1}의 이름을 입력해주세요.`);
+          toast.error(`품목 ${i + 1}의 이름을 입력해주세요.`);
           return;
         }
 
         // 수량 유효성 검사
         if (typeof product.count !== 'number' || product.count < 0) {
-          alert(`${productNameForAlert}의 수량은 0 이상의 숫자로 입력해주세요.`);
+          toast.error(`${productNameForAlert}의 수량은 0 이상의 숫자로 입력해주세요.`);
           return;
         }
         if (product.count > MAX_PRODUCT_COUNT) {
-          alert(`${productNameForAlert}의 수량은 ${MAX_PRODUCT_COUNT.toLocaleString()}을 초과할 수 없습니다.`);
+          toast.error(`${productNameForAlert}의 수량은 ${MAX_PRODUCT_COUNT.toLocaleString()}을 초과할 수 없습니다.`);
           return;
         }
 
         // 단가 유효성 검사
         if (typeof product.price !== 'number' || product.price < 0) {
-          alert(`${productNameForAlert}의 단가는 0 이상의 숫자로 입력해주세요.`);
+          toast.error(`${productNameForAlert}의 단가는 0 이상의 숫자로 입력해주세요.`);
           return;
         }
         if (product.price > MAX_PRODUCT_PRICE) {
-          alert(`${productNameForAlert}의 단가는 ${MAX_PRODUCT_PRICE.toLocaleString()}을 초과할 수 없습니다.`);
+          toast.error(`${productNameForAlert}의 단가는 ${MAX_PRODUCT_PRICE.toLocaleString()}을 초과할 수 없습니다.`);
           return;
         }
       }
 
       if (id && id !== 'new') {
         await handleUpdateQuote(formData);
+        await queryClient.invalidateQueries({ queryKey: ['quotes'] });
+        await queryClient.invalidateQueries({ queryKey: ['quoteDetail', formData.id] });
+        toast.success('견적서가 성공적으로 수정되었습니다.');
       } else {
         await handleCreateQuote(formData);
+        await queryClient.invalidateQueries({ queryKey: ['quotes'] });
+        toast.success('견적서가 성공적으로 등록되었습니다.');
       }
       navigate('/work/quotes');
     } catch (error) {
       console.error('Failed to save quote:', error);
-      alert('견적서 저장에 실패했습니다.');
+      toast.error('견적서 저장에 실패했습니다.');
     }
   };
 
@@ -163,7 +193,12 @@ export const QuoteDetailTemplate = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <QuoteBasicInfoForm />
+        <QuoteBasicInfoForm
+          clientNameRef={clientNameRef}
+          managerNumberRef={managerNumberRef}
+          shippingAddressRef={shippingAddressRef}
+          onInputFocus={() => setTooltip(null)}
+        />
         <QuoteProductTable
           products={formData.products}
           onProductChange={(index, field, value) => {
@@ -248,6 +283,14 @@ export const QuoteDetailTemplate = () => {
           ← 목록으로
         </button>
       </div>
+      {tooltip && (
+        <TooltipPortal position={tooltip.position}>
+          <div className="bg-red-500 text-white text-xs rounded px-3 py-1 relative shadow" style={{ transform: 'translateX(-50%) translateY(-100%)' }}>
+            {tooltip.message}
+            <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-red-500" />
+          </div>
+        </TooltipPortal>
+      )}
     </div>
   );
 };
