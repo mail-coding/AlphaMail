@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Typography } from '@/shared/components/atoms/Typography';
 import { productService } from '../../../services/productService';
+import { s3Service } from '../../../services/s3Service';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useUserInfo } from '@/shared/hooks/useUserInfo';
 import { Input } from '@/shared/components/atoms/input';
 import { Button } from '@/shared/components/atoms/button';
 import { TooltipPortal } from '@/shared/components/atoms/TooltipPortal';
+import { toast } from 'react-toastify';
 
 interface ProductDetailTemplateProps {
   onBack?: () => void;
@@ -18,7 +20,7 @@ interface ProductDetailForm {
   stock: number;
   inboundPrice: number;
   outboundPrice: number;
-  image?: File;
+  image?: string;
   imageUrl?: string;
   companyId: number;
 }
@@ -41,6 +43,8 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
 
   // input refs
   const nameRef = useRef<HTMLInputElement>(null);
@@ -182,10 +186,8 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setFormData(prev => ({
-        ...prev,
-        image: e.target.files![0]
-      }));
+      setImageFile(e.target.files[0]);
+      setImageUrl(URL.createObjectURL(e.target.files[0]));
     }
   };
 
@@ -236,6 +238,7 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitted(true);
+    
     // 유효성 검사
     const errors: Record<string, string> = {};
     if (!formData.name.trim()) {
@@ -277,15 +280,51 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({
     if (Object.keys(errors).length > 0) {
       return;
     }
+
     try {
+      setIsLoading(true);
+      let finalImageUrl = formData.imageUrl;
+
+      // 새로운 이미지가 선택된 경우에만 업로드
+      if (imageFile) {
+        try {
+          // TODO:기존 이미지가 있다면 삭제
+          // if (formData.imageUrl) {
+          //   await s3Service.deleteImage(formData.imageUrl);
+          // }
+          
+          // 새 이미지 업로드
+          finalImageUrl = await s3Service.uploadImage(imageFile);
+        } catch (error) {
+          console.error('이미지 처리 실패:', error);
+          toast.error('이미지 업로드에 실패했습니다.');
+          return;
+        }
+      }
+
+      const submitData = {
+        ...formData,
+        image: finalImageUrl
+      };
+
       if (id && id !== 'new') {
-        updateMutation.mutate(formData);
+        await updateMutation.mutateAsync(submitData);
+        toast.success('상품이 수정되었습니다.');
       } else {
-        createMutation.mutate(formData);
+        await createMutation.mutateAsync(submitData);
+        toast.success('상품이 등록되었습니다.');
+      }
+
+      if (onBack) {
+        onBack();
+      } else {
+        navigate('/work/products');
       }
     } catch (error) {
       console.error('상품 저장 실패:', error);
-      alert('상품 저장에 실패했습니다.');
+      toast.error('상품 저장에 실패했습니다.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -428,7 +467,6 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({
 
         {/* 이미지 업로드 섹션 */}
         <div className="grid grid-cols-2 gap-6">
-          {/* 이미지 업로드 섹션 */}
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">상품 이미지</label>
@@ -439,10 +477,10 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
               />
             </div>
-            {(formData.image || formData.imageUrl) && (
+            {(imageUrl || formData.imageUrl) && (
               <div className="mt-4">
                 <img 
-                  src={formData.image ? URL.createObjectURL(formData.image) : formData.imageUrl} 
+                  src={imageUrl || formData.imageUrl} 
                   alt="상품 이미지 미리보기"
                   className="max-w-full h-auto rounded-md"
                 />
