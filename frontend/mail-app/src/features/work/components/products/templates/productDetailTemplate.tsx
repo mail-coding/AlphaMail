@@ -45,6 +45,7 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [errorImage, setErrorImage] = useState(false);
 
   // input refs
   const nameRef = useRef<HTMLInputElement>(null);
@@ -68,13 +69,27 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({
         setIsLoading(true);
         setError(null);
         const productDetail = await productService.getProduct(id);
+
+        // 이미지 URL 유효성 검사
+        let validImageUrl: string | undefined = undefined;
+        if (productDetail.image) {
+          try {
+            const response = await fetch(productDetail.image, { method: 'HEAD' });
+            if (response.ok) {
+              validImageUrl = productDetail.image;
+            }
+          } catch (error) {
+            console.error('이미지 URL 유효성 검사 실패:', error);
+          }
+        }
+
         setFormData({
           name: productDetail.name,
           standard: productDetail.standard,
           stock: productDetail.stock,
           inboundPrice: productDetail.inboundPrice,
           outboundPrice: productDetail.outboundPrice,
-          imageUrl: productDetail.image,
+          imageUrl: validImageUrl,
           companyId: userInfo?.companyId || 0
         });
       } catch (err) {
@@ -186,8 +201,47 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setImageFile(e.target.files[0]);
-      setImageUrl(URL.createObjectURL(e.target.files[0]));
+      const file = e.target.files[0];
+
+      // 파일 확장자 검사
+      const ext = file.name.split('.').pop()?.toLowerCase();
+      if (ext !== 'png' && ext !== 'jpg' && ext !== 'jpeg') {
+        toast.error('이미지는 .png, .jpg, .jpeg 파일만 업로드할 수 있습니다.');
+        return;
+      }
+
+      // 파일 크기 제한 (2MB)
+      const maxSizeInBytes = 2 * 1024 * 1024;
+      if (file.size > maxSizeInBytes) {
+        toast.error('이미지는 2MB 이하만 업로드할 수 있습니다.');
+        return;
+      }
+
+      // MIME 타입 검사
+      if (!file.type.startsWith('image/')) {
+        toast.error('유효한 이미지 파일이 아닙니다.');
+        return;
+      }
+
+      // 이미지 유효성 검사
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        try {
+          const img = new Image();
+          img.onload = () => {
+            // 유효한 이미지인 경우에만 상태 업데이트
+            setImageFile(file);
+            setImageUrl(ev.target?.result as string);
+          };
+          img.onerror = () => {
+            toast.error('손상되었거나 유효하지 않은 이미지 파일입니다.');
+          };
+          img.src = ev.target?.result as string;
+        } catch (error) {
+          toast.error('이미지 파일을 읽는 중 오류가 발생했습니다.');
+        }
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -257,7 +311,7 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({
     ) {
       errors.inboundPrice = '입고단가를 입력해 주세요.';
     } else if (Number(formData.inboundPrice) < 0 || Number(formData.inboundPrice) > 9223372036854775808) {
-      errors.inboundPrice = '0 ~ 9223372036854775808 사이의 금액을 입력해 주세요.';
+      errors.inboundPrice = '유효하지 않은 값입니다.';
     }
     if (
       formData.outboundPrice === undefined ||
@@ -267,7 +321,7 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({
     ) {
       errors.outboundPrice = '출고단가를 입력해 주세요.';
     } else if (Number(formData.outboundPrice) < 0 || Number(formData.outboundPrice) > 9223372036854775808) {
-      errors.outboundPrice = '0 ~ 9223372036854775808 사이의 금액을 입력해 주세요.';
+      errors.outboundPrice = '유효하지 않은 값입니다.';
     }
     if (
       formData.stock !== undefined &&
@@ -275,7 +329,7 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({
       String(formData.stock).trim() !== '' &&
       (!/^-?\d+$/.test(String(formData.stock)) || Number(formData.stock) < 0 || Number(formData.stock) > 2100000000)
     ) {
-      errors.stock = '0 ~ 2,100,000,000 사이의 값만 입력할 수 있습니다.';
+      errors.stock = '유효하지 않은 값입니다.';
     }
     if (Object.keys(errors).length > 0) {
       return;
@@ -477,12 +531,17 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
               />
             </div>
-            {(imageUrl || formData.imageUrl) && (
+            {(imageUrl || formData.imageUrl) && !errorImage && (
               <div className="mt-4">
-                <img 
-                  src={imageUrl || formData.imageUrl} 
+                <img
+                  src={imageUrl || formData.imageUrl}
                   alt="상품 이미지 미리보기"
                   className="max-w-full h-auto rounded-md"
+                  onError={() => {
+                    setImageUrl(null);
+                    setFormData(prev => ({ ...prev, imageUrl: undefined }));
+                    setErrorImage(true);
+                  }}
                 />
               </div>
             )}
