@@ -54,9 +54,18 @@ export const CalendarDayCell: React.FC<CalendarDayCellProps> = ({
     // 여러 날짜에 걸친 일정만 배경색 적용
     if (!isSingleDay) {
       // 완료된 일정은 회색 바로 표시
-      return isCompleted 
-        ? 'text-xs text-gray-500 bg-gray-200 cursor-pointer p-1 overflow-hidden'
-        : 'text-xs text-white bg-[#3E99C6] cursor-pointer p-1 overflow-hidden';
+         const baseStyle = isCompleted 
+        ? 'text-xs text-gray-500 bg-gray-200 cursor-pointer overflow-hidden'
+        : 'text-xs text-white bg-[#3E99C6] cursor-pointer overflow-hidden';
+      
+      // 시작일과 종료일에만 마진 적용
+      if (isStart) {
+        return `${baseStyle} p-1 rounded-l-md border-r-0`; 
+      } else if (isEnd) {
+        return `${baseStyle} p-1 rounded-r-md border-l-0`; 
+      } else {
+        return `${baseStyle} p-1 border-x-0`; 
+      }
     }
     // 단일 날짜 일정은 배경색 없이 텍스트만
     return `text-xs ${isCompleted ? 'text-gray-400' : 'text-black'} cursor-pointer p-1 overflow-hidden flex items-center`;
