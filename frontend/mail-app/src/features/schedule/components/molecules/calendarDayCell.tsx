@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Schedule } from '@/features/schedule/types/schedule';
 import { format, isSameDay, startOfDay, isMonday } from 'date-fns';
 import { ScheduleDayModal } from './ScheduleDayModal';
 
 interface CalendarDayCellProps {
   date: Date;
-  events: (Schedule | null)[];
+  events: any; // (Schedule | null)[] & { filteredEvents?: Schedule[] };
   isToday: boolean;
   isCurrentMonth: boolean;
+  cellHeightClass?: string;
   onEventClick?: (event: Schedule) => void;
   holidayMap?: Record<string, string>;
+  
 }
 
 export const CalendarDayCell: React.FC<CalendarDayCellProps> = ({
@@ -19,9 +21,9 @@ export const CalendarDayCell: React.FC<CalendarDayCellProps> = ({
   isCurrentMonth,
   onEventClick,
   holidayMap = {},
+  
 }) => {
-
-    // 각 셀에 표시할 최대 일정 수
+  // 각 셀에 표시할 최대 일정 수
   const MAX_VISIBLE_EVENTS = 3;
 
   const [showModal, setShowModal] = useState(false);
@@ -55,17 +57,19 @@ export const CalendarDayCell: React.FC<CalendarDayCellProps> = ({
     const isStart = isSameDay(currentDate, startDate);
     const isEnd = isSameDay(currentDate, endDate);
     const isSingleDay = isStart && isEnd;
+    const isMultiDay = !isSingleDay;
 
     const isCompleted = event.is_done;
+    // const duration = differenceInDays(endDate, startDate) + 1;
 
     // 여러 날짜에 걸친 일정만 배경색 적용
-    if (!isSingleDay) {
+    if (isMultiDay) {
       // 완료된 일정은 회색 바로 표시
-         const baseStyle = isCompleted 
+      const baseStyle = isCompleted 
         ? 'text-xs text-gray-500 bg-gray-200 cursor-pointer overflow-hidden'
         : 'text-xs text-white bg-[#3E99C6] cursor-pointer overflow-hidden';
       
-      // 시작일과 종료일에만 마진 적용
+      // 시작일과 종료일에 둥근 모서리 적용
       if (isStart) {
         return `${baseStyle} p-1 rounded-l-md border-r-0`; 
       } else if (isEnd) {
@@ -74,19 +78,17 @@ export const CalendarDayCell: React.FC<CalendarDayCellProps> = ({
         return `${baseStyle} p-1 border-x-0`; 
       }
     }
+    
     // 단일 날짜 일정은 배경색 없이 텍스트만
     return `text-xs ${isCompleted ? 'text-gray-400' : 'text-black'} cursor-pointer p-1 overflow-hidden flex items-center`;
-  
   };
 
-
-  
   const getDotColor = (event: Schedule) => {
     if (!event) return '#3E99C6'; // 기본 색상
     return event.is_done ? '#9CA3AF' : '#3E99C6'; // 완료된 일정은 회색, 미완료는 파란색
   };
 
-    // 일정명을 표시해야 하는지 결정하는 함수
+  // 일정명을 표시해야 하는지 결정하는 함수
   const shouldShowEventName = (event: Schedule) => {
     if (!event) return false;
     
@@ -104,30 +106,56 @@ export const CalendarDayCell: React.FC<CalendarDayCellProps> = ({
 
   // 긴 공휴일 이름 약어로 표시
   const formatHolidayName = (name: string) => {
-   
     if (name.includes('공휴일')) {
-
       if (name.length > 8) {
         return name.substring(0, 6) + '...';
       }
     }
-    
     return name;
   };
 
-   
-  const filteredEvents = events.filter(event => event !== null) as Schedule[];
-
-  const visibleEvents = filteredEvents.slice(0, MAX_VISIBLE_EVENTS);
-  const hiddenEventsCount = Math.max(0, filteredEvents.length - MAX_VISIBLE_EVENTS);
-
+  // 연속된 일정은 위치가 유지되도록 하고, 모달에는 모든 일정이 표시되도록 수정
+  const eventsArray = Array.isArray(events) ? events : [];
+  
+  // null이 아닌 실제 일정만 필터링
+  const nonNullEvents = eventsArray.filter(event => event !== null) as Schedule[];
+  
+  // 중복을 제거한 고유 일정 목록
+  const uniqueEvents = [...new Map(nonNullEvents.map(event => [event.id, event])).values()];
+  
+  // 모달에 표시할 필터링된 일정 목록
+  const filteredEvents = events.filteredEvents || uniqueEvents;
+  
+  // 정확히 MAX_VISIBLE_EVENTS개까지만 보여주기
+  const visibleEvents = nonNullEvents.slice(0, MAX_VISIBLE_EVENTS);
+  
+  // 고유 일정 개수와 표시 일정 개수 비교하여 더보기 버튼 표시 여부 결정
+  const realEventCount = filteredEvents.length;
+  const hiddenEventsCount = Math.max(0, realEventCount - visibleEvents.length);
+  
+  // 디버깅용 로그
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      const dateStr = format(date, 'yyyy-MM-dd');
+      if (nonNullEvents.length > 0 || filteredEvents.length > 0) {
+        console.log(`${dateStr} 일정 정보:`, {
+          전체: eventsArray.length,
+          실제: nonNullEvents.length,
+          고유: uniqueEvents.length,
+          필터링됨: filteredEvents.length,
+          표시: visibleEvents.length,
+          숨김: hiddenEventsCount
+        });
+      }
+    }
+  }, [date, eventsArray.length, nonNullEvents.length, uniqueEvents.length, filteredEvents.length, visibleEvents.length, hiddenEventsCount]);
 
   return (
     <>
       <div
-        className={`min-h-[100px] border-b border-gray-300 bg-white ${
-          !isCurrentMonth ? 'text-gray-400' : ''
-        } ${isToday ? 'bg-blue-100' : ''}`}
+        className={`min-h-[120px] border-b border-r border-gray-300 bg-white ${
+          !isCurrentMonth ? 'text-gray-400 bg-gray-50' : ''
+        } ${isToday ? 'bg-blue-50' : ''}`}
       >
         <div className={`inline-flex items-center font-medium p-2 ${isToday ? 'text-blue-600 font-bold' : ''} ${!isCurrentMonth ? 'text-gray-400' : dayColor}`}>
           <span>{date.getDate()}</span>
@@ -145,7 +173,7 @@ export const CalendarDayCell: React.FC<CalendarDayCellProps> = ({
             const isSingleDay = isStart && isEnd;
             const isMultiDay = !isSingleDay;
             const showEventName = shouldShowEventName(event);
-
+            
             return (
               <div
                 key={`${event.id}-${index}`}
@@ -173,7 +201,7 @@ export const CalendarDayCell: React.FC<CalendarDayCellProps> = ({
             );
           })}
           
-          {/* 더보기 버튼 */}
+          {/* 더보기 버튼 - 숨겨진 일정이 있을 때만 표시 */}
           {hiddenEventsCount > 0 && (
             <div 
               className="text-xs text-gray-500 p-1 cursor-pointer hover:bg-gray-100 rounded flex items-center justify-center"
@@ -196,6 +224,5 @@ export const CalendarDayCell: React.FC<CalendarDayCellProps> = ({
         onEventClick={onEventClick}
       />
     </>
-    
   );
 };

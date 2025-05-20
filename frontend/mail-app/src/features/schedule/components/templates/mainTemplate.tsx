@@ -7,7 +7,7 @@ import { useScheduleStore } from '../../stores/useScheduleStore';
 import { Schedule } from '../../types/schedule';
 import { useCalendarSchedules } from '../../hooks/useCalendarSchedules';
 import { useWeeklySchedules } from '../../hooks/useWeeklySchedules';
-import { addDays, format, isBefore, startOfDay } from 'date-fns';
+import { addDays, format, startOfDay, differenceInDays } from 'date-fns';
 import { useScheduleSearchStore } from '@/shared/stores/useSearchBar';
 import { ScheduleSearchTemplate } from './scheduleSearchTemplate';
 import { useLocation } from 'react-router-dom';
@@ -24,7 +24,10 @@ export const MainTemplate: React.FC = () => {
 
   const [currentDate, setCurrentDate] = React.useState(new Date());
   const [selectedWeekDate] = React.useState(new Date());
-
+  // const dateSchedules: Record<string, Schedule[]> = {};
+  // const result: Record<string, { filteredEvents: Schedule[] }> = {};
+  // const usedPositions: Record<string, Set<number>> = {};
+  
   // 페이지 이동 시 검색 상태 초기화
   useEffect(() => {
     setIsSearchMode(false);
@@ -47,59 +50,209 @@ export const MainTemplate: React.FC = () => {
     });
   }, [calendarSchedules, weeklySchedules, isCalendarLoading, isWeeklyLoading, isError, error]);
 
-  const eventsMap = React.useMemo(() => {
-    if (!calendarSchedules?.data) {
-      return {};
+// 이벤트 정보를 위한 인터페이스 정의
+interface EventInfo {
+  schedule: Schedule;
+  startDate: Date;
+  endDate: Date;
+  startTime: number;
+  durationDays: number;
+  position: number;
+}
+
+
+const eventsMap = React.useMemo(() => {
+  if (!calendarSchedules?.data) {
+    return {};
+  }
+
+  console.log("다중일 일정 충돌 감지 및 별도 행 배치 방식 적용");
+  
+  // 일정 데이터 복사
+  const schedules = [...calendarSchedules.data];
+  
+  // 결과 맵 초기화
+  const result: Record<string, any> = {};
+  
+  // 날짜별 일정 목록 (모달용)
+  const dateSchedules: Record<string, Schedule[]> = {};
+  
+  // 다중일 일정과 단일일 일정 분리
+  const multiDayEvents: EventInfo[] = [];
+  const singleDayEvents: EventInfo[] = [];
+  
+  // 1. 일정 분류 및 날짜 범위 계산
+  schedules.forEach((schedule: Schedule) => {
+    const startDate = startOfDay(new Date(schedule.start_time));
+    const endDate = startOfDay(new Date(schedule.end_time));
+    const durationDays = differenceInDays(endDate, startDate) + 1;
+    const isMultiDay = durationDays > 1;
+    
+    const eventInfo: EventInfo = {
+      schedule,
+      startDate,
+      endDate,
+      startTime: new Date(schedule.start_time).getTime(),
+      durationDays,
+      position: -1 // 아직 배치되지 않음
+    };
+    
+    // 다중일/단일일 분류
+    if (isMultiDay) {
+      multiDayEvents.push(eventInfo);
+    } else {
+      singleDayEvents.push(eventInfo);
     }
-
-    const map: Record<string, Schedule[]> = {};
-    const schedulePositions = new Map<string, number>(); // 일정의 위치(순서)를 저장
-
-    // 모든 일정을 시작일 기준으로 정렬
-    const sortedSchedules = [...calendarSchedules.data].sort((a, b) => {
-      return new Date(a.start_time).getTime() - new Date(b.start_time).getTime();
-    });
-
-    // 각 일정에 대해 시작일부터 종료일까지의 모든 날짜에 일정 추가
-    sortedSchedules.forEach((schedule) => {
-      let currentDate = startOfDay(new Date(schedule.start_time));
-      const endDate = startOfDay(new Date(schedule.end_time));
-
-      // 사용 가능한 위치 찾기
-      let position = 0;
-      while (true) {
-        let isPositionAvailable = true;
-        for (let date = currentDate; date <= endDate; date = addDays(date, 1)) {
-          const dateKey = format(date, 'yyyy-MM-dd');
-          if (map[dateKey] && map[dateKey][position]) {
-            isPositionAvailable = false;
-            break;
-          }
+    
+    // 이 일정이 걸쳐있는 모든 날짜에 대해 결과 맵 초기화
+    let currentDate = new Date(startDate);
+    while (currentDate <= endDate) {
+      const dateKey = format(currentDate, 'yyyy-MM-dd');
+      
+    if (!Array.isArray(result[dateKey])) {
+        result[dateKey] = [];
+        result[dateKey].filteredEvents = []; // <-- 여기에서 filteredEvents 속성을 추가
+      }
+      
+      
+      // 날짜별 일정 목록 초기화 (모달용)
+      if (!dateSchedules[dateKey]) {
+        dateSchedules[dateKey] = [];
+      }
+      
+      // 날짜별 일정 목록에 추가 (중복 방지)
+      if (!dateSchedules[dateKey].some((s: Schedule) => s.id === schedule.id)) {
+        dateSchedules[dateKey].push(schedule);
+      }
+      
+      currentDate = addDays(currentDate, 1);
+    }
+  });
+  
+  // 2. 다중일 일정 시작 시간순 정렬
+  multiDayEvents.sort((a: EventInfo, b: EventInfo) => a.startTime - b.startTime);
+  
+  // 3. 충돌 감지 알고리즘으로 다중일 일정 배치
+  // (이 부분이 핵심)
+  const usedPositions: Record<string, Set<number>> = {}; // dateKey -> 사용된 포지션 집합
+  const eventPositions: Record<string, number> = {}; // 일정 ID -> 포지션
+  
+  // 포지션 확인 및 배치 함수
+  const placeEvent = (event: EventInfo) => {
+    let position = 0;
+    let placed = false;
+    
+    // 일정의 시작부터 끝까지 모든 날짜 범위에 대해
+    let currentDate = new Date(event.startDate);
+    const dateRangePositions = new Set<number>(); // 이 일정이 걸친 모든 날짜의 사용 중인 포지션
+    
+    // 먼저 각 날짜별로 사용 중인 포지션 수집
+    while (currentDate <= event.endDate) {
+      const dateKey = format(currentDate, 'yyyy-MM-dd');
+      if (!usedPositions[dateKey]) {
+        usedPositions[dateKey] = new Set<number>();
+      }
+      
+      // 이 날짜에 사용된 모든 포지션을 저장
+      usedPositions[dateKey].forEach((pos: number) => dateRangePositions.add(pos));
+      
+      currentDate = addDays(currentDate, 1);
+    }
+    
+    // 사용 가능한 가장 낮은 포지션 찾기
+    while (!placed) {
+      if (!dateRangePositions.has(position)) {
+        // 가능한 포지션 찾음
+        placed = true;
+        
+        // 모든 날짜에 이 포지션 사용 표시
+        currentDate = new Date(event.startDate);
+        while (currentDate <= event.endDate) {
+          const dateKey = format(currentDate, 'yyyy-MM-dd');
+          usedPositions[dateKey].add(position);
+          currentDate = addDays(currentDate, 1);
         }
-        if (isPositionAvailable) break;
+        
+        // 포지션 저장
+        event.position = position;
+        eventPositions[event.schedule.id] = position;
+      } else {
+        // 다음 포지션 확인
         position++;
       }
-
-      schedulePositions.set(schedule.id, position);
-
-      while (isBefore(currentDate, endDate) || currentDate.getTime() === endDate.getTime()) {
-        const dateKey = format(currentDate, 'yyyy-MM-dd');
-        if (!map[dateKey]) {
-          map[dateKey] = [];
-        }
-
-        // 해당 일정의 위치에 맞게 빈 슬롯 채우기
-        while (map[dateKey].length <= position) {
-          map[dateKey].push(null as unknown as Schedule);
-        }
-        map[dateKey][position] = schedule;
-
-        currentDate = addDays(currentDate, 1);
+    }
+    
+    // 일정 배치
+    currentDate = new Date(event.startDate);
+    while (currentDate <= event.endDate) {
+      const dateKey = format(currentDate, 'yyyy-MM-dd');
+      
+      // 배열 확장
+      while (result[dateKey].length <= position) {
+        result[dateKey].push(null);
       }
-    });
-
-    return map;
-  }, [calendarSchedules]);
+      
+      // 일정 배치
+      result[dateKey][position] = event.schedule;
+      
+      currentDate = addDays(currentDate, 1);
+    }
+  };
+  
+  // 다중일 일정 배치 (시작 시간순으로 정렬된 상태)
+  multiDayEvents.forEach(placeEvent);
+  
+  // 4. 단일일 일정 시작 시간순 정렬 및 배치
+  singleDayEvents.sort((a: EventInfo, b: EventInfo) => a.startTime - b.startTime);
+  
+  // 단일일 일정 배치 (다중일 일정 배치 후)
+  singleDayEvents.forEach((event: EventInfo) => {
+    const dateKey = format(event.startDate, 'yyyy-MM-dd');
+    
+    if (!usedPositions[dateKey]) {
+      usedPositions[dateKey] = new Set<number>();
+    }
+    
+    // 사용 가능한 가장 낮은 포지션 찾기
+    let position = 0;
+    while (usedPositions[dateKey].has(position)) {
+      position++;
+    }
+    
+    // 포지션 사용 표시
+    usedPositions[dateKey].add(position);
+    
+    // 포지션 저장
+    event.position = position;
+    eventPositions[event.schedule.id] = position;
+    
+    // 배열 확장
+    while (result[dateKey].length <= position) {
+      result[dateKey].push(null);
+    }
+    
+    // 일정 배치
+    result[dateKey][position] = event.schedule;
+  });
+  
+  // 5. 각 날짜별 필터링된 일정 목록 추가 (모달용)
+  for (const dateKey in dateSchedules) {
+    if (!result[dateKey]) {
+      result[dateKey] = [];
+    }
+    
+    // 각 날짜의 일정 중 고유 일정만 필터링
+    const allEvents = result[dateKey].filter((event: Schedule | null) => event !== null) as Schedule[];
+    const uniqueEvents = [...new Map(allEvents.map((event: Schedule) => [event.id, event])).values()];
+    
+    // 필터링된 일정 목록 설정
+    result[dateKey].filteredEvents = uniqueEvents;
+  }
+  
+  console.log("일정 ID별 포지션:", eventPositions);
+  
+  return result;
+}, [calendarSchedules?.data]);
 
   const handleMonthChange = (year: number, month: number) => {
     setCurrentDate(new Date(year, month));
