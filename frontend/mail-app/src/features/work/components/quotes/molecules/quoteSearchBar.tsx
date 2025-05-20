@@ -1,17 +1,18 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Typography } from '@/shared/components/atoms/Typography';
+import ProductSelectTemplate from '../../products/templates/productSelectTemplate';
 
 interface QuoteSearchBarProps {
   onSearch: (params: QuoteSearchParams) => void;
 }
 
 export interface QuoteSearchParams {
-  keyword: string;
-  receiverCompany: string;
-  sender: string;
+  clientName: string;
+  quoteNo: string;
+  userName: string;
   startDate: string;
   endDate: string;
-  product: string;
+  productName: string;
 }
 
 export const QuoteSearchBar: React.FC<QuoteSearchBarProps> = ({ onSearch }) => {
@@ -21,18 +22,32 @@ export const QuoteSearchBar: React.FC<QuoteSearchBarProps> = ({ onSearch }) => {
   const itemRef = useRef<HTMLInputElement>(null);
   const startDateRef = useRef<HTMLInputElement>(null);
   const endDateRef = useRef<HTMLInputElement>(null);
+  const [isProductSelectOpen, setIsProductSelectOpen] = useState(false);
 
   const handleSearch = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    const params = {
-      keyword: clientRef.current?.value || '',
-      receiverCompany: quoteNoRef.current?.value || '',
-      sender: managerRef.current?.value || '',
-      startDate: startDateRef.current?.value || '',
-      endDate: endDateRef.current?.value || '',
-      product: itemRef.current?.value || '',
+    let startDateValue = startDateRef.current?.value || '';
+    let endDateValue = endDateRef.current?.value || '';
+    // ISOString 변환
+    startDateValue = startDateValue ? new Date(startDateValue).toISOString() : '';
+    endDateValue = endDateValue ? new Date(endDateValue).toISOString() : '';
+    const params: QuoteSearchParams = {
+      clientName: clientRef.current?.value || '',
+      quoteNo: quoteNoRef.current?.value || '',
+      userName: managerRef.current?.value || '',
+      startDate: startDateValue,
+      endDate: endDateValue,
+      productName: itemRef.current?.value || '',
     };
     onSearch(params);
+  };
+
+  // 품목 선택 후 값 세팅 함수 (실제 구현 시 product name 등으로 변경)
+  const handleProductSelect = (product: { name: string }) => {
+    if (itemRef.current) {
+      itemRef.current.value = product.name;
+    }
+    setIsProductSelectOpen(false);
   };
 
   return (
@@ -87,15 +102,11 @@ export const QuoteSearchBar: React.FC<QuoteSearchBarProps> = ({ onSearch }) => {
           <label className="text-sm text-gray-600 min-w-[40px] text-right">품목</label>
           <input
             ref={itemRef}
-            className="w-[140px] h-[30px] px-2 bg-white text-base placeholder-gray-400 border border-gray-300 focus:outline-none pr-8 rounded-none"
+            className="w-[140px] h-[30px] px-2 bg-white text-base placeholder-gray-400 border border-gray-300 focus:outline-none pr-8 rounded-none cursor-pointer"
             placeholder="품목"
+            readOnly
+            onClick={() => setIsProductSelectOpen(true)}
           />
-          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-              <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" fill="none" />
-              <line x1="16.5" y1="16.5" x2="21" y2="21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          </span>
         </div>
         <button
           type="submit"
@@ -108,6 +119,11 @@ export const QuoteSearchBar: React.FC<QuoteSearchBarProps> = ({ onSearch }) => {
           <Typography variant="titleSmall" className="text-white">검색</Typography>
         </button>
       </div>
+      <ProductSelectTemplate
+        isOpen={isProductSelectOpen}
+        onSelect={handleProductSelect}
+        onClose={() => setIsProductSelectOpen(false)}
+      />
     </form>
   );
 };

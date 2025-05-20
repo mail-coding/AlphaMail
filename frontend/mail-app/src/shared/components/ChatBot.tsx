@@ -8,11 +8,11 @@ import { Input } from '@/shared/components/atoms/input';
 import { Button } from '@/shared/components/atoms/button';
 import AiLoading from '@/features/mail/components/organisms/aiLoading';
 import { useNavigate } from 'react-router-dom';
-import { useQuotes } from '@/features/work/hooks/useQuote';
 import { useOrderDetail } from '@/features/work/hooks/useOrderDetail';
 import { useQuery } from '@tanstack/react-query';
 import { scheduleService } from '@/features/schedule/services/scheduleService';
 import { Schedule } from '@/features/schedule/types/schedule';
+import { useQuoteDetail } from '@/features/work/hooks/useQuoteDetail';
 
 // 스타일 컴포넌트
 const MessageCard = styled.div`
@@ -54,8 +54,8 @@ const Tr = styled.tr`
 // 각 타입별 컴포넌트
 const QuoteMessage = ({ id, reply }: { id: string; reply: string }) => {
   const navigate = useNavigate();
-  const { data: quoteDetail } = useQuotes({ search: id });
-  const quotes = quoteDetail?.contents || [];
+  const { data: quoteDetail } = useQuoteDetail(parseInt(id));
+  const quotes = quoteDetail?.products || [];
   
   return (
     <MessageCard>
@@ -72,8 +72,8 @@ const QuoteMessage = ({ id, reply }: { id: string; reply: string }) => {
         <tbody>
           {quotes.map((quote) => (
             <Tr key={quote.id}>
-              <Td>{quote.clientName || '-'}</Td>
-              <Td>{quote.productName || '-'}</Td>
+              <Td>{quoteDetail?.clientName || '-'}</Td>
+              <Td>{quote.name || '-'}</Td>
               <Td>{quote.price?.toLocaleString() || '-'}원</Td>
               <Td>
                 <Button 

@@ -76,6 +76,10 @@ export const parseQuoteResponse = (data: any): QuoteResponse => ({
 export interface QuoteQueryParams {
   page?: number;
   size?: number;
-  search?: string;
-  sort?: number;
+  clientName?: string;
+  orderNo?: string;
+  userName?: string;
+  startDate?: string;
+  endDate?: string;
+  productName?: string;
 } 

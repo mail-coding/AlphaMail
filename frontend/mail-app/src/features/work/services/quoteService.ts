@@ -10,12 +10,21 @@ import {
 
 export const quoteService = {
   getQuotes: async (params?: QuoteQueryParams, companyId?: number): Promise<QuoteResponse> => {
-    const response = await api.get(`/api/erp/companies/${companyId}/quotes`, { 
-      params: {
-        ...params,
-        page: params?.page ? params.page - 1 : 0,
-      }
-     });
+    const rawParams = {
+      ...params,
+      page: params?.page ? params.page - 1 : 0,
+    }
+
+    const filteredParams = Object.fromEntries(
+      Object.entries(rawParams).filter(([_, v]) =>
+        v !== null && v !== undefined && v !== ''
+      )
+    );
+
+    console.log("filteredParams", filteredParams);
+    const response = await api.get(`/api/erp/companies/${companyId}/quotes`, {
+      params: filteredParams,
+    });
     return parseQuoteResponse(response.data);
   },
 

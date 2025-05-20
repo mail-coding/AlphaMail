@@ -37,33 +37,35 @@ export const QuoteTable: React.FC<QuoteTableProps> = ({
       <table className="min-w-full border">
         <thead className="bg-gray-50">
           <tr>
-            <th className="p-2">
+            <th className="p-2 text-center border-r border-gray-200">
               <input
                 type="checkbox"
                 checked={quotes.length > 0 && quotes.every((quote) => selectedQuoteIds.has(quote.id))}
                 onChange={(e) => {
-                  if (e.target.checked) {
-                    quotes.forEach((quote) => onSelectQuote?.(quote.id));
-                  } else {
-                    quotes.forEach((quote) => onSelectQuote?.(quote.id));
-                  }
+                  const isChecked = e.target.checked;
+                  const currentPageQuoteIds = quotes.map(quote => quote.id);
+                  currentPageQuoteIds.forEach(quoteId => {
+                    if (selectedQuoteIds.has(quoteId) !== isChecked) {
+                      onSelectQuote?.(quoteId);
+                    }
+                  });
                 }}
                 className="rounded border-gray-300"
               />
             </th>
-            <th className="p-2">
+            <th className="p-2 text-center border-r border-gray-200">
               <Typography variant="body" bold>견적번호</Typography>
             </th>
-            <th className="p-2">
+            <th className="p-2 text-center border-r border-gray-200">
               <Typography variant="body" bold>거래처명</Typography>
             </th>
-            <th className="p-2">
+            <th className="p-2 text-center border-r border-gray-200">
               <Typography variant="body" bold>견적일자</Typography>
             </th>
-            <th className="p-2">
+            <th className="p-2 text-center border-r border-gray-200">
               <Typography variant="body" bold>담당자</Typography>
             </th>
-            <th className="p-2">
+            <th className="p-2 text-center">
               <Typography variant="body" bold>총 금액</Typography>
             </th>
           </tr>

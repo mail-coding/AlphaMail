@@ -18,6 +18,7 @@ export const useQuotes = (params: QuoteQueryParams): UseQuotesReturn => {
   const groupId = userInfo?.groupId;
   const queryClient = useQueryClient();
 
+
   const { data, isLoading, error } = useQuery<QuoteResponse>({
     queryKey: ['quotes', params, companyId],
     queryFn: () => quoteService.getQuotes(params, companyId!),

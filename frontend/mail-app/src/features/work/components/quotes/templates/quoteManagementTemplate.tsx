@@ -1,26 +1,27 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Quote } from '../../../types/quote';
-import { QuoteSearchBar, QuoteSearchParams } from '../molecules/quoteSearchBar';
+import { QuoteSearchBar } from '../molecules/quoteSearchBar';
 import { QuoteTable } from '../organisms/quoteTable';
 import { useQuotes } from '../../../hooks/useQuote';
 import { quoteService } from '../../../services/quoteService';
 import { Button } from '@/shared/components/atoms/button';
 import { Typography } from '@/shared/components/atoms/Typography';
+import { useQuoteStore } from '@/features/work/stores/quoteStore';
 
 export const QuoteManagementTemplate: React.FC = () => {
   const navigate = useNavigate();
   const [selectedQuoteIds, setSelectedQuoteIds] = useState<Set<number>>(new Set());
-  const [keyword, setKeyword] = useState<string>('');
+  const { setSearchParams, searchParams } = useQuoteStore();
 
   const { data: quoteResponse, isLoading, error } = useQuotes({
-    search: keyword,
+    ...searchParams,
     page: 1,
     size: 10,
   });
 
-  const handleSearch = (params: QuoteSearchParams) => {
-    setKeyword(params.keyword);
+  const handleSearch = (params: any) => {
+    setSearchParams(params);
   };
 
   const handleAddQuote = () => {
@@ -80,7 +81,7 @@ export const QuoteManagementTemplate: React.FC = () => {
               size="large"
               className="flex items-baseline gap-2 p-0 bg-transparent shadow-none border-none text-black font-bold text-xl hover:bg-transparent hover:text-black active:bg-transparent"
             >
-              <span className="text-2xl font-bold leading-none relative -top-[-1px]">+</span>
+              <span className="text-2xl font-bold leading-none relative -top-[-1px] text-black" >+</span>
               <Typography variant="titleSmall" className="leading-none">견적서 등록하기</Typography>
             </Button>
             <div className="flex gap-2">

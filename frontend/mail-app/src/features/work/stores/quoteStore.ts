@@ -3,6 +3,15 @@ import { quoteService } from '../services/quoteService';
 import { Quote, QuoteDetail, QuoteQueryParams } from '../types/quote';
 import { useUserInfo } from '@/shared/hooks/useUserInfo';
 
+interface QuoteSearchParams {
+  clientName?: string;
+  quoteNo?: string;
+  userName?: string;
+  startDate?: string;
+  endDate?: string;
+  productName?: string;
+}
+
 interface QuoteState {
   quotes: Quote[];
   selectedQuote: QuoteDetail | null;
@@ -28,6 +37,9 @@ interface QuoteState {
   setCurrentPage: (page: number) => void;
   setPageSize: (size: number) => void;
   setSortOption: (option: number) => void;
+  searchParams: QuoteSearchParams;
+  setSearchParams: (params: QuoteSearchParams) => void;
+  clearSelection: () => void;
 }
 
 export const useQuoteStore = create<QuoteState>((set) => ({
@@ -178,4 +190,10 @@ export const useQuoteStore = create<QuoteState>((set) => ({
   setPageSize: (size) => set({ pageSize: size }),
 
   setSortOption: (option) => set({ sortOption: option }),
+
+  searchParams: {},
+
+  setSearchParams: (params) => set({ searchParams: params }),
+
+  clearSelection: () => set({ selectedQuoteIds: new Set() }),
 })); 
