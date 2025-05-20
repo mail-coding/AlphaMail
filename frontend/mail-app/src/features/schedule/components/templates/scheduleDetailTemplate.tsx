@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { format } from 'date-fns';
+import { format, addYears } from 'date-fns';
 import { Schedule } from '@/features/schedule/types/schedule';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { scheduleService } from '@/features/schedule/services/scheduleService';
@@ -42,6 +42,11 @@ export const ScheduleDetailTemplate: React.FC<ScheduleDetailTemplateProps> = ({
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+  // 현재 날짜로부터 20년 후를 최대 날짜로 설정
+  const currentDate = new Date();
+  const maxDate = addYears(currentDate, 20);
+  const maxDateString = format(maxDate, "yyyy-MM-dd'T'HH:mm");
+
   const validateSchedule = (schedule: Schedule): ValidationErrors => {
     const newErrors: ValidationErrors = {};
 
@@ -63,6 +68,15 @@ export const ScheduleDetailTemplate: React.FC<ScheduleDetailTemplateProps> = ({
       newErrors.end_time = '종료 일시를 선택해주세요.';
     } else if (schedule.end_time < schedule.start_time) {
       newErrors.end_time = '종료 일시는 시작 일시보다 이후여야 합니다.';
+    }
+    
+    const maxAllowedDate = addYears(new Date(), 20);
+    if (schedule.start_time > maxAllowedDate) {
+      newErrors.start_time = '일정은 현재로부터 최대 20년 이내로만 등록할 수 있습니다.';
+    }
+    
+    if (schedule.end_time > maxAllowedDate) {
+      newErrors.end_time = '일정은 현재로부터 최대 20년 이내로만 등록할 수 있습니다.';
     }
 
     return newErrors;
@@ -293,6 +307,7 @@ export const ScheduleDetailTemplate: React.FC<ScheduleDetailTemplateProps> = ({
                     size="medium"
                     className={errors.start_time ? 'border-red-500' : ''}
                     required
+                    max={maxDateString} 
                   />
                   {errors.start_time && (
                     <Typography variant="caption" color="text-red-500">{errors.start_time}</Typography>
@@ -320,6 +335,7 @@ export const ScheduleDetailTemplate: React.FC<ScheduleDetailTemplateProps> = ({
                       }
                     }}
                     min={format(new Date(schedule.start_time), "yyyy-MM-dd'T'HH:mm")}
+                    max={maxDateString} 
                     size="medium"
                     className={errors.end_time ? 'border-red-500' : ''}
                     required
