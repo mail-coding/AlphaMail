@@ -1,6 +1,6 @@
 import React from 'react';
 import { Schedule } from '@/features/schedule/types/schedule';
-import { format, isSameDay, startOfDay } from 'date-fns';
+import { format, isSameDay, startOfDay, isMonday } from 'date-fns';
 
 interface CalendarDayCellProps {
   date: Date;
@@ -72,14 +72,44 @@ export const CalendarDayCell: React.FC<CalendarDayCellProps> = ({
   
   };
 
-  const getTextStyle = () => {
-    return '';
-  };
+
   
   const getDotColor = (event: Schedule) => {
     if (!event) return '#3E99C6'; // 기본 색상
     return event.is_done ? '#9CA3AF' : '#3E99C6'; // 완료된 일정은 회색, 미완료는 파란색
   };
+
+    // 일정명을 표시해야 하는지 결정하는 함수
+  const shouldShowEventName = (event: Schedule) => {
+    if (!event) return false;
+    
+    const currentDate = startOfDay(date);
+    const startDate = startOfDay(new Date(event.start_time));
+    
+    // 1. 일정 시작일인 경우 항상 표시
+    if (isSameDay(currentDate, startDate)) return true;
+    
+    // 2. 주의 첫날(월요일)에 표시
+    if (isMonday(currentDate)) return true;
+    
+    return false;
+  };
+
+  // 긴 공휴일 이름 약어로 표시
+  const formatHolidayName = (name: string) => {
+    // 특정 공휴일 이름 약어로 변환
+    if (name.includes('공휴일')) {
+
+      if (name.length > 8) {
+        return name.substring(0, 6) + '...';
+      }
+    }
+    
+    return name;
+  };
+
+
+
 
   return (
     <div
@@ -90,7 +120,9 @@ export const CalendarDayCell: React.FC<CalendarDayCellProps> = ({
       <div className={`inline-flex items-center font-medium p-2 ${isToday ? 'text-blue-600 font-bold' : ''} ${!isCurrentMonth ? 'text-gray-400' : dayColor}`}>
         <span>{date.getDate()}</span>
         {holidayName && (
-          <span className={`ml-1 text-xs align-middle ${!isCurrentMonth ? 'text-gray-400' : 'text-red-500'}`}>{holidayName}</span>
+               <span className={`ml-1 text-xs align-middle truncate max-w-[60px] ${!isCurrentMonth ? 'text-gray-400' : 'text-red-500'}`} title={holidayName}>
+            {formatHolidayName(holidayName)}
+          </span>
         )}
       </div>
       <div className="space-y-0.5">
@@ -112,6 +144,8 @@ export const CalendarDayCell: React.FC<CalendarDayCellProps> = ({
           const isStart = isSameDay(date, new Date(event.start_time));
           const isEnd = isSameDay(date, new Date(event.end_time));
           const isSingleDay = isStart && isEnd;
+          const isMultiDay = !isSingleDay;
+          const showEventName = shouldShowEventName(event);
 
           return (
             <div
@@ -119,7 +153,7 @@ export const CalendarDayCell: React.FC<CalendarDayCellProps> = ({
               className={getEventStyle(event) + " w-full h-[24px]"}
               onClick={() => event && onEventClick?.(event)}
             >
-              {isStart ? (
+              {(isStart || showEventName) ? (
                 <div className="flex items-center w-full min-w-0">
                   {isSingleDay ? (
                     <span 
@@ -127,10 +161,12 @@ export const CalendarDayCell: React.FC<CalendarDayCellProps> = ({
                       style={{ background: getDotColor(event) }} 
                     />
                   ) : null}
-                  <span className={`flex-1 min-w-0 overflow-hidden whitespace-nowrap text-ellipsis ${getTextStyle()}`}>
-                    {formatTime(event.start_time.toISOString())} {event.name}
+                 <span className="flex-1 min-w-0 overflow-hidden whitespace-nowrap text-ellipsis">
+                    {isStart ? `${formatTime(event.start_time.toISOString())} ${event.name}` : event.name}
                   </span>
                 </div>
+              ) : isMultiDay ? (
+                <div className="w-full h-full">&nbsp;</div>
               ) : (
                 <div className="invisible">placeholder</div>
               )}
