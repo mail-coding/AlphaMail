@@ -9,6 +9,7 @@ import { Input } from '@/shared/components/atoms/input';
 import { Button } from '@/shared/components/atoms/button';
 import { TooltipPortal } from '@/shared/components/atoms/TooltipPortal';
 import { toast } from 'react-toastify';
+import { Spinner } from '@/shared/components/atoms/spinner';
 
 interface ProductDetailTemplateProps {
   onBack?: () => void;
@@ -53,6 +54,7 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({
   const inboundPriceRef = useRef<HTMLInputElement>(null);
   const outboundPriceRef = useRef<HTMLInputElement>(null);
   const stockRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 말풍선 위치 상태
   const [tooltip, setTooltip] = useState<{
@@ -61,28 +63,37 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({
     position: { top: number; left: number };
   } | null>(null);
 
+  const validateImageUrl = (url: string): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+  
+      img.onload = () => resolve(true);
+      img.onerror = () => resolve(false);
+  
+      img.src = url;
+  
+      // Safari 캐시 우회 방지 (필요시)
+      // img.src = `${url}?cacheBust=${Date.now()}`;
+    });
+  };
+
   useEffect(() => {
     const fetchProductDetail = async () => {
       if (!id || id === 'new') return;
-      
+  
       try {
         setIsLoading(true);
         setError(null);
         const productDetail = await productService.getProduct(id);
-
-        // 이미지 URL 유효성 검사
+  
         let validImageUrl: string | undefined = undefined;
         if (productDetail.image) {
-          try {
-            const response = await fetch(productDetail.image, { method: 'HEAD' });
-            if (response.ok) {
-              validImageUrl = productDetail.image;
-            }
-          } catch (error) {
-            console.error('이미지 URL 유효성 검사 실패:', error);
+          const isValid = await validateImageUrl(productDetail.image);
+          if (isValid) {
+            validImageUrl = productDetail.image;
           }
         }
-
+  
         setFormData({
           name: productDetail.name,
           standard: productDetail.standard,
@@ -90,7 +101,7 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({
           inboundPrice: productDetail.inboundPrice,
           outboundPrice: productDetail.outboundPrice,
           imageUrl: validImageUrl,
-          companyId: userInfo?.companyId || 0
+          companyId: userInfo?.companyId || 0,
         });
       } catch (err) {
         console.error('상품 상세 정보 조회 실패:', err);
@@ -99,9 +110,10 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({
         setIsLoading(false);
       }
     };
-
+  
     fetchProductDetail();
   }, [id, userInfo?.companyId]);
+  
 
   useEffect(() => {
     if (!isSubmitted) {
@@ -382,8 +394,17 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({
     }
   };
 
+  // 이미지가 바뀔 때마다 errorImage를 초기화
+  useEffect(() => {
+    setErrorImage(false);
+  }, [imageUrl, formData.imageUrl]);
+
   if (isLoading) {
-    return <div className="p-6">로딩 중...</div>;
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Spinner size="large" />
+      </div>
+    );
   }
 
   if (error) {
@@ -407,25 +428,57 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* 표 스타일 입력폼 */}
-        <div className="overflow-x-auto">
-          <table className="w-full border-separate border-spacing-0">
-            <colgroup>
-              <col style={{ width: '120px' }} />
-              <col style={{ width: '220px' }} />
-              <col style={{ width: '120px' }} />
-              <col style={{ width: '220px' }} />
-              <col style={{ width: '80px' }} />
-              <col style={{ width: '120px' }} />
-            </colgroup>
-            <tbody>
-              {/* 1행: 품목명(3칸), 규격(2칸) */}
-              <tr>
-                <td className="bg-[#F9F9F9] h-[44px] border border-[#E5E5E5] text-center align-middle font-medium">
-                  <Typography variant="body" className="text-center">품목명<span className="text-red-500 ml-1">*</span></Typography>
-                </td>
-                <td className="bg-white border border-[#E5E5E5] px-2" colSpan={3}>
-                  <div className="relative flex items-center">
+        <div className="flex flex-row items-start gap-8">
+          {/* 왼쪽: 이미지 업로드/미리보기 */}
+          <div className="w-[220px] min-w-[160px] bg-white border border-gray-200 rounded-lg p-4 flex flex-col items-center">
+            <label className="block text-sm font-medium text-gray-700 mb-2">상품 이미지</label>
+            <div
+              className="w-28 h-28 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden cursor-pointer border border-gray-300 mb-2"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {(imageUrl || formData.imageUrl) && (!errorImage || imageUrl) ? (
+                <img
+                  src={imageUrl || formData.imageUrl}
+                  alt="상품 이미지 미리보기"
+                  className="w-full h-full object-cover"
+                  onError={() => {
+                    setErrorImage(true);
+                  }}
+                />
+              ) : (
+                <span className="text-2xl font-medium text-gray-700">+</span>
+              )}
+            </div>
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              style={{ display: 'none' }}
+              onChange={handleImageChange}
+            />
+            <Button
+              type="button"
+              size="small"
+              variant="secondary"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <span>사진 변경</span>
+            </Button>
+          </div>
+          {/* 오른쪽: 입력폼 전체 (표 스타일) */}
+          <div className="flex-1 overflow-x-auto">
+            <table className="border-separate border-spacing-0 w-full">
+              <colgroup>
+                <col style={{ width: '120px' }} />
+                <col style={{ width: '320px' }} />
+              </colgroup>
+              <tbody>
+                {/* 품목명 */}
+                <tr>
+                  <td className="bg-[#F9F9F9] h-[44px] border border-[#E5E5E5] text-center align-middle font-medium">
+                    <Typography variant="body">품목명 <span className="text-red-500">*</span></Typography>
+                  </td>
+                  <td className="bg-white border border-[#E5E5E5] px-2">
                     <Input
                       ref={nameRef}
                       type="text"
@@ -435,14 +488,17 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({
                       onFocus={() => setTooltip(null)}
                       placeholder="품목명을 입력하세요"
                       size="large"
+                      className="!w-[300px]"
+                      maxLength={255}
                     />
-                  </div>
-                </td>
-                <td className="bg-[#F9F9F9] h-[44px] border border-[#E5E5E5] text-center align-middle font-medium">
-                  <Typography variant="body" className="text-center">규격<span className="text-red-500 ml-1">*</span></Typography>
-                </td>
-                <td className="bg-white border border-[#E5E5E5] px-2">
-                  <div className="relative flex items-center">
+                  </td>
+                </tr>
+                {/* 규격 */}
+                <tr>
+                  <td className="bg-[#F9F9F9] h-[44px] border border-[#E5E5E5] text-center align-middle font-medium">
+                    <Typography variant="body">규격 <span className="text-red-500">*</span></Typography>
+                  </td>
+                  <td className="bg-white border border-[#E5E5E5] px-2">
                     <Input
                       ref={standardRef}
                       type="text"
@@ -452,55 +508,61 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({
                       onFocus={() => setTooltip(null)}
                       placeholder="규격을 입력하세요"
                       size="large"
+                      className="!w-[300px]"
+                      maxLength={255}
                     />
-                  </div>
-                </td>
-              </tr>
-              {/* 2행: 입고단가, 출고단가, 재고 */}
-              <tr>
-                <td className="bg-[#F9F9F9] h-[44px] border border-[#E5E5E5] text-center align-middle font-medium">
-                  <Typography variant="body" className="text-center">입고단가<span className="text-red-500 ml-1">*</span></Typography>
-                </td>
-                <td className="bg-white border border-[#E5E5E5] px-2">
-                  <div className="relative flex items-center">
-                    <Input
-                      ref={inboundPriceRef}
-                      type="number"
-                      name="inboundPrice"
-                      value={formData.inboundPrice || ''}
-                      onChange={handleInputChange}
-                      onFocus={() => setTooltip(null)}
-                      placeholder="0"
-                      size="large"
-                      className="text-right"
-                    />
-                    <Typography variant="body" className="ml-2 text-gray-500">원</Typography>
-                  </div>
-                </td>
-                <td className="bg-[#F9F9F9] h-[44px] border border-[#E5E5E5] text-center align-middle font-medium">
-                  <Typography variant="body" className="text-center">출고단가<span className="text-red-500 ml-1">*</span></Typography>
-                </td>
-                <td className="bg-white border border-[#E5E5E5] px-2">
-                  <div className="relative flex items-center">
-                    <Input
-                      ref={outboundPriceRef}
-                      type="number"
-                      name="outboundPrice"
-                      value={formData.outboundPrice || ''}
-                      onChange={handleInputChange}
-                      onFocus={() => setTooltip(null)}
-                      placeholder="0"
-                      size="large"
-                      className="text-right"
-                    />
-                    <Typography variant="body" className="ml-2 text-gray-500">원</Typography>
-                  </div>
-                </td>
-                <td className="bg-[#F9F9F9] h-[44px] border border-[#E5E5E5] text-center align-middle font-medium">
-                  <Typography variant="body" className="text-center">재고</Typography>
-                </td>
-                <td className="bg-white border border-[#E5E5E5] px-2">
-                  <div className="relative flex items-center">
+                  </td>
+                </tr>
+                {/* 입고단가 */}
+                <tr>
+                  <td className="bg-[#F9F9F9] h-[44px] border border-[#E5E5E5] text-center align-middle font-medium">
+                    <Typography variant="body">입고단가 <span className="text-red-500">*</span></Typography>
+                  </td>
+                  <td className="bg-white border border-[#E5E5E5] px-2">
+                    <div className="flex items-center">
+                      <Input
+                        ref={inboundPriceRef}
+                        type="number"
+                        name="inboundPrice"
+                        value={formData.inboundPrice || ''}
+                        onChange={handleInputChange}
+                        onFocus={() => setTooltip(null)}
+                        placeholder="0"
+                        size="large"
+                        className="text-right !w-[300px]"
+                      />
+                      <span className="ml-2 text-gray-500">원</span>
+                    </div>
+                  </td>
+                </tr>
+                {/* 출고단가 */}
+                <tr>
+                  <td className="bg-[#F9F9F9] h-[44px] border border-[#E5E5E5] text-center align-middle font-medium">
+                    <Typography variant="body">출고단가 <span className="text-red-500">*</span></Typography>
+                  </td>
+                  <td className="bg-white border border-[#E5E5E5] px-2">
+                    <div className="flex items-center">
+                      <Input
+                        ref={outboundPriceRef}
+                        type="number"
+                        name="outboundPrice"
+                        value={formData.outboundPrice || ''}
+                        onChange={handleInputChange}
+                        onFocus={() => setTooltip(null)}
+                        placeholder="0"
+                        size="large"
+                        className="text-right !w-[300px]"
+                      />
+                      <span className="ml-2 text-gray-500">원</span>
+                    </div>
+                  </td>
+                </tr>
+                {/* 재고 */}
+                <tr>
+                  <td className="bg-[#F9F9F9] h-[44px] border border-[#E5E5E5] text-center align-middle font-medium">
+                    <Typography variant="body">재고</Typography>
+                  </td>
+                  <td className="bg-white border border-[#E5E5E5] px-2">
                     <Input
                       ref={stockRef}
                       type="number"
@@ -510,41 +572,12 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({
                       onFocus={() => setTooltip(null)}
                       placeholder="0"
                       size="large"
-                      className="text-right"
+                      className="text-right !w-[300px]"
                     />
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        {/* 이미지 업로드 섹션 */}
-        <div className="grid grid-cols-2 gap-6">
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">상품 이미지</label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              />
-            </div>
-            {(imageUrl || formData.imageUrl) && !errorImage && (
-              <div className="mt-4">
-                <img
-                  src={imageUrl || formData.imageUrl}
-                  alt="상품 이미지 미리보기"
-                  className="max-w-full h-auto rounded-md"
-                  onError={() => {
-                    setImageUrl(null);
-                    setFormData(prev => ({ ...prev, imageUrl: undefined }));
-                    setErrorImage(true);
-                  }}
-                />
-              </div>
-            )}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 

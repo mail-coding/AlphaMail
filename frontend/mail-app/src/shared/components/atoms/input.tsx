@@ -19,7 +19,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       return (
         <input
           ref={ref}
-          className={cn('border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-primary h-[30px] w-full px-3', 
+          className={cn('border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-primary h-[30px] w-full px-3 font-pretendard', 
             textSizeMap[size],
             className)}
           {...props}
@@ -31,7 +31,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <input
         ref={ref}
-        className={cn('border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-primary h-[25px] w-full px-3', 
+        className={cn('border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-primary h-[25px] w-full px-3 font-pretendard', 
           textSizeMap[size],
           className)}
         {...props}
