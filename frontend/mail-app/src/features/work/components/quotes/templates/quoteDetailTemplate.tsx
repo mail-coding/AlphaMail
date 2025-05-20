@@ -164,7 +164,7 @@ export const QuoteDetailTemplate = () => {
         await queryClient.invalidateQueries({ queryKey: ['quotes'] });
         toast.success('견적서가 성공적으로 등록되었습니다.');
       }
-      navigate('/work/quotes');
+      navigate('/work/quotes', { replace: true });
     } catch (error) {
       console.error('Failed to save quote:', error);
       toast.error('견적서 저장에 실패했습니다.');
