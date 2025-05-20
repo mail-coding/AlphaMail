@@ -3,9 +3,11 @@ import {
     Page, Text, View, Document, StyleSheet, Font,
     PDFDownloadLink
   } from '@react-pdf/renderer';
-import React, { useRef } from 'react';
+import React from 'react';
 import { Button } from '@/shared/components/atoms/button';
 import { Typography } from '@/shared/components/atoms/Typography';
+import { useQuoteDetail } from '@/features/work/hooks/useQuoteDetail';
+import { Spinner } from '@/shared/components/atoms/spinner';
   
   Font.register({
     family: 'NanumGothic',
@@ -139,20 +141,26 @@ import { Typography } from '@/shared/components/atoms/Typography';
   });
   
   interface PdfButtonProps {
-    data: QuoteDetail;
+    quoteId: number;
   }
   
-  export const PdfButton: React.FC<PdfButtonProps> = ({ data }) => {
-    const initialData = useRef(data);
+  export const PdfButton: React.FC<PdfButtonProps> = ({ quoteId }) => {
+    const { data: quoteDetail, isLoading } = useQuoteDetail(quoteId);
+    console.log("quoteId", quoteId);
+    console.log("quoteDetail", quoteDetail);
+    // 데이터 유효성 검사
+    if (isLoading) {
+        return <Spinner size="small" />;
+    }
 
-    if (!initialData.current || !initialData.current.quoteNo || !initialData.current.products || initialData.current.products.length === 0) {
-      return null;
+    if (!quoteDetail) {
+        return null;
     }
 
     return (
       <PDFDownloadLink
-        document={<MyPDFDocument data={initialData.current} />}
-        fileName={`${initialData.current.quoteNo}_견적서.pdf`}
+        document={<MyPDFDocument data={quoteDetail} />}
+        fileName={`${quoteDetail.quoteNo}_견적서.pdf`}
         className="inline-block"
       >
         {({ loading, error }) => {
