@@ -169,7 +169,9 @@ export const QuoteDetailTemplate = () => {
           견적서 {id && id !== 'new' ? '수정' : '등록'}
         </Typography>
         <div className="flex space-x-2">
-          {showPdfButton && <PdfButton quoteDetail={formData} />}
+          <div className="min-w-[110px] h-[40px]">
+            {showPdfButton && <PdfButton quoteDetail={formData} />}
+          </div>
         </div>
       </div>
 

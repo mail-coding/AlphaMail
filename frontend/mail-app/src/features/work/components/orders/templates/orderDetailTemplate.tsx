@@ -232,6 +232,13 @@ const OrderDetailTemplate: React.FC = () => {
         />
         <OrderProductTable />
         <div className="flex justify-end space-x-2 mt-8">
+        <Button
+            type="submit"
+            variant="primary"
+            size="small"
+          >
+            <Typography variant="titleSmall" className="text-white">{id && id !== 'new' ? '수정' : '등록'}</Typography>
+          </Button>
           <Button
             type="button"
             variant="secondary"
@@ -239,13 +246,6 @@ const OrderDetailTemplate: React.FC = () => {
             onClick={handleCancel}
           >
             <Typography variant="titleSmall" className="text-white">취소</Typography>
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            size="small"
-          >
-            <Typography variant="titleSmall" className="text-white">{id && id !== 'new' ? '수정' : '등록'}</Typography>
           </Button>
         </div>
       </form>
