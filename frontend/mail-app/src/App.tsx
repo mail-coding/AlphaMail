@@ -39,7 +39,7 @@ const AppLayout = () => {
   if (path === '/login') {
     return (
       <div className="flex h-screen">
-        <NavBar />
+        {/* <NavBar /> */}
         <main className="flex-1">
           <Router />
         </main>
