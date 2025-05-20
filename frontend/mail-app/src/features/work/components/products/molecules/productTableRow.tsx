@@ -16,51 +16,45 @@ export const ProductTableRow: React.FC<ProductTableRowProps> = ({
   sequenceNumber
 }) => {
   return (
-    <tr className={`border-t hover:bg-gray-50 ${product.isSelected ? 'bg-blue-50' : ''}`}>
-      <td className="p-2 text-center">
+    <tr 
+      className="border-t hover:bg-gray-50 cursor-pointer"
+      onClick={() => onProductClick?.(product)}
+    >
+      <td className="p-2 text-center border-r border-gray-200" onClick={(e) => e.stopPropagation()}>
         <input
           type="checkbox"
           checked={product.isSelected}
           onChange={() => onSelect(product.id)}
           className="rounded border-gray-300"
+          onClick={(e) => e.stopPropagation()}
         />
       </td>
-      <td className="p-2 text-center">
+      <td className="p-2 text-center border-r border-gray-200">
         <Typography variant="body">
           {sequenceNumber}
         </Typography>
       </td>
-      <td className="p-2">
-        {onProductClick ? (
-          <a
-            href={`/work/products/${product.id}`}
-            onClick={e => { e.preventDefault(); onProductClick(product); }}
-            className="text-left hover:text-blue-600 hover:underline cursor-pointer bg-transparent border-none p-0 m-0 font-normal text-[12px] leading-normal"
-          >
-            {product.name}
-          </a>
-        ) : (
-          <Typography variant="body">
-            {product.name}
-          </Typography>
-        )}
+      <td className="p-2 text-center border-r border-gray-200">
+        <Typography variant="body">
+          {product.name}
+        </Typography>
       </td>
-      <td className="p-2 text-center">
+      <td className="p-2 text-center border-r border-gray-200">
         <Typography variant="body">
           {product.standard}
         </Typography>
       </td>
-      <td className="p-2 text-center">
+      <td className="p-2 text-center border-r border-gray-200">
         <Typography variant="body">
           {product.stock}
         </Typography>
       </td>
-      <td className="p-2 text-right">
+      <td className="p-2 text-center border-r border-gray-200">
         <Typography variant="body">
           {product.inboundPrice.toLocaleString()}원
         </Typography>
       </td>
-      <td className="p-2 text-right">
+      <td className="p-2 text-center">
         <Typography variant="body">
           {product.outboundPrice.toLocaleString()}원
         </Typography>

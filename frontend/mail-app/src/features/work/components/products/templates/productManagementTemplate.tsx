@@ -9,6 +9,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/shared/components/atoms/button';
 import { Typography } from '@/shared/components/atoms/Typography';
+import { toast } from 'react-toastify';
 
 interface ProductManagementTemplateProps {
   onAddProduct?: () => void;
@@ -50,7 +51,7 @@ export const ProductManagementTemplate: React.FC<ProductManagementTemplateProps>
 
   const handleDelete = async () => {
     if (selectedProductIds.size === 0) {
-      alert('삭제할 상품을 선택해주세요.');
+      toast.error('삭제할 상품을 선택해주세요.');
       return;
     }
 
@@ -61,16 +62,19 @@ export const ProductManagementTemplate: React.FC<ProductManagementTemplateProps>
     try {
       await productService.deleteProducts([...selectedProductIds]);
       setSelectedProductIds(new Set());
-      alert('선택한 상품이 삭제되었습니다.');
+      toast.success('선택한 상품이 삭제되었습니다.');
       
-      // 삭제 후 데이터 갱신
       await queryClient.invalidateQueries({ 
         queryKey: ['products'],
         refetchType: 'all'
       });
+      await queryClient.invalidateQueries({ 
+        queryKey: ['productDetail'],
+        refetchType: 'all'
+      });
     } catch (error) {
       console.error('상품 삭제 실패:', error);
-      alert('상품 삭제에 실패했습니다.');
+      toast.error('상품 삭제에 실패했습니다.');
     }
   };
 
@@ -94,8 +98,8 @@ export const ProductManagementTemplate: React.FC<ProductManagementTemplateProps>
               size="large"
               className="flex items-baseline gap-2 p-0 bg-transparent shadow-none border-none text-black font-bold text-xl hover:bg-transparent hover:text-black active:bg-transparent"
             >
-              <span className="text-2xl font-bold leading-none relative -top-[-1px]">+</span>
-              <Typography variant="titleSmall" className="leading-none">상품 등록하기</Typography>
+              <span className="text-2xl font-bold leading-none relative -top-[-1px] text-black">+</span>
+              <Typography variant="titleSmall" className="leading-none">재고 등록하기</Typography>
             </Button>
             <div className="flex gap-2">
               <Button
@@ -117,6 +121,7 @@ export const ProductManagementTemplate: React.FC<ProductManagementTemplateProps>
             onSelectProduct={toggleProductSelection}
             selectedProductIds={selectedProductIds}
             onPageChange={handlePageChange}
+            isLoading={isLoading}
           />
         </div>
       </div>

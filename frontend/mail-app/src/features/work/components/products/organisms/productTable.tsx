@@ -2,6 +2,7 @@ import { Product } from '../../../types/product';
 import { ProductTableRow } from '../molecules/productTableRow';
 import { Typography } from '@/shared/components/atoms/Typography';
 import { Button } from '@/shared/components/atoms/button';
+import { Spinner } from '@/shared/components/atoms/spinner';
 
 interface ProductTableProps {
   products: Product[];
@@ -12,6 +13,7 @@ interface ProductTableProps {
   onSelectProduct?: (id: number) => void;
   selectedProductIds?: Set<number>;
   onPageChange: (page: number) => void;
+  isLoading?: boolean;
 }
 
 export const ProductTable: React.FC<ProductTableProps> = ({ 
@@ -22,8 +24,17 @@ export const ProductTable: React.FC<ProductTableProps> = ({
   onProductClick,
   onSelectProduct,
   selectedProductIds = new Set(),
-  onPageChange
+  onPageChange,
+  isLoading
 }) => {
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-[400px]">
+        <Spinner size="large" />
+      </div>
+    );
+  }
+
   if (!Array.isArray(products)) {
     console.error('Products is not an array:', products);
     return <div>데이터 형식이 올바르지 않습니다.</div>;
@@ -34,26 +45,40 @@ export const ProductTable: React.FC<ProductTableProps> = ({
       <table className="min-w-full border">
         <thead className="bg-gray-50">
           <tr>
-            <th className="p-2">
-              <Typography variant="body" bold>선택</Typography>
+            <th className="p-2 border-r border-gray-200">
+              <input
+                type="checkbox"
+                checked={products.length > 0 && products.every((product) => selectedProductIds.has(product.id))}
+                onChange={(e) => {
+                  const isChecked = e.target.checked;
+                  const currentPageProductIds = products.map(product => product.id);
+                  
+                  currentPageProductIds.forEach(productId => {
+                    if (selectedProductIds.has(productId) !== isChecked) {
+                      onSelectProduct?.(productId);
+                    }
+                  });
+                }}
+                className="rounded border-gray-300"
+              />
+            </th>
+            <th className="p-2 border-r border-gray-200">
+              <Typography variant="body">순번</Typography>
+            </th>
+            <th className="p-2 border-r border-gray-200">
+              <Typography variant="body">품목명</Typography>
+            </th>
+            <th className="p-2 border-r border-gray-200">
+              <Typography variant="body">규격</Typography>
+            </th>
+            <th className="p-2 border-r border-gray-200">
+              <Typography variant="body">재고</Typography>
+            </th>
+            <th className="p-2 border-r border-gray-200">
+              <Typography variant="body">매입가</Typography>
             </th>
             <th className="p-2">
-              <Typography variant="body" bold>순번</Typography>
-            </th>
-            <th className="p-2">
-              <Typography variant="body" bold>품목명</Typography>
-            </th>
-            <th className="p-2">
-              <Typography variant="body" bold>규격</Typography>
-            </th>
-            <th className="p-2">
-              <Typography variant="body" bold>재고</Typography>
-            </th>
-            <th className="p-2">
-              <Typography variant="body" bold>매입가</Typography>
-            </th>
-            <th className="p-2">
-              <Typography variant="body" bold>판매가</Typography>
+              <Typography variant="body">판매가</Typography>
             </th>
           </tr>
         </thead>
