@@ -530,6 +530,7 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({
                         placeholder="0"
                         size="large"
                         className="text-right !w-[300px]"
+                        min={0}
                       />
                       <span className="ml-2 text-gray-500">원</span>
                     </div>
@@ -552,6 +553,7 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({
                         placeholder="0"
                         size="large"
                         className="text-right !w-[300px]"
+                        min={0}
                       />
                       <span className="ml-2 text-gray-500">원</span>
                     </div>
@@ -573,6 +575,7 @@ export const ProductDetailTemplate: React.FC<ProductDetailTemplateProps> = ({
                       placeholder="0"
                       size="large"
                       className="text-right !w-[300px]"
+                      min={0}
                     />
                   </td>
                 </tr>
