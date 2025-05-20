@@ -35,6 +35,8 @@ export const QuoteDetailTemplate = () => {
     position: { top: number; left: number };
   } | null>(null);
 
+  const [isDataReady, setIsDataReady] = useState(false);
+
   useEffect(() => {
     if (id === 'new') {
       setFormData({
@@ -62,7 +64,25 @@ export const QuoteDetailTemplate = () => {
     }
   }, [id, quote, setFormData]);
 
-  // formData 변경 감지를 위한 useEffect
+  useEffect(() => {
+    if (formData && !isLoading) {
+      const isValid = Boolean(
+        formData.quoteNo && 
+        formData.products && 
+        formData.products.length > 0 &&
+        formData.products.every(product => 
+          product && 
+          product.name && 
+          typeof product.count === 'number' && 
+          typeof product.price === 'number'
+        )
+      );
+      setIsDataReady(isValid);
+    } else {
+      setIsDataReady(false);
+    }
+  }, [formData, isLoading]);
+
   useEffect(() => {
     if (formData) {
       console.log("formData updated:", formData);
@@ -72,54 +92,30 @@ export const QuoteDetailTemplate = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      if (!userInfo) {
-        toast.error('사용자 정보를 찾을 수 없습니다.');
-        return;
-      }
+      if (!userInfo) return toast.error('사용자 정보를 찾을 수 없습니다.');
+      if (!formData) return toast.error('견적서 데이터가 없습니다.');
+      if (!formData.products || formData.products.length === 0)
+        return toast.error('최소 1개의 품목을 추가해야 합니다.');
 
-      if (!formData) {
-        toast.error('견적서 데이터가 없습니다.');
-        return;
-      }
-
-      if (!formData.products || formData.products.length === 0) {
-        toast.error('최소 1개의 품목을 추가해야 합니다.');
-        return;
-      }
-
-      // 거래 담당자 10자 이내
       if (!formData.clientName || formData.clientName.trim() === '') {
         const rect = clientNameRef.current?.getBoundingClientRect();
-        if (rect) setTooltip({
-          key: 'clientName',
-          message: '거래처명을 입력해주세요.',
-          position: { top: rect.top + window.scrollY, left: rect.left + window.scrollX + rect.width / 2 }
-        });
+        if (rect) setTooltip({ key: 'clientName', message: '거래처명을 입력해주세요.', position: { top: rect.top + window.scrollY, left: rect.left + window.scrollX + rect.width / 2 } });
         return;
       }
-      // 거래처 연락처: 비어있거나, phoneInput의 정규식과 일치
+
       const phoneRegex = /^((010-\d{4}-\d{4})|(01[1|6|7|8|9]-\d{3,4}-\d{4})|(0[2-9]{1,2}-\d{3,4}-\d{4}))$/;
       if (formData.managerNumber && !phoneRegex.test(formData.managerNumber)) {
         const rect = managerNumberRef.current?.getBoundingClientRect();
-        if (rect) setTooltip({
-          key: 'managerNumber',
-          message: '거래처 연락처 형식이 올바르지 않습니다.',
-          position: { top: rect.top + window.scrollY, left: rect.left + window.scrollX + rect.width / 2 }
-        });
-        return;
-      }
-      // 주소 필수
-      if (!formData.shippingAddress || formData.shippingAddress.trim() === '') {
-        const rect = shippingAddressRef.current?.getBoundingClientRect();
-        if (rect) setTooltip({
-          key: 'shippingAddress',
-          message: '주소를 입력해주세요.',
-          position: { top: rect.top + window.scrollY, left: rect.left + window.scrollX + rect.width / 2 }
-        });
+        if (rect) setTooltip({ key: 'managerNumber', message: '거래처 연락처 형식이 올바르지 않습니다.', position: { top: rect.top + window.scrollY, left: rect.left + window.scrollX + rect.width / 2 } });
         return;
       }
 
-      // 각 제품에 대한 유효성 검사
+      if (!formData.shippingAddress || formData.shippingAddress.trim() === '') {
+        const rect = shippingAddressRef.current?.getBoundingClientRect();
+        if (rect) setTooltip({ key: 'shippingAddress', message: '주소를 입력해주세요.', position: { top: rect.top + window.scrollY, left: rect.left + window.scrollX + rect.width / 2 } });
+        return;
+      }
+
       const MAX_PRODUCT_COUNT = 2000000000;
       const MAX_PRODUCT_PRICE = 9223372036854775807;
 
@@ -127,31 +123,16 @@ export const QuoteDetailTemplate = () => {
         const product = formData.products[i];
         const productNameForAlert = product.name || `품목 ${i + 1}`;
 
-        // 품목 이름 유효성 검사
-        if (!product.name) {
-          toast.error(`품목 ${i + 1}의 이름을 입력해주세요.`);
-          return;
-        }
+        if (!product.name) return toast.error(`품목 ${i + 1}의 이름을 입력해주세요.`);
+        if (typeof product.count !== 'number' || product.count < 0)
+          return toast.error(`${productNameForAlert}의 수량은 0 이상의 숫자로 입력해주세요.`);
+        if (product.count > MAX_PRODUCT_COUNT)
+          return toast.error(`${productNameForAlert}의 수량은 ${MAX_PRODUCT_COUNT.toLocaleString()}을 초과할 수 없습니다.`);
 
-        // 수량 유효성 검사
-        if (typeof product.count !== 'number' || product.count < 0) {
-          toast.error(`${productNameForAlert}의 수량은 0 이상의 숫자로 입력해주세요.`);
-          return;
-        }
-        if (product.count > MAX_PRODUCT_COUNT) {
-          toast.error(`${productNameForAlert}의 수량은 ${MAX_PRODUCT_COUNT.toLocaleString()}을 초과할 수 없습니다.`);
-          return;
-        }
-
-        // 단가 유효성 검사
-        if (typeof product.price !== 'number' || product.price < 0) {
-          toast.error(`${productNameForAlert}의 단가는 0 이상의 숫자로 입력해주세요.`);
-          return;
-        }
-        if (product.price > MAX_PRODUCT_PRICE) {
-          toast.error(`${productNameForAlert}의 단가는 ${MAX_PRODUCT_PRICE.toLocaleString()}을 초과할 수 없습니다.`);
-          return;
-        }
+        if (typeof product.price !== 'number' || product.price < 0)
+          return toast.error(`${productNameForAlert}의 단가는 0 이상의 숫자로 입력해주세요.`);
+        if (product.price > MAX_PRODUCT_PRICE)
+          return toast.error(`${productNameForAlert}의 단가는 ${MAX_PRODUCT_PRICE.toLocaleString()}을 초과할 수 없습니다.`);
       }
 
       if (id && id !== 'new') {
@@ -179,7 +160,7 @@ export const QuoteDetailTemplate = () => {
     );
   }
 
-  const showPdfButton = id && id !== 'new' && formData && formData.quoteNo && formData.products && formData.products.length > 0;
+  const showPdfButton = id && id !== 'new' && isDataReady;
 
   return (
     <div className="p-8 bg-white rounded shadow max-w-5xl mx-auto">
@@ -188,7 +169,7 @@ export const QuoteDetailTemplate = () => {
           견적서 {id && id !== 'new' ? '수정' : '등록'}
         </Typography>
         <div className="flex space-x-2">
-          {showPdfButton && <PdfButton quoteId={formData.id} />}
+          {showPdfButton && <PdfButton quoteDetail={formData} />}
         </div>
       </div>
 
@@ -256,12 +237,10 @@ export const QuoteDetailTemplate = () => {
         />
 
         <div className="flex justify-end space-x-2 mt-8">
-        <Button
-            type="submit"
-            variant="primary"
-            size="small"
-          >
-            <Typography variant="titleSmall" className="text-white">{id && id !== 'new' ? '수정' : '등록'}</Typography>
+          <Button type="submit" variant="primary" size="small">
+            <Typography variant="titleSmall" className="text-white">
+              {id && id !== 'new' ? '수정' : '등록'}
+            </Typography>
           </Button>
           <Button
             type="button"
@@ -283,6 +262,7 @@ export const QuoteDetailTemplate = () => {
           ← 목록으로
         </button>
       </div>
+
       {tooltip && (
         <TooltipPortal position={tooltip.position}>
           <div className="bg-red-500 text-white text-xs rounded px-3 py-1 relative shadow" style={{ transform: 'translateX(-50%) translateY(-100%)' }}>
@@ -295,4 +275,4 @@ export const QuoteDetailTemplate = () => {
   );
 };
 
-export default QuoteDetailTemplate; 
+export default QuoteDetailTemplate;

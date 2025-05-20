@@ -31,13 +31,9 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
         />
       </td>
       <td className="p-2 text-center border-r border-gray-200">
-        <a
-          href={`/work/orders/${order.id}`}
-          onClick={(e) => { e.preventDefault(); onOrderClick?.(order); }}
-          className="text-center hover:text-blue-600 hover:underline cursor-pointer bg-transparent border-none p-0 m-0 font-normal text-[12px] leading-normal"
-        >
+        <Typography variant="body">
           {order.orderNo}
-        </a>
+        </Typography>
       </td>
       <td className="p-2 text-center border-r border-gray-200">
         <Typography variant="body">
