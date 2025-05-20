@@ -4,8 +4,14 @@ import { useAiStore } from '../../stores/useAiStore';
 import { Button } from '@/shared/components/atoms/button';
 import { useEmailTemplate } from '../../hooks/useAiMail';
 import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'react-toastify';
 
-const AiTemplateDetail: React.FC = () => {
+interface AiTemplateDetailProps {
+  onApplyTemplate: (content: string) => void;
+  onCloseAssistant: () => void;
+}
+
+const AiTemplateDetail: React.FC<AiTemplateDetailProps> = ({ onApplyTemplate, onCloseAssistant }) => {
   const { selectedTemplateId, setIsEditing } = useAiStore();
   const queryClient = useQueryClient();
 
@@ -30,7 +36,30 @@ const AiTemplateDetail: React.FC = () => {
   const handleApplyTemplate = () => {
     // 메일 본문에 템플릿 내용을 적용하는 로직
     if (template?.generatedContent) {
-      console.log('템플릿 적용:', template.generatedContent);
+      try {
+        
+        // 콜백을 통해 부모 컴포넌트로 템플릿 내용 전달
+        onApplyTemplate(template.generatedContent);
+        
+        // 성공 메시지 표시
+        toast.success('템플릿이 메일에 적용되었습니다.', {
+          toastId: `template-applied-${Date.now()}`
+        });
+        
+        // AI 어시스턴트 패널 닫기
+        onCloseAssistant();
+        
+        console.log('템플릿 적용 완료');
+      } catch (error) {
+        console.error('템플릿 적용 중 오류:', error);
+        toast.error('템플릿 적용 중 오류가 발생했습니다.', {
+          toastId: `template-error-${Date.now()}`
+        });
+      }
+    } else {
+      toast.warning('적용할 템플릿 내용이 없습니다.', {
+        toastId: `template-empty-${Date.now()}`
+      });
     }
   };
 

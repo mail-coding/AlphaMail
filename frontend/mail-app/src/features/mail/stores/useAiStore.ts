@@ -16,6 +16,7 @@ interface AiState {
   selectedTemplateId: string | null;
   isAddingNewTemplate: boolean;
   isEditing: boolean;
+  isOpen: boolean;
 
   // 액션
   openAiAssistant: () => void;
@@ -30,6 +31,7 @@ interface AiState {
   clearSelectedTemplate: () => void;
   setAddingNewTemplate: (isAdding: boolean) => void;
   setIsEditing: (isEditing: boolean) => void;
+  setIsOpen: (isOpen: boolean) => void;
 }
 
 export const useAiStore = create<AiState>((set) => ({
@@ -40,7 +42,8 @@ export const useAiStore = create<AiState>((set) => ({
     isTranslating: false,
     translatedContent: null,
     isAddingNewTemplate: false,
-    
+    isOpen: false,
+
     // 템플릿 초기 상태
     selectedTemplateId: null,
     isEditing: false,
@@ -62,4 +65,6 @@ export const useAiStore = create<AiState>((set) => ({
     clearSelectedTemplate: () => set({ selectedTemplateId: null }),
     setAddingNewTemplate: (isAdding: boolean) => set({ isAddingNewTemplate: isAdding }),
     setIsEditing: (isEditing: boolean) => set({ isEditing }),
+    setIsOpen: (isOpen: boolean) => set({ isOpen }),
+
 }));

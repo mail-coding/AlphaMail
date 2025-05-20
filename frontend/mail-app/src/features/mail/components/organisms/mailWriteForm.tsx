@@ -37,15 +37,36 @@ export const MailWriteForm: React.FC<MailWriteFormProps> = ({
   recentRecipients,
   onSelectRecipient
 }) => {
-  const { attachments, addAttachment, removeAttachment } = useMailStore();
+  const isFirstRender = useRef(true);
+  const { 
+    attachments, 
+    addAttachment, 
+    removeAttachment, 
+    content: storeContent,
+    setContent : setStoreContent
+  } = useMailStore();
+
   const [to, setTo] = useState<string[]>(initialTo);
   const [subject, setSubject] = useState<string>(initialSubject);
-  const [content, setContent] = useState<string>(initialContent);
   const [isUploading, setIsUploading] = useState<boolean>(false);
-  const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024;
-  const MAX_TOTAL_ATTACHMENTS_SIZE = 10 * 1024 * 1024;
-  const lastToastIdRef = useRef<string | number | null>(null);
+  const MAX_ATTACHMENT_SIZE = 6 * 1024 * 1024;
+  const MAX_TOTAL_ATTACHMENTS_SIZE = 6 * 1024 * 1024;
 
+  // 초기화 시 스토어 content 설정
+  useEffect(() => {
+    // 초기 렌더링 시에만 실행되도록 ref 사용    
+    if (isFirstRender.current && initialContent) {
+      setStoreContent(initialContent);
+      isFirstRender.current = false;
+    }
+  }, [initialContent, setStoreContent]);  
+  
+  // storeContent가 변경될 때 부모 컴포넌트에 알림
+  useEffect(() => {
+    console.log('스토어 콘텐츠 변경 감지:', storeContent ? storeContent + '...' : '빈 콘텐츠');
+    onContentChange(storeContent);
+  }, [storeContent, onContentChange]);
+  
   useEffect(() => {
     setTo(initialTo);
     onRecipientsChange(initialTo);
@@ -55,31 +76,6 @@ export const MailWriteForm: React.FC<MailWriteFormProps> = ({
     setSubject(initialSubject);
     onSubjectChange(initialSubject);
   }, [initialSubject, onSubjectChange]);
-
-  useEffect(() => {
-    setContent(initialContent);
-    onContentChange(initialContent);
-  }, [initialContent, onContentChange]);
-
-  const showToast = (message: string, type: 'error' | 'warning' | 'info' | 'success' = 'error') => {
-
-    // 이전 토스트가 있으면 닫기
-    if (lastToastIdRef.current) {
-      toast.dismiss(lastToastIdRef.current);
-    }
-    
-    // 새 토스트 표시 및 ID 저장
-    const toastId = toast[type](message, {
-      position: "top-right",
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
-    
-    lastToastIdRef.current = toastId;
-  };
 
   const handleAddRecipient = (email: string) => {
     const newTo = [...to, email];
@@ -94,34 +90,50 @@ export const MailWriteForm: React.FC<MailWriteFormProps> = ({
     onRecipientsChange(newTo);
   };
   
-  
   const handleSubjectChange = (newSubject: string) => {
     setSubject(newSubject);
     onSubjectChange(newSubject);
   };
   
   const handleContentChange = (newContent: string) => {
-    setContent(newContent);
-    onContentChange(newContent);
+    console.log('메일 폼 - 콘텐츠 변경 핸들러:', newContent.substring(0, 50) + '...');
+    setStoreContent(newContent);
   };
-  
+
   const handleAddAttachment = async (files: FileList) => {
     // 현재 첨부파일의 총 크기 계산
     const currentTotalSize = attachments.reduce((total, attachment) => {
       return total + attachment.size;
     }, 0);
-
+    
     // 새 파일들 처리
     for (const file of files) {
+      // 중복 파일 확인
+      const isDuplicate = attachments.some(
+        attachment => attachment.name === file.name && attachment.size === file.size
+      );
+      
+      if (isDuplicate) {
+        // 고유 ID를 가진 토스트 생성
+        toast.warning(`중복된 파일은 업로드할 수 없습니다: ${file.name}`, {
+          toastId: `duplicate-${file.name}-${Date.now()}` // 고유 ID 생성
+        });
+        continue; // 중복 파일은 건너뜀
+      }
+      
       // 개별 파일 크기 검사
       if (file.size > MAX_ATTACHMENT_SIZE) {
-        showToast(`${file.name}의 크기가 10MB를 초과합니다. 10MB 이하의 파일만 첨부 가능합니다.`, 'error');
+        toast.error(`${file.name}의 크기가 6MB를 초과합니다. 6MB 이하의 파일만 첨부 가능합니다.`, {
+          toastId: `size-${file.name}-${Date.now()}` // 고유 ID 생성
+        });
         continue;
       }
       
       // 총 첨부파일 크기 검사
       if (currentTotalSize + file.size > MAX_TOTAL_ATTACHMENTS_SIZE) {
-        showToast('총 첨부파일 크기가 10MB를 초과합니다.', 'error');
+        toast.error('총 첨부파일 크기가 6MB를 초과합니다.', {
+          toastId: `total-size-${Date.now()}` // 고유 ID 생성
+        });
         break;
       }
       
@@ -135,7 +147,9 @@ export const MailWriteForm: React.FC<MailWriteFormProps> = ({
           setIsUploading(false);
         }, 500);
       } catch (error) {
-        showToast(`파일 처리 실패: ${error instanceof Error ? error.message : '알 수 없는 오류'}`, 'error');
+        toast.error(`파일 처리 실패: ${error instanceof Error ? error.message : '알 수 없는 오류'}`, {
+          toastId: `error-${Date.now()}` // 고유 ID 생성
+        });
         setIsUploading(false);
       }
     }
@@ -202,7 +216,7 @@ export const MailWriteForm: React.FC<MailWriteFormProps> = ({
       
       <div className="flex-1">
         <MailQuillEditor
-          content={content}
+          content={storeContent}
           onChange={handleContentChange}
           fontOptions={fontOptions}
         />

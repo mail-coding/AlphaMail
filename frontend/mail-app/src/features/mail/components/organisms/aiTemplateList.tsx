@@ -8,7 +8,12 @@ import AiLoading from './aiLoading';
 import { useAiStore } from '../../stores/useAiStore';
 import { useEmailTemplates, useDeleteEmailTemplate } from '../../hooks/useAiMail';
 
-const AiTemplateList: React.FC = () => {
+interface AiTemplateListProps {
+  onApplyTemplate: (content: string) => void;
+  onCloseAssistant: () => void;
+}
+
+const AiTemplateList: React.FC<AiTemplateListProps> = ({ onApplyTemplate, onCloseAssistant }) => {
   // useAiStore에서 상태와 액션 가져오기
   const { 
     selectedTemplateId, 
@@ -107,7 +112,10 @@ const AiTemplateList: React.FC = () => {
             <AiTemplateEdit 
               setIsGenerating={setIsGenerating} 
             /> : 
-            <AiTemplateDetail />
+            <AiTemplateDetail 
+            onApplyTemplate={onApplyTemplate}
+            onCloseAssistant={onCloseAssistant}
+            />
           }
         </div>
       </div>

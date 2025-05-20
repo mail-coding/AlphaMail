@@ -4,6 +4,7 @@ import AiTemplateList from '../organisms/aiTemplateList';
 import AiSummary from '../organisms/aiSummary';
 import { Typography } from '@/shared/components/atoms/Typography';
 import { useAiStore } from '../../stores/useAiStore';
+import { useMailStore } from '../../stores/useMailStore';
 // import AiSendPrompt from '../molecules/aiSendPrompt';
 
 interface AiPageTemplateProps {
@@ -26,8 +27,28 @@ const AiPageTemplate: React.FC<AiPageTemplateProps> = ({
     isAnalyzing, 
     startAnalysis, 
     setAnalysisResult,
-    clearAnalysisResult
+    clearAnalysisResult,
+    setIsOpen
   } = useAiStore();
+  
+  const { setContent } = useMailStore();
+
+  // 템플릿 적용 핸들러
+  const handleApplyTemplate = (templateContent: string) => {
+    console.log('AI 페이지 - 템플릿 적용:', templateContent);
+    setContent(templateContent);
+  };
+
+  // AI 어시스턴트 닫기 핸들러
+  const handleCloseAssistant = () => {
+    onClose();
+    setIsOpen(false);
+  };
+
+  useEffect(() => {
+    // AI 스토어의 isOpen 상태 동기화
+    setIsOpen(isOpen);
+  }, [isOpen, setIsOpen]);
 
   useEffect(() => {
     if (isOpen && mode === 'summary' && mailContent) {
@@ -87,7 +108,10 @@ const AiPageTemplate: React.FC<AiPageTemplateProps> = ({
         // 메일 작성 페이지에서 사용할 템플릿 컴포넌트
         <div className="flex flex-col h-full">
           <div className="flex-1 overflow-auto">
-            <AiTemplateList />
+            <AiTemplateList 
+              onApplyTemplate={handleApplyTemplate}
+              onCloseAssistant={handleCloseAssistant}
+            />
           </div>
           <div className="h-14"></div>
         </div>

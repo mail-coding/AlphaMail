@@ -61,7 +61,7 @@ interface MailState {
   resetFolderState: () => void;
 }
 
-export const useMailStore = create<MailState>((set) => ({
+export const useMailStore = create<MailState>((set, get) => ({
   // 기존 상태
   currentFolder: 1,
   currentPage: 1,
@@ -147,7 +147,17 @@ export const useMailStore = create<MailState>((set) => ({
   
   setSubject: (subject) => set({ subject }),
   
-  setContent: (content) => set({ content }),
+  setContent: (content) => {
+    console.log('메일 스토어 - 콘텐츠 설정:', content);
+    set({ content });
+    
+    // 상태 변경 후 확인
+    setTimeout(() => {
+      const currentContent = get().content;
+      console.log('메일 스토어 - 콘텐츠 설정 후 상태:', 
+        currentContent ? currentContent : '빈 콘텐츠');
+    }, 0);
+  },
   
   setThreadId: (threadId) => set({ threadId }),
   
@@ -176,7 +186,7 @@ export const useMailStore = create<MailState>((set) => ({
   setFolders: (folders) => set({ folders }),
   setFolderLoading: (loading) => set({ folderLoading: loading }),
   getFolderIdByType: (type: 'inbox' | 'sent' | 'trash') => {
-    const folders: FolderResponse[] = useMailStore.getState().folders;
+    const folders: FolderResponse[] = get().folders;
     
     // 폴더 타입에 따라 시스템 폴더 찾기
     switch (type) {

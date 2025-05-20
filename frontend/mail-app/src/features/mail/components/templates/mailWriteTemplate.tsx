@@ -67,7 +67,6 @@ const MailWriteTemplate: React.FC = () => {
   
   const MAX_EMAIL_LENGTH = 254; // RFC 5321 기준
   const MAX_SUBJECT_LENGTH = 120; // 제목 최대 길이
-  const MAX_CONTENT_LENGTH = 50000; // 내용 최대 길이 (약 100KB)
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -340,21 +339,17 @@ const { data: threadInfo } = useQuery({
     // 작성 취소 및 이전 페이지로 이동
     navigate(-1);
   };
-  
-  const handleContentChange = (newContent: string) => {
-    if (newContent.length > MAX_CONTENT_LENGTH) {
-      showToast(`내용은 최대 ${MAX_CONTENT_LENGTH.toLocaleString()}자까지 입력 가능합니다.`, 'warning');
-      return;
-    }
-    setContent(newContent);
-  };
-  
+    
   const handleSubjectChange = (newSubject: string) => {
     if (newSubject.length > MAX_SUBJECT_LENGTH) {
       showToast(`제목은 최대 ${MAX_SUBJECT_LENGTH}자까지 입력 가능합니다.`, 'warning');
       return;
     }
     setSubject(newSubject);
+  };
+  
+  const handleContentChange = (newContent: string) => {
+    setContent(newContent);
   };
   
   const handleRecipientsChange = (newRecipients: string[]) => {
@@ -392,9 +387,9 @@ const { data: threadInfo } = useQuery({
         initialTo={to}
         initialSubject={subject}
         initialContent={content}
-        onContentChange={handleContentChange}
         onSubjectChange={handleSubjectChange}
         onRecipientsChange={handleRecipientsChange}
+        onContentChange={handleContentChange}
         fontOptions={FONT_OPTIONS}
         onRecipientFocus={handleRecipientFocus}
         onRecipientBlur={handleRecipientBlur}

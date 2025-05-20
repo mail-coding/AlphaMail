@@ -69,7 +69,7 @@ export const MailAttachmentInput: React.FC<MailAttachmentInputProps> = ({
               </div>
             ))}
             <div className="text-right text-xs text-gray-500 mt-1">
-              {formatFileSize(attachments.reduce((acc, curr) => acc + curr.size, 0))}/10MB
+              {formatFileSize(attachments.reduce((acc, curr) => acc + curr.size, 0))}/6MB
             </div>
           </div>
         )}
