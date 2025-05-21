@@ -4,7 +4,6 @@ import { productService } from '../services/productService';
 import { useUserInfo } from '@/shared/hooks/useUserInfo';
 
 export const useProductSelect = () => {
-  const { data: userInfo } = useUserInfo();
   const {
     products,
     searchKeyword,
@@ -17,6 +16,8 @@ export const useProductSelect = () => {
     setLoading,
     setError,
   } = useProductSelectStore();
+
+  const { data: userInfo } = useUserInfo();
 
   const fetchProducts = useCallback(async () => {
     if (!userInfo?.companyId) {

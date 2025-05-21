@@ -72,6 +72,7 @@ const ProductSelectTable: React.FC<ProductSelectTableProps> = ({
       {/* Pagination */}
       <div className="flex justify-center items-center mt-2 mb-1">
         <Button
+          type="button"
           variant="ghost"
           size="small"
           disabled={page === 1}
@@ -82,6 +83,7 @@ const ProductSelectTable: React.FC<ProductSelectTableProps> = ({
         {[...Array(pageCount)].map((_, i) => (
           <Button
             key={i}
+            type="button"
             variant="ghost"
             size="small"
             onClick={() => onPageChange(i + 1)}
@@ -91,6 +93,7 @@ const ProductSelectTable: React.FC<ProductSelectTableProps> = ({
           </Button>
         ))}
         <Button
+          type="button"
           variant="ghost"
           size="small"
           disabled={page === pageCount}

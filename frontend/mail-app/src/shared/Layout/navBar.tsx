@@ -4,7 +4,7 @@ import { Typography } from '@/shared/components/atoms/Typography';
 import { useNavbarStore } from '../stores/useNavbarStore';
 import { useUserStore } from '../stores/useUserStore';
 import { useState, useEffect } from 'react';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { api } from '@/shared/lib/axiosInstance';
 
@@ -283,8 +283,6 @@ export const NavBar = () => {
                 </div>
             )}
             
-            {/* 토스트 컨테이너 */}
-            <ToastContainer />
         </div>
     );
 };

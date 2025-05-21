@@ -1,4 +1,5 @@
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // createRef 대신 일반 변수 사용 (컴포넌트 외부에서는 useRef가 아닌 일반 변수 사용)
 let lastToastId: string | number | null = null;
@@ -48,4 +49,21 @@ export const dismissAllToasts = () => {
   } catch (error) {
     console.error('토스트 닫기 중 오류:', error);
   }
+};
+
+// ToastContainer를 포함한 컴포넌트
+export const ToastProvider: React.FC = () => {
+  return (
+    <ToastContainer
+      position="top-right"
+      autoClose={3000}
+      hideProgressBar={false}
+      newestOnTop
+      closeOnClick
+      rtl={false}
+      pauseOnFocusLoss
+      draggable
+      pauseOnHover
+    />
+  );
 };
