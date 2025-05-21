@@ -187,6 +187,7 @@ const OrderBasicInfoForm: React.FC<OrderBasicInfoFormProps> = ({
                 className="w-full h-[32px]"
                 onFocus={onInputFocus}
                 onClick={onInputFocus}
+                preventFormSubmit={true}
               />
               {errors.clientName && <p className="mt-1 text-xs text-red-500">{errors.clientName}</p>}
             </td>

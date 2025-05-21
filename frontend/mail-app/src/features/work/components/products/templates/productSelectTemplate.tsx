@@ -67,9 +67,13 @@ const ProductSelectTemplate: React.FC<ProductSelectTemplateProps> = ({
           </div>
           <div className="flex justify-end mt-4">
             <Button
+              type="button"
               variant="primary"
               disabled={selectedId === null || isLoading}
-              onClick={handleConfirm}
+              onClick={(e) => {
+                e.preventDefault();
+                handleConfirm();
+              }}
             >
               선택
             </Button>

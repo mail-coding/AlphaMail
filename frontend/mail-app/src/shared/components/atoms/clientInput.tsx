@@ -9,6 +9,7 @@ interface ClientInputProps {
   className?: string;
   onFocus?: React.FocusEventHandler<HTMLInputElement>;
   onClick?: React.MouseEventHandler<HTMLInputElement>;
+  preventFormSubmit?: boolean;
 }
 
 const ClientInput = forwardRef<HTMLInputElement, ClientInputProps>(

@@ -57,14 +57,21 @@ export const ClientSelectTemplate: React.FC<ClientSelectTemplateProps> = ({
               onSelect={setSelectedId}
               page={currentPage}
               pageCount={data ? Math.ceil(data.totalCount / pageSize) : 1}
-              onPageChange={setCurrentPage}
+              onPageChange={(page) => {
+                setCurrentPage(page);
+                setSelectedId(null);
+              }}
             />
           </div>
           <div className="flex justify-end mt-4">
             <Button
+              type="button"
               variant="primary"
               disabled={selectedId === null}
-              onClick={handleSelect}
+              onClick={(e) => {
+                e.preventDefault();
+                handleSelect();
+              }}
             >
               선택
             </Button>
