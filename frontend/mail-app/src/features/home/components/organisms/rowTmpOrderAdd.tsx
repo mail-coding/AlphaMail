@@ -19,7 +19,7 @@ interface RowTmpOrderAddProps {
 export const RowTmpOrderAdd: React.FC<RowTmpOrderAddProps> = ({ temporaryPurchaseOrderId }) => {
   const { 
     orderNo, 
-    orderDate, 
+
     clientName,
     licenseNumber, 
     representative, 
@@ -196,12 +196,15 @@ export const RowTmpOrderAdd: React.FC<RowTmpOrderAddProps> = ({ temporaryPurchas
         </div>
         
         <div className="col-span-1 flex items-center">
-          <Typography variant="caption" className="text-gray-700">
-            일자
+        <Typography variant="caption" className="text-gray-700">
+            납기일자
           </Typography>
+          {showValidationErrors && !deliverAt && <ValidationError show={true} />}
         </div>
         <div className="col-span-2">
-          <Input readOnly value={orderDate} className={`bg-gray-200 ${inputStyle}`} />
+          <div className={`h-10 flex items-center`}>
+            <TmpOrderAddDate initialDate={deliverAt} />
+          </div>
         </div>
         
         <div className="col-span-1 flex items-center">
@@ -239,8 +242,8 @@ export const RowTmpOrderAdd: React.FC<RowTmpOrderAddProps> = ({ temporaryPurchas
           {showValidationErrors && !clientId && <ValidationError show={true} />}
         </div>
         <div className="col-span-5">
-          <div className={`h-10 flex items-center`}>
-            <TmpOrderAddClient initialClientName={clientName} />
+          <div className={`h-10 flex items-center `}>
+            <TmpOrderAddClient initialClientName={clientName}/>
           </div>
         </div>
         
@@ -319,17 +322,7 @@ export const RowTmpOrderAdd: React.FC<RowTmpOrderAddProps> = ({ temporaryPurchas
           </div>
         </div>
         
-        <div className="col-span-1 flex items-center">
-        <Typography variant="caption" className="text-gray-700">
-            납기일자
-          </Typography>
-          {showValidationErrors && !deliverAt && <ValidationError show={true} />}
-        </div>
-        <div className="col-span-5">
-          <div className={`h-10 flex items-center`}>
-            <TmpOrderAddDate initialDate={deliverAt} />
-          </div>
-        </div>
+       
       </div>
       
       <TmpOrderAddRow />

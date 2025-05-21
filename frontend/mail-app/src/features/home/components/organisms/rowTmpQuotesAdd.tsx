@@ -3,7 +3,6 @@ import { Typography } from '@/shared/components/atoms/Typography';
 import { Input } from '@/shared/components/atoms/input';
 import { Button } from '@/shared/components/atoms/button';
 import { TmpQuoteAddAddress } from '../molecules/tmpQuoteAddAddress';
-import { TmpQuoteAddDate } from '../molecules/tmpQuoteAddDate';
 import { useTmpQuoteStore } from '../../stores/useTmpQuoteStore';
 import { TmpQuoteAddClient } from '../molecules/tmpQuoteAddClient';
 import { useHome } from '../../hooks/useHome';
@@ -26,8 +25,6 @@ export const RowTmpQuotesAdd: React.FC<RowTmpQuotesAddProps> = ({ temporaryQuote
     setManager, 
     managerContact, 
     setManagerContact,
-    validityPeriod,
-    setValidityPeriod,
     clientId,
     clientName,
     products,
@@ -148,16 +145,7 @@ export const RowTmpQuotesAdd: React.FC<RowTmpQuotesAddProps> = ({ temporaryQuote
           <Input readOnly value={quoteNo} className={`bg-gray-200 ${inputStyle}`} />
         </div>
         
-        <div className="col-span-1 flex items-center">
-          <Typography variant="caption" className="text-gray-700">
-            일자
-          </Typography>
-        </div>
-        <div className="col-span-2">
-          <div className="w-full">
-            <TmpQuoteAddDate />
-          </div>
-        </div>
+      
         
         <div className="col-span-1 flex items-center">
           <Typography variant="caption" className="text-gray-700">
@@ -172,18 +160,7 @@ export const RowTmpQuotesAdd: React.FC<RowTmpQuotesAddProps> = ({ temporaryQuote
           />
         </div>
         
-        <div className="col-span-1 flex items-center">
-          <Typography variant="caption" className="text-gray-700">
-            유효기간
-          </Typography>
-        </div>
-        <div className="col-span-2">
-          <Input 
-            value={validityPeriod} 
-            onChange={(e) => setValidityPeriod(e.target.value)} 
-            className={inputStyle}
-          />
-        </div>
+
         
         <div className="col-span-1 flex items-center">
           <Typography variant="caption" className="text-gray-700">
