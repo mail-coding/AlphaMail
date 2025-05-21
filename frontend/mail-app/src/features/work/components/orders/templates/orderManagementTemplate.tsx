@@ -133,15 +133,7 @@ const OrderManagementTemplate: React.FC = () => {
             onOrderClick={handleOrderClick}
             isLoading={isLoading}
             selectedOrderIds={selectedOrderIds}
-            onSelectOrder={(id) => {
-              const newSelectedIds = new Set(selectedOrderIds);
-              if (newSelectedIds.has(id)) {
-                newSelectedIds.delete(id);
-              } else {
-                newSelectedIds.add(id);
-              }
-              setSelectedOrderIds(newSelectedIds);
-            }}
+            onSelectOrder={setSelectedOrderIds}
           />
         </div>
       </div>

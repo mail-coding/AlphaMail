@@ -18,7 +18,7 @@ interface OrderTableProps {
   onOrderClick: (order: Order) => void;
   isLoading: boolean;
   selectedOrderIds: Set<number>;
-  onSelectOrder: (id: number) => void;
+  onSelectOrder: (ids: Set<number>) => void;
 }
 
 const OrderTable: React.FC<OrderTableProps> = ({
@@ -54,13 +54,17 @@ const OrderTable: React.FC<OrderTableProps> = ({
                 checked={orders.length > 0 && orders.every((order) => selectedOrderIds.has(order.id))}
                 onChange={(e) => {
                   const isChecked = e.target.checked;
-                  const currentPageOrderIds = orders.map(order => order.id);
+                  const newSelectedIds = new Set(selectedOrderIds);
                   
-                  currentPageOrderIds.forEach(orderId => {
-                    if (selectedOrderIds.has(orderId) !== isChecked) {
-                      onSelectOrder(orderId);
+                  orders.forEach(order => {
+                    if (isChecked) {
+                      newSelectedIds.add(order.id);
+                    } else {
+                      newSelectedIds.delete(order.id);
                     }
                   });
+                  
+                  onSelectOrder(newSelectedIds);
                 }}
                 className="rounded border-gray-300"
               />
@@ -91,7 +95,15 @@ const OrderTable: React.FC<OrderTableProps> = ({
               <OrderTableRow
                 key={order.id}
                 order={order}
-                onSelect={onSelectOrder}
+                onSelect={(id) => {
+                  const newSelectedIds = new Set(selectedOrderIds);
+                  if (newSelectedIds.has(id)) {
+                    newSelectedIds.delete(id);
+                  } else {
+                    newSelectedIds.add(id);
+                  }
+                  onSelectOrder(newSelectedIds);
+                }}
                 onOrderClick={onOrderClick}
                 isSelected={selectedOrderIds.has(order.id)}
               />
