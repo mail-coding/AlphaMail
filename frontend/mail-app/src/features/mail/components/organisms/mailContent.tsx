@@ -32,7 +32,7 @@ export const MailContent: React.FC<MailContentProps> = ({
   const enhancedHtml = bodyHtml ? styleTag + bodyHtml : null;
   
   return (
-    <div className="mail-content px-4 py-4 overflow-auto">
+    <div className="mail-content px-6 py-4 overflow-auto">
       {enhancedHtml ? (
         <div 
           className="font-pretendard text-[12px] text-gray-900 mail-content-html" 

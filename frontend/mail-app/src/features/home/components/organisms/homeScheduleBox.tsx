@@ -65,7 +65,7 @@ export const HomeScheduleBox: React.FC = () => {
                 </div>
                 <Typography 
                   variant="titleSmall" 
-                  className={schedule.is_done ? 'text-gray-200' : 'text-black-400'}
+                  className={schedule.is_done ? 'text-[#9C9C9C]' : 'text-black-400'}
                 >
                   {schedule.name}
                 </Typography>

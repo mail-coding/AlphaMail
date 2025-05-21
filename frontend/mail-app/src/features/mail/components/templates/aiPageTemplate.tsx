@@ -80,7 +80,7 @@ const AiPageTemplate: React.FC<AiPageTemplateProps> = ({
            height: 'calc(100vh - 64px)',
            boxShadow: '-5px 0 15px rgba(0, 0, 0, 0.1)'
          }}>
-      <div className="flex justify-center items-center p-4 bg-gradient-to-r from-[#62DDFF] to-[#9D44CA] relative">
+      <div className="flex justify-center items-center p-4 bg-gradient-to-r from-[#62DDFF] to-[#3E5DE8] relative">
         <Typography variant="titleMedium" bold className="text-white">
           {mode === 'summary' ? 'AI 스레드 요약' : 'AI 메일 템플릿'}
         </Typography>

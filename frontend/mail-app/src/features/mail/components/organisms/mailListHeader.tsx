@@ -75,10 +75,10 @@ export const MailListHeader: React.FC<MailListHeaderProps> = ({
   };
 
   return (
-    <div className="mb-4">
-      <div className="flex items-center justify-between px-4 py-2">
-        <div className="flex items-center">
-          <div className="mr-4">
+    <div className="bg-[#F5F5F5] w-full">
+      <div className="flex items-center justify-between px-4 py-2 ">
+        <div className="flex items-center ">
+          <div className="mr-4 ">
             <CheckboxItem 
               checked={allSelected} 
               onChange={onSelectAll}

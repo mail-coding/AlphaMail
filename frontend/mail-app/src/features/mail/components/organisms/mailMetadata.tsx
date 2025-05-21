@@ -35,7 +35,7 @@ export const MailMetadata: React.FC<MailMetadataProps> = ({
     };
   
   return (
-    <div className="px-4 py-2">
+    <div className="px-6 py-4">
       {/* 메일 제목 */}
       <div className="mb-4">
         <MailSubject subject={subject || ''} isRead={true} variant="detail" />
@@ -45,7 +45,7 @@ export const MailMetadata: React.FC<MailMetadataProps> = ({
       <MailDetailAiButton 
         onAiAssistant={onAiAssistant}
         onTranslate={onTranslate}
-        aiButtonWidth="130px" 
+        aiButtonWidth="120px" 
         aiButtonHeight="30px"
         aiFontSize="11px"
       />

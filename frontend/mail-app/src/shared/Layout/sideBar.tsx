@@ -242,7 +242,7 @@ export const SideBar: React.FC<SideBarProps> = ({ type}) => {
                           >
                             <Typography 
                               variant="titleSmall"
-                              color={pathname.startsWith("/work/clients") ? "text-[#66BAE4]" : ""}
+                              color={pathname.startsWith("/work/clients") ? "text-[#518EF9]" : ""}
                               bold={pathname.startsWith("/work/clients")}
                             >
                               거래처 관리
@@ -256,7 +256,7 @@ export const SideBar: React.FC<SideBarProps> = ({ type}) => {
                           >
                             <Typography 
                               variant="titleSmall"
-                              color={pathname.startsWith("/work/orders") ? "text-[#66BAE4]" : ""}
+                              color={pathname.startsWith("/work/orders") ? "text-[#518EF9]" : ""}
                               bold={pathname.startsWith("/work/orders")}
                             >
                               발주서 관리
@@ -270,7 +270,7 @@ export const SideBar: React.FC<SideBarProps> = ({ type}) => {
                           >
                             <Typography
                               variant="titleSmall"
-                              color={pathname.startsWith("/work/products") ? "text-[#66BAE4]" : ""}
+                              color={pathname.startsWith("/work/products") ? "text-[#518EF9]" : ""}
                               bold={pathname.startsWith("/work/products")}
                             >
                               재고 관리
@@ -284,7 +284,7 @@ export const SideBar: React.FC<SideBarProps> = ({ type}) => {
                           >
                             <Typography 
                               variant="titleSmall"
-                              color={pathname.startsWith("/work/quotes") ? "text-[#66BAE4]" : ""}
+                              color={pathname.startsWith("/work/quotes") ? "text-[#518EF9]" : ""}
                               bold={pathname.startsWith("/work/quotes")}
                             >
                               견적서 관리

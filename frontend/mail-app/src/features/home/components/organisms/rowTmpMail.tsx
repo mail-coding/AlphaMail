@@ -66,7 +66,11 @@ export const RowTmpMail: React.FC<RowTmpMailProps> = ({ type, id }) => {
           <TmpMailSender name={formattedMailData.sender} />
           <TmpMailRecipient emails={formattedMailData.recipients} />
           <TmpMailDate date={formattedMailData.date} />
+
+          <div className="border-t border-gray-200 my-2" />
+
           <TmpMailAttachments attachments={formattedMailData.attachments} emailId={formattedMailData.emailId} />
+        
         </div>
         
         {/* 오른쪽 영역: 메일 본문 */}

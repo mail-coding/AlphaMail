@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from '@/shared/components/atoms/button';
 import { ButtonGroup } from '../molecules/buttonGroup';
+import { Typography } from '@/shared/components/atoms/Typography';
 
 interface MailDetailHeaderProps {
   onBack: () => void;
@@ -39,12 +40,12 @@ export const MailDetailHeader: React.FC<MailDetailHeaderProps> = ({
     };
   
   return (
-    <div className="flex justify-between mb-6 p-4">
-      <Button variant="ghost" onClick={onBack} className="flex items-center gap-1">
+    <div className="flex justify-between p-2 pl-0 bg-[#F5F5F5]">
+      <Button variant="ghost" onClick={onBack} className="bg-[#F5F5F5] flex items-center gap-1  hover:bg-[#D4D4D4]">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M15 18L9 12L15 6" stroke="#616161" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
-        뒤로
+        <Typography variant='titleSmall' className="text-[#616161]">뒤로</Typography>
       </Button>
       
       {/* 버튼 그룹 - 출처에 따라 다르게 표시 */}
