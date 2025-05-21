@@ -17,7 +17,7 @@ export const ClientManagementTemplate: React.FC = () => {
   const [pageSize, setPageSize] = useState(10);
   const [selectedClientIds, setSelectedClientIds] = useState<Set<number>>(new Set());
 
-  const { data, refetch } = useClients({
+  const { data, refetch, isLoading } = useClients({
     query: searchKeyword,
     page: currentPage,
     size: pageSize,
@@ -103,6 +103,7 @@ export const ClientManagementTemplate: React.FC = () => {
             totalCount={data?.totalCount || 0}
             pageCount={data?.pageCount || 0}
             onClientClick={handleClientClick}
+            isLoading={isLoading}
           />
         </div>
       </div>
