@@ -67,8 +67,10 @@ AlphaMail은 이메일로 들어오는 다양한 업무를 AI가 자동으로 �
 - **JWT** - 토큰 기반 인증
 
 ### 프론트엔드
-- **React/Vue** - 사용자 인터페이스
-- **Nginx** - 웹 서버 및 리버스 프록시
+- **React** - 사용자 인터페이스
+- **TypeScript** - 타입 기반 체크
+- **TailwindCSS** - 빠르고 효율적인 스타일링
+- **React-Query** - 비동기 데이터 관리
 
 ### AI & ML
 - **Anthropic Claude** - 메인 LLM
