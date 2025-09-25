@@ -28,26 +28,28 @@ AlphaMail은 이메일로 들어오는 다양한 업무를 AI가 자동으로 �
 ## 🚀 핵심 기능
 
 ### 1. AI 업무 비서
+![AI비서](https://github.com/user-attachments/assets/63c0d250-404b-4af2-a719-a30498517d99)
 - 메일 내용 자동 분석 및 분류
 - 첨부파일(사업자등록증 등) OCR 처리
 - 업무별 자동 등록 및 처리
 - 홈 대시보드 통합 관리
 
-
-
 ### 2. 메일 서비스
+![메일서비스](https://github.com/user-attachments/assets/d2fa763a-e0ab-4566-ac38-cb10e5d7971a)
 - 스레드 기반 메일 이력 관리
 - AI 기반 메일 요약
 - 템플릿 기반 자동 답장 생성
 - 벡터 DB 기반 빠른 검색
 
 ### 3. AI 챗봇
+![챗봇](https://github.com/user-attachments/assets/dcb6ec1b-4063-4335-a0ad-cce2ca128f95)
 - 실시간 업무 지원
 - 일정 등록/조회
 - 발주서/견적서 검색
 - 전역 접근성
 
 ### 4. 문서 작업
+![문서작업](https://github.com/user-attachments/assets/8ecf7345-75b5-403d-8bee-239290ea2480)
 - 견적서 자동 생성 및 문서화
 - 발주서 처리
 - 거래처 관리
