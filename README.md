@@ -13,7 +13,7 @@ AlphaMail은 이메일로 들어오는 다양한 업무를 AI가 자동으로 �
 
 ### 마이크로서비스 구성
 - **Backend** (Spring Boot + Java 17) - 핵심 비즈니스 로직 및 API
-- **Frontend** (React/Vue + Nginx) - 사용자 인터페이스
+- **Frontend** (React + Nginx) - 사용자 인터페이스
 - **RAG Server** (Python) - 문서 검색 및 벡터 DB 처리
 - **OCR Server** (Node.js) - 문서 이미지 텍스트 추출
 - **MCP Server/Client** - AI 도구 호출 및 처리
