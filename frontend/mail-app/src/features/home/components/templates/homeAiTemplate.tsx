@@ -29,14 +29,14 @@ export const HomeAiTemplate: React.FC = () => {
 
   const totalPages = data?.pageCount || 0;
   
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      console.log('AI 데이터 갱신');
-      refetch();
-    }, 10000); // 10초마다 갱신
+  // useEffect(() => {
+  //   const intervalId = setInterval(() => {
+  //     console.log('AI 데이터 갱신');
+  //     refetch();
+  //   }, 10000); // 10초마다 갱신
     
-    return () => clearInterval(intervalId);
-  }, [refetch]);
+  //   return () => clearInterval(intervalId);
+  // }, [refetch]);
 
   // 페이지 포커스 시 데이터 갱신
   useEffect(() => {
