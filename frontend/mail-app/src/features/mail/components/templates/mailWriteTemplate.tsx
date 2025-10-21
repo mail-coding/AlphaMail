@@ -12,7 +12,7 @@ import { ko } from 'date-fns/locale';
 import { format } from 'date-fns';
 import AiPageTemplate from './aiPageTemplate';
 import { useAiStore } from '../../stores/useAiStore';
-import { useUser } from '@/features/auth/hooks/useUser'; // useUser 훅 임포트
+import { useUser } from '@/features/auth/hooks/useUser';
 import { useHeaderStore } from '@/shared/stores/useHeaderStore';
 import { showToast } from '@/shared/components/atoms/toast';
 
@@ -28,56 +28,35 @@ const FONT_OPTIONS = [
 ];
 
 const MailWriteTemplate: React.FC = () => {
-
   const { data: userData } = useUser();
   const { useRecentEmails } = useMail();
   const { data: recentEmailsData } = useRecentEmails();
   const [showRecentRecipients, setShowRecentRecipients] = useState(false);
   const { setTitle } = useHeaderStore();
-
-  useEffect(() => {
-    setTitle('메일 작성');
-  }, [setTitle]);
-
-  // 최근 수신자 목록 (API 데이터 사용)
-  const recentRecipients = useMemo(() => {
-    if (!recentEmailsData?.recentEmails) return [];
-    
-    return recentEmailsData.recentEmails.map((item: RecentEmailItem) => ({
-      name: item.owner || undefined, // owner가 빈 문자열이면 undefined로 설정
-      email: item.email
-    }));
-  }, [recentEmailsData]);
-  
-  // 받는 사람 입력창 포커스 핸들러
-  const handleRecipientFocus = () => {
-    setShowRecentRecipients(true);
-  };
-  
-  // 받는 사람 입력창 블러 핸들러
-  const handleRecipientBlur = () => {
-    // 약간의 지연을 두어 항목 클릭이 가능하도록 함
-    setTimeout(() => {
-      setShowRecentRecipients(false);
-    }, 200);
-  };
-  
-  // 최근 수신자 선택 핸들러
-  const handleSelectRecipient = (email: string) => {
-    // 이미 선택된 이메일이 아닌 경우에만 추가
-    if (!to.includes(email)) {
-      setTo([...to, email]);
-    }
-    setShowRecentRecipients(false);
-  };
-  
-  const MAX_EMAIL_LENGTH = 254; // RFC 5321 기준
-  const MAX_SUBJECT_LENGTH = 120; // 제목 최대 길이
-
   const navigate = useNavigate();
   const location = useLocation();
   const { sendMail } = useMail();
-  const { attachments, clearAttachments } = useMailStore();
+  
+  // Zustand 스토어에서 상태 구독
+  const {
+    to,
+    subject,
+    content,
+    threadId,
+    inReplyTo,
+    references,
+    attachments,
+    setTo,
+    setSubject,
+    setContent,
+    setThreadId,
+    setInReplyTo,
+    setReferences,
+    addAttachment,
+    removeAttachment,
+    clearAttachments,
+    resetMailCompose
+  } = useMailStore();
 
   const { 
     isAiAssistantOpen, 
@@ -85,65 +64,80 @@ const MailWriteTemplate: React.FC = () => {
     closeAiAssistant 
   } = useAiStore();
 
-  const [to, setTo] = useState<string[]>([]);
-  const [subject, setSubject] = useState<string>('');
-  const [content, setContent] = useState<string>('');
   const [showLoading, setShowLoading] = useState(false);
-  const [threadId, setThreadId] = useState<string | null>(null);
-  const [inReplyTo, setInReplyTo] = useState<string | null>(null);
-  const [references, setReferences] = useState<string>('');
 
+  useEffect(() => {
+    setTitle('메일 작성');
+  }, [setTitle]);
 
-  // URL 쿼리 파라미터 파싱
+  // 최근 수신자 목록
+  const recentRecipients = useMemo(() => {
+    if (!recentEmailsData?.recentEmails) return [];
+    
+    return recentEmailsData.recentEmails.map((item: RecentEmailItem) => ({
+      name: item.owner || undefined,
+      email: item.email
+    }));
+  }, [recentEmailsData]);
+  
+  const handleRecipientFocus = () => {
+    setShowRecentRecipients(true);
+  };
+  
+  const handleRecipientBlur = () => {
+    setTimeout(() => {
+      setShowRecentRecipients(false);
+    }, 200);
+  };
+  
+  const handleSelectRecipient = (email: string) => {
+    if (!to.includes(email)) {
+      setTo([...to, email]);
+    }
+    setShowRecentRecipients(false);
+  };
+  
+  const MAX_EMAIL_LENGTH = 254;
+  const MAX_SUBJECT_LENGTH = 120;
+
   const queryParams = new URLSearchParams(location.search);
   const replyToId = queryParams.get('reply');
-  const mailId = replyToId
+  const mailId = replyToId;
 
-  // 답장 또는 전달 메일 ID가 있을 때만 원본 메일 정보 가져오기
   const { data: originalMail } = useQuery({
     queryKey: ['mail', mailId],
     queryFn: () => mailService.getMailDetail(mailId!),
-    enabled: !!mailId, // mailId가 있을 때만 쿼리 활성화
-    staleTime: 0, // 항상 최신 데이터 사용
-    refetchOnMount: 'always', // 컴포넌트 마운트 시 항상 다시 가져오기
-});
+    enabled: !!mailId,
+    staleTime: 0,
+    refetchOnMount: 'always',
+  });
   
-// 스레드 검색 - 같은 발신자/수신자와의 이메일 스레드 찾기
-const { data: threadInfo } = useQuery({
-  queryKey: ['mailThread', originalMail?.sender, mailId],
-  queryFn: async () => {
-    if (!originalMail) return null;
-    
-    // 같은 발신자와의 이메일 검색 (최근 30일 이내)
-    try {
-      const response = await mailService.getMailList(
-        1,
-        1, 
-        5, 
-        0, 
-        originalMail.sender
-      );
+  const { data: threadInfo } = useQuery({
+    queryKey: ['mailThread', originalMail?.sender, mailId],
+    queryFn: async () => {
+      if (!originalMail) return null;
       
-      // 같은 발신자와의 이메일이 있으면 가장 최근 메일의 threadId 반환
-      if (response.emails && response.emails.length > 0) {
-        const latestMail = response.emails[0];
-        const detail = await mailService.getMailDetail(latestMail.id);
-        return {
-          threadId: detail.threadId || String(detail.id),
-          references: detail.references || []
-        };
+      try {
+        const response = await mailService.getMailList(1, 1, 5, 0, originalMail.sender);
+        
+        if (response.emails && response.emails.length > 0) {
+          const latestMail = response.emails[0];
+          const detail = await mailService.getMailDetail(latestMail.id);
+          return {
+            threadId: detail.threadId || String(detail.id),
+            references: detail.references || []
+          };
+        }
+        return null;
+      } catch (error) {
+        console.error('스레드 검색 오류:', error);
+        return null;
       }
-      return null;
-    } catch (error) {
-      console.error('스레드 검색 오류:', error);
-      return null;
-    }
-  },
-  enabled: !!originalMail && replyToId !== null,
-  staleTime: 0,
-});  
+    },
+    enabled: !!originalMail && replyToId !== null,
+    staleTime: 0,
+  });
   
-  // 한국 시간 형식으로 변환하는 함수
   const formatKoreanDateTime = (dateString: string): string => {
     const date = new Date(dateString);
     return format(date, 'yyyy년 M월 d일 (E) a h:mm', { locale: ko });
@@ -152,9 +146,8 @@ const { data: threadInfo } = useQuery({
   // 원본 메일 정보로 폼 초기화
   useEffect(() => {
     if (originalMail && replyToId) {
-      // 답장 모드
       const emailOnly = originalMail.sender.match(/<([^>]+)>/) ? 
-      originalMail.sender.match(/<([^>]+)>/)?.[1] : originalMail.sender;
+        originalMail.sender.match(/<([^>]+)>/)?.[1] : originalMail.sender;
 
       setTo([emailOnly || '']);
   
@@ -168,7 +161,6 @@ const { data: threadInfo } = useQuery({
         ? originalMail.sentDateTime 
         : originalMail.receivedDateTime;
   
-      // HTML 형식으로 원본 메일 내용 추가
       const replyContent = `
         <p></p>
         <p></p>
@@ -187,8 +179,6 @@ const { data: threadInfo } = useQuery({
       setInReplyTo(originalMail.messageId || null);
 
       let refsString = '';
-
-      // 원본 메일의 references가 있으면 먼저 추가
       if (originalMail.references) {
         if (Array.isArray(originalMail.references)) {
           refsString = originalMail.references.join(' ');
@@ -197,9 +187,7 @@ const { data: threadInfo } = useQuery({
         }
       }
       
-      // 원본 메일의 messageId 추가
       if (originalMail.messageId) {
-        // 기존 references가 있으면 공백 추가 후 messageId 추가
         if (refsString) {
           refsString += ' ' + originalMail.messageId;
         } else {
@@ -208,47 +196,36 @@ const { data: threadInfo } = useQuery({
       }
       
       setReferences(refsString);
-  
       setThreadId(originalMail.threadId || String(originalMail.id));
 
-      console.log('답장 모드: 원본 메일 내용 설정 완료', {
-        to: [originalMail.sender],
-        subject: newSubject,
-        content: replyContent.substring(0, 100) + '...',
-        threadId: originalMail.threadId || String(originalMail.id),
-        inReplyTo: originalMail.messageId || null,
-        references: refsString
-      });
+      console.log('답장 모드: 원본 메일 내용 설정 완료');
     }
-  }, [originalMail, replyToId, threadInfo]);
+  }, [originalMail, replyToId, setTo, setSubject, setContent, setInReplyTo, setReferences, setThreadId]);
 
-    // sendMail.isPending 상태가 변경될 때 로딩 상태 관리
-    useEffect(() => {
+  useEffect(() => {
     if (sendMail.isPending) {
-        setShowLoading(true);
+      setShowLoading(true);
     } else if (!sendMail.isPending && showLoading) {
-        // 최소 1초 동안 로딩 표시
-        const timer = setTimeout(() => {
+      const timer = setTimeout(() => {
         setShowLoading(false);
-        }, 1000);
-        
-        return () => clearTimeout(timer);
+      }, 1000);
+      
+      return () => clearTimeout(timer);
     }
-    }, [sendMail.isPending, showLoading]);
+  }, [sendMail.isPending, showLoading]);
 
-  // 컴포넌트 언마운트 시 첨부파일 상태 초기화
+  // 컴포넌트 언마운트 시 상태 초기화
   useEffect(() => {
     return () => {
-      clearAttachments();
+      resetMailCompose();
     };
-  }, [clearAttachments]);
+  }, [resetMailCompose]);
 
   const handleSend = () => {
-    // 유효성 검사
     if (to.length === 0) {
-        showToast('받는 사람을 입력해주세요.', 'error');
-        return;
-      }
+      showToast('받는 사람을 입력해주세요.', 'error');
+      return;
+    }
       
     if (!subject) {
       showToast('제목을 입력해주세요.', 'error');
@@ -261,21 +238,17 @@ const { data: threadInfo } = useQuery({
       return;
     }
     
-    // 첨부파일 정보 준비 (AttachmentInfo 형식으로 변환)
     const attachmentInfos = attachments.map(attachment => ({
       name: attachment.name,
       size: attachment.size,
       type: attachment.type
     }));
 
-        // 이메일 주소 형식 정리 (모든 수신자에 대해)
     const cleanedRecipients = to.map(recipient => {
-      // "이름" <이메일> 형식에서 이메일만 추출
       const emailMatch = recipient.match(/<([^>]+)>/);
       return emailMatch ? emailMatch[1] : recipient;
     });
 
-    // 메일 전송 데이터 준비 
     const mailData: SendMailRequest = {
       sender: userData?.email || '',
       recipients: cleanedRecipients,
@@ -284,31 +257,22 @@ const { data: threadInfo } = useQuery({
       bodyHtml: content,
       inReplyTo: inReplyTo,
       references: references,
-      attachments: attachmentInfos // 첨부파일 정보 추가
+      attachments: attachmentInfos
     };
   
-    console.log('Sending mail with recipients:', cleanedRecipients);
-    console.log('Attachments:', attachments);
-    console.log('Thread info:', { threadId, inReplyTo, references });
-  
-    // 첨부파일 File 객체 배열 준비
     const attachmentFiles = attachments.map(attachment => attachment.file).filter(Boolean) as File[];
   
-    // 메일 전송 API 호출
     sendMail.mutate({ 
       mailData, 
       attachments: attachmentFiles 
     }, {
       onSuccess: () => {
-        console.log('메일이 성공적으로 전송되었습니다.');
-        // 전송 후 목록으로 이동
+        resetMailCompose();
         setTimeout(() => {
           navigate('/mail/result', { state: { status: 'success' } });
         }, 1000);
       },
       onError: (error: Error | { status?: number; statusCode?: number; message?: string }) => {
-        console.error('메일 전송 실패:', error);
-        // 로딩 상태를 1초 동안 유지한 후 결과 페이지로 이동
         setTimeout(() => {
           navigate('/mail/result', { 
             state: { 
@@ -323,7 +287,7 @@ const { data: threadInfo } = useQuery({
   };
   
   const handleCancel = () => {
-    // 작성 취소 및 이전 페이지로 이동
+    resetMailCompose();
     navigate(-1);
   };
     
@@ -340,7 +304,6 @@ const { data: threadInfo } = useQuery({
   };
   
   const handleRecipientsChange = (newRecipients: string[]) => {
-    // 각 이메일 주소의 길이 검사
     for (const email of newRecipients) {
       if (email.length > MAX_EMAIL_LENGTH) {
         showToast(`이메일 주소는 최대 ${MAX_EMAIL_LENGTH}자까지 입력 가능합니다.`, 'warning');
@@ -358,9 +321,9 @@ const { data: threadInfo } = useQuery({
     closeAiAssistant();
   };
 
-  
   return (
-   <div className={`flex flex-col h-full bg-white rounded-lg shadow overflow-auto ${isAiAssistantOpen ? 'mr-[400px]' : ''}`}>      <MailWriteHeader
+    <div className={`flex flex-col h-full bg-white rounded-lg shadow overflow-auto ${isAiAssistantOpen ? 'mr-[400px]' : ''}`}>
+      <MailWriteHeader
         onSend={handleSend}
         onCancel={handleCancel}
         onAiAssistant={handleAiAssistant}
@@ -385,22 +348,20 @@ const { data: threadInfo } = useQuery({
         onSelectRecipient={handleSelectRecipient}
       />
 
-        {/* 로딩 오버레이 */}
-        {(sendMail.isPending || showLoading) && (
-            <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-                <div className= "flex flex-col items-center">
-                    <Spinner size="large" className="mb-4" />
-                    <p className="text-white text-lg font-medium">메일을 전송 중입니다...</p>
-                </div>
-            </div>
-        )}
+      {(sendMail.isPending || showLoading) && (
+        <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+          <div className="flex flex-col items-center">
+            <Spinner size="large" className="mb-4" />
+            <p className="text-white text-lg font-medium">메일을 전송 중입니다...</p>
+          </div>
+        </div>
+      )}
 
-        {/* AI 어시스턴트 */}
-        <AiPageTemplate 
-          isOpen={isAiAssistantOpen} 
-          onClose={handleCloseAiAssistant}
-          mode="template"
-        />
+      <AiPageTemplate 
+        isOpen={isAiAssistantOpen} 
+        onClose={handleCloseAiAssistant}
+        mode="template"
+      />
     </div>
   );
 };
