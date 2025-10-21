@@ -54,7 +54,8 @@ interface MailState {
   setReferences: (references: string[]) => void;
   setIsLoading: (isLoading: boolean) => void;
   resetComposeState: () => void;
-
+  resetMailCompose: () => void;
+  
   setFolders: (folders: FolderResponse[]) => void;
   setFolderLoading: (loading: boolean) => void;
   getFolderIdByType: (type: 'inbox' | 'sent' | 'trash') => number | undefined;
@@ -168,6 +169,10 @@ export const useMailStore = create<MailState>((set, get) => ({
     references: [],
     attachments: []
   }),
+
+  resetMailCompose() {
+  this.resetComposeState();
+  },
 
   resetFolderState: () => set({ 
     folders: [],
