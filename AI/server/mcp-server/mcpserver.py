@@ -168,9 +168,18 @@ def createTemporaryPurchaseOrder(
         )
         response.raise_for_status()
         logger.info("임시 발주 정보 전송 성공")
+        try:
+            response_data = response.json()
+        except:
+            # JSON이 아닌 경우 텍스트로 처리
+            response_data = {
+                "message": response.text,
+                "status_code": response.status_code
+            }
+        
         return {
             "message": "임시 발주 정보가 정상적으로 외부 시스템에 전송되었습니다.",
-            "response": response.json()
+            "response": response_data
         }
     except Exception as e:
         logger.error(f"임시 발주 정보 전송 실패: {str(e)}")
@@ -255,9 +264,18 @@ def createTemporaryQuote(
         )
         response.raise_for_status()
         logger.info("임시 견적 정보 전송 성공")
+
+        try:
+            response_data = response.json()
+        except:
+            # JSON이 아닌 경우 텍스트로 처리
+            response_data = {
+                "message": response.text,
+                "status_code": response.status_code
+            }
         return {
             "message": "임시 견적 정보가 정상적으로 외부 시스템에 전송되었습니다.",
-            "response": response.json()
+            "response": response_data
         }
     except Exception as e:
         logger.error(f"임시 견적 정보 전송 실패: {str(e)}")

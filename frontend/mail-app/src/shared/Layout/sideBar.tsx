@@ -38,6 +38,19 @@ export const SideBar: React.FC<SideBarProps> = ({ type}) => {
       setLoadingFolders
     } = useSidebarStore();
   
+    useEffect(() => {
+      if (type === 'mail') {
+        const path = location.pathname;
+        if (path === '/mail' || path.startsWith('/mail/') && !path.includes('/sent') && !path.includes('/trash')) {
+          setActiveItem("받은 메일함");
+        } else if (path === '/mail/sent' || path.includes('/mail/sent/')) {
+          setActiveItem("보낸 메일함");
+        } else if (path === '/mail/trash' || path.includes('/mail/trash/')) {
+          setActiveItem("휴지통");
+        }
+      }
+    }, [pathname, setActiveItem, type]);
+  
     const { setCurrentFolder, resetFolderState } = useMailStore();
   
     const { data: userData } = useUser();
@@ -184,7 +197,7 @@ export const SideBar: React.FC<SideBarProps> = ({ type}) => {
                                   >
                                     <Typography 
                                       variant="titleSmall" 
-                                      color={activeItem === getFolderDisplayName(folder.folderName) ? "text-[#66BAE4]" : ""}
+                                      color={activeItem === getFolderDisplayName(folder.folderName) ? "text-[#518EF9]" : ""}
                                       bold={activeItem === getFolderDisplayName(folder.folderName)}
                                     >
                                       {getFolderDisplayName(folder.folderName)}
@@ -229,7 +242,7 @@ export const SideBar: React.FC<SideBarProps> = ({ type}) => {
                           >
                             <Typography 
                               variant="titleSmall"
-                              color={pathname.startsWith("/work/clients") ? "text-[#66BAE4]" : ""}
+                              color={pathname.startsWith("/work/clients") ? "text-[#518EF9]" : ""}
                               bold={pathname.startsWith("/work/clients")}
                             >
                               거래처 관리
@@ -243,7 +256,7 @@ export const SideBar: React.FC<SideBarProps> = ({ type}) => {
                           >
                             <Typography 
                               variant="titleSmall"
-                              color={pathname.startsWith("/work/orders") ? "text-[#66BAE4]" : ""}
+                              color={pathname.startsWith("/work/orders") ? "text-[#518EF9]" : ""}
                               bold={pathname.startsWith("/work/orders")}
                             >
                               발주서 관리
@@ -257,7 +270,7 @@ export const SideBar: React.FC<SideBarProps> = ({ type}) => {
                           >
                             <Typography
                               variant="titleSmall"
-                              color={pathname.startsWith("/work/products") ? "text-[#66BAE4]" : ""}
+                              color={pathname.startsWith("/work/products") ? "text-[#518EF9]" : ""}
                               bold={pathname.startsWith("/work/products")}
                             >
                               재고 관리
@@ -271,7 +284,7 @@ export const SideBar: React.FC<SideBarProps> = ({ type}) => {
                           >
                             <Typography 
                               variant="titleSmall"
-                              color={pathname.startsWith("/work/quotes") ? "text-[#66BAE4]" : ""}
+                              color={pathname.startsWith("/work/quotes") ? "text-[#518EF9]" : ""}
                               bold={pathname.startsWith("/work/quotes")}
                             >
                               견적서 관리

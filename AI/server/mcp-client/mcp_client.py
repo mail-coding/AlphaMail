@@ -105,10 +105,9 @@ class MCPClientManager:
             3. **견적 요청**: 구체적인 제품/서비스에 대한 가격 견적 요청만 추출
 
             ### 추출하지 않아야 할 것
-            1. **개인 일정**: 연차, 휴가, 개인적인 약속 등 업무 외 개인 일정
-            2. **공휴일/휴무일 언급**: 단순 언급 또는 참고용 정보
-            3. **단순 가격/품목 문의**: 견적서 발행 의도 없이 단순 정보 요청인 경우
-            4. **일상적 대화**: "가격이 어떻게 되나요?", "이 제품 살 수 있나요?" 같은 단순 질문
+            1. **공휴일/휴무일 언급**: 단순 언급 또는 참고용 정보
+            2. **단순 가격/품목 문의**: 견적서 발행 의도 없이 단순 정보 요청인 경우
+            3. **일상적 대화**: "가격이 어떻게 되나요?", "이 제품 살 수 있나요?" 같은 단순 질문
 
             ### 중복 방지 규칙
             - 메일에서 같은 건에 대해서는 (예: 같은 발주 번호, 같은 일정, 같은 요청 항목)이 **한 번만 등록**되도록 합니다.
@@ -165,21 +164,40 @@ class MCPClientManager:
                 "llm_response": response
             }
 
+            executed_tools = set()
+        
             for msg in response.get("messages", []):
                 if hasattr(msg, 'tool_calls') and msg.tool_calls:
                     for call in msg.tool_calls:
-                        tool = next((t for t in self.tools if t.name == call['name']), None)
+                        tool_name = call['name']
+                        
+                        # ⭐ 이미 실행된 도구인지 확인
+                        if tool_name in executed_tools:
+                            logger.warning(f"중복 도구 호출 방지: {tool_name} 이미 실행됨")
+                            result["tool_results"].append({
+                                "tool": tool_name,
+                                "skipped": f"도구 '{tool_name}' 중복 호출 방지됨",
+                                "args": call['args']
+                            })
+                            continue
+                        
+                        # 도구 실행
+                        tool = next((t for t in self.tools if t.name == tool_name), None)
                         if tool:
+                            logger.info(f"도구 실행: {tool_name}")
                             server_response = await tool.coroutine(call['args'])
                             result["tool_results"].append({
-                                "tool": call['name'],
+                                "tool": tool_name,
                                 "result": server_response
                             })
+                            # ⭐ 실행된 도구로 기록
+                            executed_tools.add(tool_name)
                         else:
                             result["tool_results"].append({
-                                "tool": call['name'],
-                                "error": f"도구 '{call['name']}'을(를) 찾을 수 없습니다."
+                                "tool": tool_name,
+                                "error": f"도구 '{tool_name}'을(를) 찾을 수 없습니다."
                             })
+            
             return result
 
         except Exception as e:

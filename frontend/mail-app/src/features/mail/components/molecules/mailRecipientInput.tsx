@@ -1,7 +1,7 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Typography } from '@/shared/components/atoms/Typography';
-import { toast } from 'react-toastify';
 import { validateEmail } from '@/shared/utils/validation';
+import { showToast } from '@/shared/components/atoms/toast';
 
 interface MailRecipientInputProps {
   label: string;
@@ -10,6 +10,7 @@ interface MailRecipientInputProps {
   onRemoveRecipient: (index: number) => void;
   onFocus?: () => void;
   onBlur?: () => void;
+  recentRecipients?: string[]; // 최근 수신자 목록 추가
 }
 
 export const MailRecipientInput: React.FC<MailRecipientInputProps> = ({
@@ -18,31 +19,13 @@ export const MailRecipientInput: React.FC<MailRecipientInputProps> = ({
   onAddRecipient,
   onRemoveRecipient,
   onFocus,
-  onBlur
+  onBlur,
+  recentRecipients = [] // 기본값 빈 배열
 }) => {
 
   const [inputValue, setInputValue] = useState('');
-  const lastToastIdRef = useRef<string | number | null>(null);
-
-  const showToast = (message: string, type: 'error' | 'warning' | 'info' | 'success' = 'error') => {
-    // 이전 토스트가 있으면 닫기
-    if (lastToastIdRef.current) {
-      toast.dismiss(lastToastIdRef.current);
-    }
-    
-    // 새 토스트 표시 및 ID 저장
-    const toastId = toast[type](message, {
-      position: "top-right",
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
-    
-    lastToastIdRef.current = toastId;
-  };
-
+  const [showRecentList, setShowRecentList] = useState(false);
+  
   const validateAndAddRecipient = (email: string) => {
     if (!email.trim()) return;
     
@@ -76,6 +59,9 @@ export const MailRecipientInput: React.FC<MailRecipientInputProps> = ({
 
   // 입력창 포커스 이벤트 핸들러
   const handleFocus = () => {
+    // 최근 수신자 목록 표시
+    setShowRecentList(true);
+    
     // 상위 컴포넌트로 포커스 이벤트 전달
     if (onFocus) {
       onFocus();
@@ -83,7 +69,16 @@ export const MailRecipientInput: React.FC<MailRecipientInputProps> = ({
   };
 
   // 입력창 블러 이벤트 핸들러
-  const handleBlur = () => {
+  const handleBlur = (e: React.FocusEvent) => {
+    // 클릭한 요소가 최근 수신자 목록 내부인지 확인
+    const isClickInsideRecentList = e.relatedTarget && 
+      e.relatedTarget.closest('.recent-recipients-list');
+    
+    if (!isClickInsideRecentList) {
+      // 최근 수신자 목록 외부 클릭 시 목록 숨김
+      setShowRecentList(false);
+    }
+    
     // 상위 컴포넌트로 블러 이벤트 전달
     if (onBlur) {
       onBlur();
@@ -94,9 +89,16 @@ export const MailRecipientInput: React.FC<MailRecipientInputProps> = ({
       validateAndAddRecipient(inputValue);
     }
   };
+  
+  // 최근 수신자 선택 핸들러
+  const handleSelectRecentRecipient = (email: string) => {
+    validateAndAddRecipient(email);
+    setShowRecentList(false);
+    setInputValue('')
+  };
 
   return (
-    <div className="flex items-start mb-2">
+    <div className="flex items-start mb-2 relative">
       <Typography variant="body" className="w-20 pt-1 text-sm">
         {label}:
       </Typography>
@@ -127,6 +129,24 @@ export const MailRecipientInput: React.FC<MailRecipientInputProps> = ({
           placeholder={`${label} 추가...`}
           className="flex-1 outline-none min-w-[100px] text-sm h-5 py-0"
         />
+        
+        {/* 최근 수신자 목록 */}
+        {showRecentList && recentRecipients.length > 0 && (
+          <div className="absolute left-20 top-full mt-1 w-[calc(100%-5rem)] bg-white shadow-lg rounded-md border border-gray-200 z-10 recent-recipients-list">
+            <ul>
+              {recentRecipients.map((email, index) => (
+                <li 
+                  key={index}
+                  className="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                  onClick={() => handleSelectRecentRecipient(email)}
+                  tabIndex={0} // 키보드 포커스 가능하도록
+                >
+                  {email}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -30,25 +30,31 @@ export const TmpScheduleDate: React.FC = () => {
         일시 <span className="text-red-500 ml-1">*</span>
       </Typography>
       <div className="flex items-center space-x-2">
+    
         <div className="flex items-center">
+        <Typography>
           <input
             type="date"
             value={schedule.startDate}
             onChange={(e) => setScheduleStartDate(e.target.value)}
             min={today} // 오늘 이후 날짜만 선택 가능
             className="border border-gray-300 rounded-sm h-[30px] px-2 text-sm"
-          />
+            />
+            </Typography>
         </div>
         <div className="flex items-center">
+        <Typography>
           <input
             type="time"
             value={schedule.startTime}
             onChange={(e) => setScheduleStartTime(e.target.value)}
             className="border border-gray-300 rounded-sm h-[30px] px-2 text-sm"
           />
+           </Typography>
         </div>
         <span className="text-gray-500">~</span>
         <div className="flex items-center">
+        <Typography>
           <input
             type="date"
             value={schedule.endDate}
@@ -57,8 +63,10 @@ export const TmpScheduleDate: React.FC = () => {
             disabled={!canSelectEndDate}
             className={`border border-gray-300 rounded-sm h-[30px] px-2 text-sm ${!canSelectEndDate ? 'bg-gray-100 cursor-not-allowed' : ''}`}
           />
+           </Typography>
         </div>
         <div className="flex items-center">
+        <Typography>
           <input
             type="time"
             value={schedule.endTime}
@@ -66,6 +74,7 @@ export const TmpScheduleDate: React.FC = () => {
             disabled={!canSelectEndTime}
             className={`border border-gray-300 rounded-sm h-[30px] px-2 text-sm ${!canSelectEndTime ? 'bg-gray-100 cursor-not-allowed' : ''}`}
           />
+           </Typography>
         </div>
       </div>
       {scheduleErrors.date && (

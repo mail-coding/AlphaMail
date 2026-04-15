@@ -3,10 +3,8 @@ import { MailRecipientInput } from '../molecules/mailRecipientInput';
 import { MailSubjectInput } from '../molecules/mailSubjectInput';
 import { MailAttachmentInput } from '../molecules/mailAttachmentInput';
 import { MailQuillEditor } from '../molecules/mailQuillEditor';
-import { toast } from 'react-toastify';
 import { useMailStore } from '../../stores/useMailStore';
-import { Typography } from '@/shared/components/atoms/Typography';
-
+import { showToast } from '@/shared/components/atoms/toast';
 
 interface MailWriteFormProps {
   initialTo: string[];
@@ -33,9 +31,7 @@ export const MailWriteForm: React.FC<MailWriteFormProps> = ({
   fontOptions,
   onRecipientFocus,
   onRecipientBlur,
-  showRecentRecipients,
   recentRecipients,
-  onSelectRecipient
 }) => {
   const isFirstRender = useRef(true);
   const { 
@@ -63,7 +59,6 @@ export const MailWriteForm: React.FC<MailWriteFormProps> = ({
   
   // storeContent가 변경될 때 부모 컴포넌트에 알림
   useEffect(() => {
-    console.log('스토어 콘텐츠 변경 감지:', storeContent ? storeContent + '...' : '빈 콘텐츠');
     onContentChange(storeContent);
   }, [storeContent, onContentChange]);
   
@@ -96,7 +91,6 @@ export const MailWriteForm: React.FC<MailWriteFormProps> = ({
   };
   
   const handleContentChange = (newContent: string) => {
-    console.log('메일 폼 - 콘텐츠 변경 핸들러:', newContent.substring(0, 50) + '...');
     setStoreContent(newContent);
   };
 
@@ -115,25 +109,19 @@ export const MailWriteForm: React.FC<MailWriteFormProps> = ({
       
       if (isDuplicate) {
         // 고유 ID를 가진 토스트 생성
-        toast.warning(`중복된 파일은 업로드할 수 없습니다: ${file.name}`, {
-          toastId: `duplicate-${file.name}-${Date.now()}` // 고유 ID 생성
-        });
+        showToast(`중복된 파일은 업로드할 수 없습니다: ${file.name}`, 'warning');
         continue; // 중복 파일은 건너뜀
       }
       
       // 개별 파일 크기 검사
       if (file.size > MAX_ATTACHMENT_SIZE) {
-        toast.error(`${file.name}의 크기가 6MB를 초과합니다. 6MB 이하의 파일만 첨부 가능합니다.`, {
-          toastId: `size-${file.name}-${Date.now()}` // 고유 ID 생성
-        });
+        showToast(`${file.name}의 크기가 6MB를 초과합니다. 6MB 이하의 파일만 첨부 가능합니다.`, 'error');
         continue;
       }
       
       // 총 첨부파일 크기 검사
       if (currentTotalSize + file.size > MAX_TOTAL_ATTACHMENTS_SIZE) {
-        toast.error('총 첨부파일 크기가 6MB를 초과합니다.', {
-          toastId: `total-size-${Date.now()}` // 고유 ID 생성
-        });
+        showToast('총 첨부파일 크기가 6MB를 초과합니다.', 'error');
         break;
       }
       
@@ -147,9 +135,7 @@ export const MailWriteForm: React.FC<MailWriteFormProps> = ({
           setIsUploading(false);
         }, 500);
       } catch (error) {
-        toast.error(`파일 처리 실패: ${error instanceof Error ? error.message : '알 수 없는 오류'}`, {
-          toastId: `error-${Date.now()}` // 고유 ID 생성
-        });
+        showToast(`파일 처리 실패: ${error instanceof Error ? error.message : '알 수 없는 오류'}`, 'error');
         setIsUploading(false);
       }
     }
@@ -163,43 +149,17 @@ export const MailWriteForm: React.FC<MailWriteFormProps> = ({
     <div className="flex flex-col flex-1">
       <div className="p-4 border-b border-gray-200">
       <div className="relative">
-          <MailRecipientInput
-            label="받는 사람"
-            recipients={to}
-            onAddRecipient={handleAddRecipient}
-            onRemoveRecipient={handleRemoveRecipient}
-            onFocus={onRecipientFocus}
-            onBlur={onRecipientBlur}
+        <MailRecipientInput
+          label="받는 사람"
+          recipients={to}
+          onAddRecipient={handleAddRecipient}
+          onRemoveRecipient={handleRemoveRecipient}
+          onFocus={onRecipientFocus}
+          onBlur={onRecipientBlur}
+          recentRecipients={recentRecipients?.map(r => r.email) || []}
           />
             
-          {/* 최근 수신자 목록 UI */}
-          {showRecentRecipients && recentRecipients && recentRecipients.length > 0 && (
-          <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
-            {recentRecipients.map((recipient, index) => (
-              <div 
-                key={index}
-                className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center"
-                onClick={() => onSelectRecipient?.(recipient.email)}
-              >
-                {recipient.name ? (
-                  <span className="flex items-center">
-                    <Typography variant="body" className="font-medium">
-                      {recipient.name}
-                    </Typography>
-                    <Typography variant="body" className="text-gray-500 ml-2">
-                      {recipient.email}
-                    </Typography>
-                  </span>
-                ) : (
-                  <Typography variant="body">
-                    {recipient.email}
-                  </Typography>
-                )}
-              </div>
-            ))}
-          </div>
-          )}
-        </div>
+      </div>
                 
         <MailSubjectInput
           subject={subject}

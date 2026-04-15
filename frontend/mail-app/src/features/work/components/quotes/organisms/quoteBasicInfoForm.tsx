@@ -9,6 +9,7 @@ import { Typography } from '@/shared/components/atoms/Typography';
 import { useUserInfo } from '@/shared/hooks/useUserInfo';
 import { PhoneInput } from '@/shared/components/atoms/phoneInput';
 import { useParams } from 'react-router-dom';
+import { showToast } from '@/shared/components/atoms/toast';
 
 const MAX_LENGTHS = {
   quoteNo: 255,
@@ -89,8 +90,8 @@ const QuoteBasicInfoForm: React.FC<QuoteBasicInfoFormProps> = ({
         managerNumber: clientDetail.managerPhone || '',
         shippingAddress: clientDetail.address || '',
       }));
-    } catch (error) {
-      alert('거래처 정보를 불러오는데 실패했습니다.');
+    } catch  {
+      showToast('거래처 정보를 불러오는데 실패했습니다.', 'error');
     }
   };
 

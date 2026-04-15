@@ -68,9 +68,9 @@ export const MailThreadList: React.FC<MailThreadListProps> = ({
   
   return (
     <div className="mt-6 border-t border-gray-200 p-6">
-      <div className="flex items-center mb-3 pl-6">
+      <div className="flex items-center mb-3 pl-0">
         <Typography variant="titleSmall" bold className="text-gray-700">
-          주고 받은 메일 
+        주고 받은 메일 
         </Typography>
         <Typography variant="titleSmall" bold className="text-blue-400 ml-1">
           {threadMails.length}

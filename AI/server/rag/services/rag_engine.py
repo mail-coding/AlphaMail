@@ -10,8 +10,8 @@ ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 ANTHROPIC_MODEL = "claude-3-7-sonnet-20250219"
 
 # 토큰 수 제한
-MAX_PROMPT_LENGTH = 3000
-MAX_SUMMARY_TOKENS = 500
+MAX_PROMPT_LENGTH = 8000  # 증가
+MAX_SUMMARY_TOKENS = 800  # 증가
 MAX_EMAIL_DRAFT_TOKENS = 500
 
 client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
@@ -54,10 +54,30 @@ class RAGEngine:
             full_content = "\n".join(unique_contents)
 
             prompt = f"""
-다음 이메일 스레드를 한국어로 간결하게 요약해 주세요. 중복은 제거하고, 핵심 내용과 결정 사항을 정리해 주세요.
+다음 이메일 스레드를 분석하여 고품질의 한국어 요약을 작성해주세요.
 
-이메일 내용:
+**요약 작성 규칙:**
+1. 핵심 내용을 우선순위에 따라 정리
+2. 중요한 결정사항과 액션 아이템을 명확히 구분
+3. 구체적인 수치, 날짜, 기한이 있다면 정확히 포함
+4. 참여자들의 주요 의견이나 입장 차이가 있다면 명시
+5. 다음 단계나 후속 조치가 필요한 사항을 별도 표시
+
+**출력 형식:**
+📋 **주요 내용**
+[핵심 안건과 논의사항을 2-3개 문장으로 요약]
+
+⚡ **결정사항 및 할일**  
+- [구체적인 결정사항이나 할일 목록]
+- [담당자나 마감일이 언급되었다면 포함]
+
+💡 **후속 조치**
+[추가로 필요한 조치사항이나 주의사항]
+
+**이메일 내용:**
 {full_content}
+
+위 형식에 따라 실무진이 바로 활용할 수 있는 명확하고 구체적인 요약을 작성해주세요.
             """
             truncated_prompt = RAGEngine.truncate_prompt(prompt)
             return RAGEngine.generate_completion(truncated_prompt, max_tokens=MAX_SUMMARY_TOKENS)

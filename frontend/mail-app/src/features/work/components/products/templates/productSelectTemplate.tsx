@@ -21,8 +21,11 @@ const ProductSelectTemplate: React.FC<ProductSelectTemplateProps> = ({
     selectedId,
     isLoading,
     error,
+    currentPage,
+    pageCount,
     handleSearch,
     handleSelect,
+    handlePageChange,
     getSelectedProduct,
   } = useProductSelect();
 
@@ -63,13 +66,20 @@ const ProductSelectTemplate: React.FC<ProductSelectTemplateProps> = ({
               selectedId={selectedId}
               onSelect={handleSelect}
               isLoading={isLoading}
+              page={currentPage}
+              pageCount={pageCount}
+              onPageChange={handlePageChange}
             />
           </div>
           <div className="flex justify-end mt-4">
             <Button
+              type="button"
               variant="primary"
               disabled={selectedId === null || isLoading}
-              onClick={handleConfirm}
+              onClick={(e) => {
+                e.preventDefault();
+                handleConfirm();
+              }}
             >
               선택
             </Button>

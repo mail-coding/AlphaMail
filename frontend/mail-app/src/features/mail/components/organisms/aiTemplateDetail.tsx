@@ -4,7 +4,7 @@ import { useAiStore } from '../../stores/useAiStore';
 import { Button } from '@/shared/components/atoms/button';
 import { useEmailTemplate } from '../../hooks/useAiMail';
 import { useQueryClient } from '@tanstack/react-query';
-import { toast } from 'react-toastify';
+import { showToast } from '@/shared/components/atoms/toast';
 
 interface AiTemplateDetailProps {
   onApplyTemplate: (content: string) => void;
@@ -12,7 +12,7 @@ interface AiTemplateDetailProps {
 }
 
 const AiTemplateDetail: React.FC<AiTemplateDetailProps> = ({ onApplyTemplate, onCloseAssistant }) => {
-  const { selectedTemplateId, setIsEditing } = useAiStore();
+  const { selectedTemplateId } = useAiStore();
   const queryClient = useQueryClient();
 
   // 템플릿 ID를 숫자로 변환
@@ -29,10 +29,6 @@ const AiTemplateDetail: React.FC<AiTemplateDetailProps> = ({ onApplyTemplate, on
     queryClient.invalidateQueries({ queryKey: ['emailTemplate', templateId] });
   }, [templateId, refetch, queryClient]);
 
-  const handleEdit = () => {
-    setIsEditing(true);
-  };
-
   const handleApplyTemplate = () => {
     // 메일 본문에 템플릿 내용을 적용하는 로직
     if (template?.generatedContent) {
@@ -42,24 +38,16 @@ const AiTemplateDetail: React.FC<AiTemplateDetailProps> = ({ onApplyTemplate, on
         onApplyTemplate(template.generatedContent);
         
         // 성공 메시지 표시
-        toast.success('템플릿이 메일에 적용되었습니다.', {
-          toastId: `template-applied-${Date.now()}`
-        });
+        showToast('템플릿이 메일에 적용되었습니다.', 'success');
         
         // AI 어시스턴트 패널 닫기
         onCloseAssistant();
         
-        console.log('템플릿 적용 완료');
-      } catch (error) {
-        console.error('템플릿 적용 중 오류:', error);
-        toast.error('템플릿 적용 중 오류가 발생했습니다.', {
-          toastId: `template-error-${Date.now()}`
-        });
+      } catch {
+        showToast('템플릿 적용 중 오류가 발생했습니다.', 'error');
       }
     } else {
-      toast.warning('적용할 템플릿 내용이 없습니다.', {
-        toastId: `template-empty-${Date.now()}`
-      });
+      showToast('적용할 템플릿 내용이 없습니다.', 'warning');
     }
   };
 
@@ -120,15 +108,7 @@ const AiTemplateDetail: React.FC<AiTemplateDetailProps> = ({ onApplyTemplate, on
       </div>
                                           
       {/* 버튼 영역 */}
-      <div className="flex justify-between">
-        <Button 
-          variant="secondary"
-          onClick={handleEdit}
-          className="mx-2 py-4"
-        >
-          템플릿 수정
-        </Button>
-        
+      <div className="flex justify-center">        
         <Button 
           variant="primary"
           onClick={handleApplyTemplate}

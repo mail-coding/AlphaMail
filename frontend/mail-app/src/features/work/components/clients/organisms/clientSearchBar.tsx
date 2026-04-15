@@ -24,16 +24,10 @@ export const ClientSearchBar: React.FC<ClientSearchBarProps> = ({ onSearch }) =>
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
         />
-        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-            <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" fill="none" />
-            <line x1="16.5" y1="16.5" x2="21" y2="21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-          </svg>
-        </span>
       </div>
       <button
         type="submit"
-        className="w-[110px] h-[40px] bg-[#3E99C6] text-white rounded-lg font-semibold flex items-center justify-center gap-2"
+        className="w-[80px] h-[30px] bg-[#4885F9] text-white rounded-sm font-semibold flex items-center justify-center gap-2"
       >
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
           <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" fill="none" />

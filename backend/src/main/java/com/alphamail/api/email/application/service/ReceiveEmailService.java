@@ -25,6 +25,7 @@ import com.alphamail.api.user.domain.valueobject.UserId;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -50,9 +51,10 @@ public class ReceiveEmailService {
 		Integer folderId = emailFolderRepository.getInboxFolderId(userId.getValue());
 
 		String threadId = resolveThreadId(request);
+
 		emailVectorUseCase.execute(VectorDBRequest.fromReceiveEmailRequest(request), userId.getValue(), threadId)
 				.onErrorContinue((error, item) -> {
-					log.warn("벡터 저장 실패 : {}", item,error);
+					log.warn("벡터 저장 실패 : {}", item, error);
 				})
 				.subscribe();
 
@@ -62,24 +64,57 @@ public class ReceiveEmailService {
 
 		Mono.fromRunnable(() -> {
 			try {
-				processAttachments(request.attachments(), savedEmail, userId);
+				List<AttachmentRequest> ocrTargets = request.attachments().stream()
+						.filter(att -> isBusinessLicense(att.filename()) && isSupportedFileType(att.contentType()))
+						.toList();
+
+				Flux.fromIterable(ocrTargets)
+						.concatMap(attachment -> {
+							try {
+								InputStream fileStream = s3Service.downloadFile(attachment.s3Key());
+								return emailOCRRespository.registOCR(fileStream, attachment.filename(),
+												attachment.contentType().split("/")[1], userId.getValue().toString())
+										.doOnNext(emailOCR -> {
+											log.info("OCR 호출 성공 : {}", emailOCR.toString());
+											if (emailOCR.success()) {
+												createTemporaryClientUseCase.execute(
+														EmailOCR.toTemporaryClientRequest(
+																emailOCR, savedEmail.getEmailId(), savedEmail.getSender(), attachment.s3Key()
+														),
+														userId.getValue()
+												);
+											}
+										})
+										.onErrorResume(error -> {
+											log.warn("OCR 호출 실패", error);
+											return Mono.empty(); // 에러 무시
+										});
+							} catch (Exception e) {
+								log.error("첨부파일 OCR 처리 중 오류 발생", e);
+								return Mono.empty();
+							}
+						})
+						.then()  // 전체 흐름 완료 기다리기
+						.subscribe();
 			} catch (Exception e) {
 				log.error("첨부파일 처리 중 오류 발생", e);
 			}
 		}).subscribe();
-		emailMCPUseCase.execute(request, savedEmail.getEmailId())
-				.onErrorContinue((error, item) -> {
-					log.warn("MCP 호출 실패 : {}", item,error);
-				})
+
+		Flux.just(request)
+				.flatMap(req -> emailMCPUseCase.execute(req, savedEmail.getEmailId())
+						.onErrorContinue((error, item) -> {
+							log.warn("MCP 호출 실패 : {}", item, error);
+						}), 2)
 				.subscribe();
 
+		// 첨부파일 DB 저장
 		List<EmailAttachment> emailAttachmentList = EmailAttachment.createAttachments(
 				request.attachments(), savedEmail.getEmailId());
 		if (!emailAttachmentList.isEmpty()) {
 			emailAttachmentRepository.saveAll(emailAttachmentList);
 		}
 	}
-
 	private String resolveThreadId(ReceiveEmailRequest request) {
 		if (request.inReplyTo() != null && !request.inReplyTo().isEmpty()) {
 			log.info("inReplyTo에서 원본 이메일 찾기: {}", request.inReplyTo());

@@ -1,11 +1,11 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Typography } from '@/shared/components/atoms/Typography';
 import AiTemplateItem from '../molecules/aiTemplateItem';
 import AiTemplateItemAdd from '../molecules/aiTemplateItemAdd';
 import { useAiStore } from '../../stores/useAiStore';
 import { useEmailTemplate, useUpdateEmailTemplate, useCreateEmailTemplate } from '../../hooks/useAiMail';
 import { EmailTemplateRequest } from '../../types/aiMail';
-import { toast } from 'react-toastify';
+import { showToast } from '@/shared/components/atoms/toast';
 
 interface TemplateField {
   id: string;
@@ -29,7 +29,6 @@ const AiTemplateEdit: React.FC<AiTemplateEditProps> = ({ setIsGenerating }) => {
   const [title, setTitle] = useState('');
   const [prompt, setPrompt] = useState('');
   const [promptCharCount, setPromptCharCount] = useState(0);
-  const lastToastIdRef = useRef<string | null>(null);
 
   // 템플릿 ID를 숫자로 변환
   const templateId = selectedTemplateId && !isAddingNewTemplate ? parseInt(selectedTemplateId) : 0;
@@ -41,25 +40,6 @@ const AiTemplateEdit: React.FC<AiTemplateEditProps> = ({ setIsGenerating }) => {
   const createTemplateMutation = useCreateEmailTemplate();
   const updateTemplateMutation = useUpdateEmailTemplate();
 
-  // 토스트 메시지 표시 함수 (중복 방지)
-  const showToast = (message: string, type: 'error' | 'warning' | 'info' | 'success' = 'error') => {
-    // 이전 토스트가 있으면 닫기
-    if (lastToastIdRef.current) {
-      toast.dismiss(lastToastIdRef.current);
-    }
-    
-    // 새 토스트 표시 및 ID 저장
-    const toastId = toast[type](message, {
-      position: "top-right",
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
-    
-    lastToastIdRef.current = toastId.toString();
-  };
 
   // 템플릿 데이터 로드
   useEffect(() => {

@@ -35,7 +35,7 @@ export const MailMetadata: React.FC<MailMetadataProps> = ({
     };
   
   return (
-    <div className="px-4 py-2">
+    <div className="px-6 py-4">
       {/* 메일 제목 */}
       <div className="mb-4">
         <MailSubject subject={subject || ''} isRead={true} variant="detail" />
@@ -45,7 +45,7 @@ export const MailMetadata: React.FC<MailMetadataProps> = ({
       <MailDetailAiButton 
         onAiAssistant={onAiAssistant}
         onTranslate={onTranslate}
-        aiButtonWidth="130px" 
+        aiButtonWidth="120px" 
         aiButtonHeight="30px"
         aiFontSize="11px"
       />
@@ -58,7 +58,7 @@ export const MailMetadata: React.FC<MailMetadataProps> = ({
           </Typography>
           <div className="flex flex-wrap gap-2">
             <Typography variant="body">
-              <span className="bg-[#CDECFC] px-2 py-1 rounded">
+              <span className="bg-[#E0EBFB] px-2 py-1 rounded">
                 {sender || '알 수 없음'}
               </span>
             </Typography>
@@ -75,7 +75,7 @@ export const MailMetadata: React.FC<MailMetadataProps> = ({
           <div className="flex flex-wrap gap-2">
             {recipients && recipients.map((recipient, index) => (
               <Typography key={index} variant="body">
-                <span className="bg-[#CDECFC] px-2 py-1 rounded">
+                <span className="bg-[#E0EBFB] px-2 py-1 rounded">
                   {recipient}
                 </span>
               </Typography>

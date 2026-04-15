@@ -17,6 +17,7 @@ const SentMailTemplate: React.FC = () => {
     sortOrder,
     searchKeyword,
     selectedMails, 
+    currentFolder,
     setCurrentPage, 
     selectMail, 
     unselectMail, 
@@ -35,11 +36,11 @@ const SentMailTemplate: React.FC = () => {
     
     // 컴포넌트 마운트 시 현재 폴더를 보낸 메일함으로 설정
     useEffect(() => {
-      if (sentFolderId) {
+      // 현재 폴더가 설정되어 있지 않은 경우에만 설정
+      if (sentFolderId && !currentFolder) {
         setCurrentFolder(sentFolderId);
       }
-    }, [sentFolderId, setCurrentFolder]);
-
+    }, [sentFolderId, currentFolder, setCurrentFolder]);
   
   const { useMailList, moveToTrash } = useMail();
   const { data, isLoading, error, refetch } = useMailList( sentFolderId, currentPage, sortOrder, searchKeyword);
@@ -77,9 +78,9 @@ const SentMailTemplate: React.FC = () => {
   };
   
   const handleMailClick = (id: string) => {
-    navigate(`/mail/sent/${id}`); // 보낸 메일함 상세 페이지로 이동
+    navigate(`/mail/sent/${id}?page=${currentPage}`);
   };
-  
+    
   const handleDelete = () => {
     if (selectedMails.length > 0) {
       moveToTrash.mutate({ mailIds: selectedMails }, {

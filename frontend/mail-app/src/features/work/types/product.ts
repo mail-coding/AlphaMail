@@ -26,7 +26,7 @@ export interface CreateProductRequest {
   stock: number;
   inboundPrice: number;
   outboundPrice: number;
-  image?: File;
+  image?: string;
   companyId: number;
 }
 

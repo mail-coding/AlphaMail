@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { toast } from 'react-toastify';
+import { showToast } from '@/shared/components/atoms/toast';
 
 interface Schedule {
   title: string;
@@ -79,7 +79,7 @@ export const useHomeStore = create<HomeState>((set, get) => ({
       }));
 
       setTimeout(() => {
-        toast.info('종료일이 시작일 이후로 자동 조정되었습니다.');
+        showToast('종료일이 시작일 이후로 자동 조정되었습니다.', 'info');
       }, 0);
     }
 
@@ -107,7 +107,7 @@ export const useHomeStore = create<HomeState>((set, get) => ({
         }));
         
         setTimeout(() => {
-          toast.info('종료일은 시작일 이후로 자동 조정되었습니다.');
+          showToast('종료일은 시작일 이후로 자동 조정되었습니다.', 'info');
         }, 0);
       }
       
@@ -200,7 +200,7 @@ export const useHomeStore = create<HomeState>((set, get) => ({
           }));
           
           setTimeout(() => {
-            toast.info('종료 시간이 시작 시간 이후로 자동 조정되었습니다.');
+            showToast('종료 시간이 시작 시간 이후로 자동 조정되었습니다.', 'info');
           }, 0);
         }
       }

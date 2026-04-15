@@ -3,13 +3,13 @@ import { Typography } from '@/shared/components/atoms/Typography';
 import { Input } from '@/shared/components/atoms/input';
 import { Button } from '@/shared/components/atoms/button';
 import { TmpQuoteAddAddress } from '../molecules/tmpQuoteAddAddress';
-import { TmpQuoteAddDate } from '../molecules/tmpQuoteAddDate';
 import { useTmpQuoteStore } from '../../stores/useTmpQuoteStore';
 import { TmpQuoteAddClient } from '../molecules/tmpQuoteAddClient';
 import { useHome } from '../../hooks/useHome';
 import { useUser } from '@/features/auth/hooks/useUser';
-import { toast } from 'react-toastify';
 import { TmpQuoteAddRow } from '../molecules/tmpQuoteAddRow';
+import { showToast } from '@/shared/components/atoms/toast';
+import { PhoneInput } from '@/shared/components/atoms/phoneInput';
 
 interface RowTmpQuotesAddProps {
   temporaryQuoteId?: number;
@@ -26,8 +26,6 @@ export const RowTmpQuotesAdd: React.FC<RowTmpQuotesAddProps> = ({ temporaryQuote
     setManager, 
     managerContact, 
     setManagerContact,
-    validityPeriod,
-    setValidityPeriod,
     clientId,
     clientName,
     products,
@@ -36,6 +34,7 @@ export const RowTmpQuotesAdd: React.FC<RowTmpQuotesAddProps> = ({ temporaryQuote
   } = useTmpQuoteStore();
   
   const [showValidationErrors, setShowValidationErrors] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const { useTemporaryQuote, useUpdateTemporaryQuote, useRegisterQuote } = useHome();
   const { data: user } = useUser();
 
@@ -85,20 +84,20 @@ export const RowTmpQuotesAdd: React.FC<RowTmpQuotesAddProps> = ({ temporaryQuote
     // 유효성 검사
     if (!clientId) {
       setShowValidationErrors(true);
-      toast.error('거래처를 선택해주세요.');
+      showToast('거래처를 선택해주세요.', 'error');
       return;
     }
     
     if (!products || products.length === 0) {
       setShowValidationErrors(true);
-      toast.error('최소 1개 이상의 품목을 추가해주세요.');
+      showToast('최소 1개 이상의 품목을 추가해주세요.', 'error');
       return;
     }
     
     const invalidProducts = products.filter(product => !product.productId);
     if (invalidProducts.length > 0) {
       setShowValidationErrors(true);
-      toast.error('모든 품목은 검색을 통해 등록해야 합니다.');
+      showToast('모든 품목은 검색을 통해 등록해야 합니다.', 'error');
       return;
     }
     
@@ -125,6 +124,34 @@ export const RowTmpQuotesAdd: React.FC<RowTmpQuotesAddProps> = ({ temporaryQuote
     registerQuoteMutation.mutate(registerData);
   };
   
+  const validate = (value: string) => {
+    let error = '';
+    if (value && value.trim() !== '') {
+      // 하이픈 제거 후 숫자만 남기기
+      const numbersOnly = value.replace(/[^0-9]/g, '');
+      
+      // 서울 지역번호(02) 또는 휴대폰(010, 011, 016, 017, 018, 019) 또는 지역번호(031~099)
+      const isValidFormat = /^(02|010|011|016|017|018|019|0[3-9][0-9])\d{7,8}$/.test(numbersOnly);
+      
+      if (!isValidFormat) {
+        error = '올바른 전화번호 형식이 아닙니다. (예: 02-1234-5678, 010-1234-5678)';
+      }
+    }
+    return error;
+  };
+
+  const handleManagerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    setManager(value);
+  };
+
+  const handleManagerContactChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    const error = validate(value);
+    setErrors(prev => ({ ...prev, managerContact: error }));
+    setManagerContact(value);
+  };
+  
   // 입력 필드 높이를 일관되게 유지하기 위한 스타일
   const inputStyle = "h-8 text-sm";
   
@@ -148,16 +175,7 @@ export const RowTmpQuotesAdd: React.FC<RowTmpQuotesAddProps> = ({ temporaryQuote
           <Input readOnly value={quoteNo} className={`bg-gray-200 ${inputStyle}`} />
         </div>
         
-        <div className="col-span-1 flex items-center">
-          <Typography variant="caption" className="text-gray-700">
-            일자
-          </Typography>
-        </div>
-        <div className="col-span-2">
-          <div className="w-full">
-            <TmpQuoteAddDate />
-          </div>
-        </div>
+      
         
         <div className="col-span-1 flex items-center">
           <Typography variant="caption" className="text-gray-700">
@@ -167,23 +185,12 @@ export const RowTmpQuotesAdd: React.FC<RowTmpQuotesAddProps> = ({ temporaryQuote
         <div className="col-span-2">
           <Input 
             value={manager} 
-            onChange={(e) => setManager(e.target.value)} 
+            onChange={handleManagerChange} 
             className={inputStyle}
           />
         </div>
         
-        <div className="col-span-1 flex items-center">
-          <Typography variant="caption" className="text-gray-700">
-            유효기간
-          </Typography>
-        </div>
-        <div className="col-span-2">
-          <Input 
-            value={validityPeriod} 
-            onChange={(e) => setValidityPeriod(e.target.value)} 
-            className={inputStyle}
-          />
-        </div>
+
         
         <div className="col-span-1 flex items-center">
           <Typography variant="caption" className="text-gray-700">
@@ -195,7 +202,7 @@ export const RowTmpQuotesAdd: React.FC<RowTmpQuotesAddProps> = ({ temporaryQuote
         </div>
         <div className="col-span-5">
           <div className="w-full">
-            <TmpQuoteAddClient />
+            <TmpQuoteAddClient initialClientName={clientName} />
           </div>
         </div>
         
@@ -224,8 +231,8 @@ export const RowTmpQuotesAdd: React.FC<RowTmpQuotesAddProps> = ({ temporaryQuote
         </div>
         <div className="col-span-2">
           <Input 
-            value={managerContact} 
-            onChange={(e) => setManagerContact(e.target.value)} 
+            value={manager} 
+            onChange={handleManagerChange} 
             className={inputStyle}
           />
         </div>
@@ -245,7 +252,13 @@ export const RowTmpQuotesAdd: React.FC<RowTmpQuotesAddProps> = ({ temporaryQuote
           </Typography>
         </div>
         <div className="col-span-2">
-          <Input className={inputStyle} />
+          <PhoneInput
+            value={managerContact}
+            onChange={handleManagerContactChange}
+            name="managerContact"
+            className={inputStyle}
+            errorMessage={errors.managerContact}
+          />
         </div>
         
         <div className="col-span-1 flex items-center">

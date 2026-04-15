@@ -6,8 +6,8 @@ import { TmpOrderAddAddress } from '../molecules/tmpOrderAddAddress';
 import { FileUploadInput } from '../molecules/fileUploadInput';
 import { useTmpClientStore } from '../../stores/useTmpClientStore';
 import { useHome } from '../../hooks/useHome';
-import { toast } from 'react-toastify';
 import { useUser } from '@/features/auth/hooks/useUser'
+import { showToast } from '@/shared/components/atoms/toast';
 
 interface RowTmpClientsAddProps {
   temporaryClientId?: number;
@@ -91,27 +91,27 @@ export const RowTmpClientsAdd: React.FC<RowTmpClientsAddProps> = ({ temporaryCli
       
       // 유효성 검사
       if (!clientName) {
-        toast.error('거래처명을 입력해주세요.');
+        showToast('거래처명을 입력해주세요.', 'error');
         return;
       }
       
       if (!representative) {
-        toast.error('대표자명을 입력해주세요.');
+        showToast('대표자명을 입력해주세요.', 'error');
         return;
       }
       
       if (!licenseNumber) {
-        toast.error('사업자 번호를 입력해주세요.');
+        showToast('사업자 번호를 입력해주세요.', 'error');
         return;
       }
       
       if (!businessType) {
-        toast.error('종목을 입력해주세요.');
+        showToast('종목을 입력해주세요.', 'error');
         return;
       }
       
       if (!businessItem) {
-        toast.error('업태를 입력해주세요.');
+        showToast('업태를 입력해주세요.', 'error');
         return;
       }
       
@@ -141,22 +141,25 @@ export const RowTmpClientsAdd: React.FC<RowTmpClientsAddProps> = ({ temporaryCli
 
   return (
     <div className="mt-4 border-t border-gray-200 pt-4 bg-white rounded-sm p-4">
-      <div className="grid grid-cols-6 gap-4">
-        <div className="col-span-1 flex items-center bg-[#CDECFC] p-2">
+      <Typography variant="titleMedium" className="font-medium mb-4">
+        거래처
+      </Typography>
+      <div className="grid grid-cols-6 gap-1">
+        <div className="col-span-1 flex items-center  p-2">
           <Typography variant="caption" className="text-gray-700">
-            사업자등록증 첨부
+            사업자등록증
           </Typography>
         </div>
         <div className="col-span-5">
           <FileUploadInput
             value={businessLicenseFileName}
             onChange={setBusinessLicense}
-            placeholder="사업자등록증 파일을 첨부하세요"
+            placeholder=""
             className="w-full"
           />
         </div>
 
-        <div className="col-span-1 flex items-center bg-[#CDECFC] p-2">
+        <div className="col-span-1 flex items-center  p-2">
           <Typography variant="caption" className="text-gray-700">
             거래처명 <span className="text-red-500">*</span>
           </Typography>
@@ -169,7 +172,7 @@ export const RowTmpClientsAdd: React.FC<RowTmpClientsAddProps> = ({ temporaryCli
           />
         </div>
 
-        <div className="col-span-1 flex items-center bg-[#CDECFC] p-2">
+        <div className="col-span-1 flex items-center p-2">
           <Typography variant="caption" className="text-gray-700">
             대표자명 <span className="text-red-500">*</span>
           </Typography>
@@ -182,7 +185,7 @@ export const RowTmpClientsAdd: React.FC<RowTmpClientsAddProps> = ({ temporaryCli
           />
         </div>
 
-        <div className="col-span-1 flex items-center bg-[#CDECFC] p-2">
+        <div className="col-span-1 flex items-center p-2">
           <Typography variant="caption" className="text-gray-700">
             사업자 번호 <span className="text-red-500">*</span>
           </Typography>
@@ -196,7 +199,7 @@ export const RowTmpClientsAdd: React.FC<RowTmpClientsAddProps> = ({ temporaryCli
           />
         </div>
 
-        <div className="col-span-1 flex items-center bg-[#CDECFC] p-2">
+        <div className="col-span-1 flex items-center p-2">
           <Typography variant="caption" className="text-gray-700">
             종목 <span className="text-red-500">*</span>
           </Typography>
@@ -210,7 +213,7 @@ export const RowTmpClientsAdd: React.FC<RowTmpClientsAddProps> = ({ temporaryCli
           />
         </div>
 
-        <div className="col-span-1 flex items-center bg-[#CDECFC] p-2">
+        <div className="col-span-1 flex items-center p-2">
           <Typography variant="caption" className="text-gray-700">
             업태 <span className="text-red-500">*</span>
           </Typography>
@@ -224,7 +227,7 @@ export const RowTmpClientsAdd: React.FC<RowTmpClientsAddProps> = ({ temporaryCli
           />
         </div>
 
-        <div className="col-span-1 flex items-center bg-[#CDECFC] p-2">
+        <div className="col-span-1 flex items-center p-2">
           <Typography variant="caption" className="text-gray-700">
             담당자 전화번호
           </Typography>
@@ -238,7 +241,7 @@ export const RowTmpClientsAdd: React.FC<RowTmpClientsAddProps> = ({ temporaryCli
           />
         </div>
 
-        <div className="col-span-1 flex items-center bg-[#CDECFC] p-2">
+        <div className="col-span-1 flex items-center p-2">
           <Typography variant="caption" className="text-gray-700">
             담당자 Email
           </Typography>
@@ -253,7 +256,7 @@ export const RowTmpClientsAdd: React.FC<RowTmpClientsAddProps> = ({ temporaryCli
           />
         </div>
 
-        <div className="col-span-1 flex items-center bg-[#CDECFC] p-2">
+        <div className="col-span-1 flex items-center p-2">
           <Typography variant="caption" className="text-gray-700">
             주소
           </Typography>

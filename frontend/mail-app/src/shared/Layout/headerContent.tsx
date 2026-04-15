@@ -17,8 +17,8 @@ export const HeaderContent: React.FC = () => {
   // 경로에 따라 다른 헤더 내용 반환
   if (path === '/') {
     return (
-      <Typography variant="titleSmall" className="text-[#606060]">
-        {userName}님 오늘 업무도 파이팅하세요
+      <Typography variant="titleSmall" className="text-[#606060] whitespace-pre-line">
+        <span className="text-blue-500 text-l">{userName}</span>님 오늘 업무도 파이팅하세요.
       </Typography>
     );
   } else if (path.startsWith('/mail')) {

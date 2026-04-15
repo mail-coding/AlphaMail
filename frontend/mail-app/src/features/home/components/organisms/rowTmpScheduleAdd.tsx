@@ -5,7 +5,7 @@ import { Button } from '@/shared/components/atoms/button';
 import { TmpScheduleDate } from '../molecules/tmpScheduleDate';
 import { useHomeStore } from '../../stores/useHomeStore';
 import { useHome } from '../../hooks/useHome';
-import { toast } from 'react-toastify';
+import { showToast } from '@/shared/components/atoms/toast';
 
 interface RowTmpScheduleAddProps {
   temporaryScheduleId: number;
@@ -77,7 +77,7 @@ export const RowTmpScheduleAdd: React.FC<RowTmpScheduleAddProps> = ({ temporaryS
     }
 
     if (!schedule.startDate || !schedule.startTime || !schedule.endDate || !schedule.endTime) {
-      toast.error('시작 시간과 종료 시간을 모두 설정해주세요.');
+      showToast('시작 시간과 종료 시간을 모두 설정해주세요.', 'error');
       return;
     }
     
@@ -107,7 +107,7 @@ export const RowTmpScheduleAdd: React.FC<RowTmpScheduleAddProps> = ({ temporaryS
     }
 
     if (!schedule.startDate || !schedule.startTime || !schedule.endDate || !schedule.endTime) {
-      toast.error('시작 시간과 종료 시간을 모두 설정해주세요.');
+      showToast('시작 시간과 종료 시간을 모두 설정해주세요.', 'error');
       return;
     }
 
@@ -167,6 +167,7 @@ export const RowTmpScheduleAdd: React.FC<RowTmpScheduleAddProps> = ({ temporaryS
           <Typography variant="titleSmall" className="text-gray-700 mb-1">
             설명
           </Typography>
+           <Typography variant="caption">
           <textarea
             value={schedule.description}
             onChange={(e) => setScheduleDescription(e.target.value)}
@@ -174,6 +175,7 @@ export const RowTmpScheduleAdd: React.FC<RowTmpScheduleAddProps> = ({ temporaryS
             className="border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-primary w-full p-3 text-sm h-24 resize-none"
             maxLength={100}
           />
+          </Typography>
           {scheduleErrors.description && (
             <Typography variant="caption" className="text-red-500 mt-1">
               {scheduleErrors.description}

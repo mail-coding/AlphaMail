@@ -42,7 +42,7 @@ public class Client {
 			.businessItem(request.businessItem())
 			.email(request.email())
 			.phoneNum(request.phoneNum())
-			.businessLicense(request.businessLicense())
+			.businessLicense(request.businessLicenseUrl())
 			.businessLicenseName(request.businessLicenseName())
 			.company(company)
 			.group(group)
@@ -82,8 +82,8 @@ public class Client {
 			this.phoneNum = request.phoneNum();
 		}
 
-		if (request.businessLicense() != null) {
-			this.businessLicense = request.businessLicense();
+		if (request.businessLicenseUrl() != null) {
+			this.businessLicense = request.businessLicenseUrl();
 		}
 	}
 }

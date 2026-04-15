@@ -4,8 +4,8 @@ import { Input } from '@/shared/components/atoms/input';
 import { useTmpQuoteStore } from '../../stores/useTmpQuoteStore';
 import ProductInput from '@/shared/components/atoms/productInput';
 import { Product } from '@/features/work/types/product';
-import { toast } from 'react-toastify';
 import { FaSearch } from 'react-icons/fa';
+import { showToast } from '@/shared/components/atoms/toast';
 
 interface TmpQuoteAddRowProps {
   showValidationErrors?: boolean;
@@ -28,7 +28,6 @@ export const TmpQuoteAddRow: React.FC<TmpQuoteAddRowProps> = ({ showValidationEr
   const [items, setItems] = useState<OrderItem[]>([]);
   const { products, setProducts } = useTmpQuoteStore();
   const productsString = useMemo(() => JSON.stringify(products), [products]);
-  const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
 
   // products 배열이 변경될 때 items 상태 업데이트
   useEffect(() => {
@@ -78,12 +77,6 @@ export const TmpQuoteAddRow: React.FC<TmpQuoteAddRowProps> = ({ showValidationEr
   const removeItem = (id: number) => {
     setItems(items.filter(item => item.id !== id));
     
-    // 선택된 제품 목록에서도 제거
-    const itemToRemove = items.find(item => item.id === id);
-    if (itemToRemove) {
-      setSelectedProducts(prev => prev.filter(p => p.name !== itemToRemove.name));
-    }
-    
     // 스토어에서도 제거
     const updatedItems = items.filter(item => item.id !== id);
     updateProductsStore(updatedItems);
@@ -92,18 +85,13 @@ export const TmpQuoteAddRow: React.FC<TmpQuoteAddRowProps> = ({ showValidationEr
   const updateProductsStore = (updatedItems: OrderItem[]) => {
     // 스토어에 저장할 제품 목록 생성
     const storeProducts = updatedItems.map(item => {
-      // 품목 검색으로 선택된 제품인지 확인
-      const selectedProduct = selectedProducts.find(p => p.name === item.name);
-      
       // 기존 products 배열에서 해당 아이템의 productId 찾기
       const existingProduct = products.find(p => p.id === item.id);
       
       return {
         id: item.id,
-        // 1. 품목 검색으로 선택된 경우 해당 제품의 id를 사용
-        // 2. 그렇지 않고 기존 products에 productId가 있으면 그것을 사용
-        // 3. 둘 다 없으면 null
-        productId: selectedProduct ? selectedProduct.id : (existingProduct?.productId || null),
+        // 기존 productId 유지
+        productId: existingProduct?.productId || null,
         productName: item.name,
         standard: item.spec,
         price: parseInt(item.price.replace(/,/g, '')) || 0,
@@ -118,14 +106,6 @@ export const TmpQuoteAddRow: React.FC<TmpQuoteAddRowProps> = ({ showValidationEr
 
   // 품목명 설정 (제품 검색 후 선택 시 호출)
   const setItemName = (id: number, product: Product) => {
-    // 선택된 제품 정보 저장
-    setSelectedProducts(prev => {
-      const filtered = prev.filter(p => 
-        !items.some(item => item.id === id && item.name === p.name)
-      );
-      return [...filtered, product];
-    });
-    
     const quantity = '0';
     
     // 가격 설정 (outboundPrice가 0이면 inboundPrice 사용)
@@ -137,7 +117,7 @@ export const TmpQuoteAddRow: React.FC<TmpQuoteAddRowProps> = ({ showValidationEr
     
     // 세액 계산 (공급가액의 10%)
     const taxAmount = Math.round(supplyAmount * 0.1);
-        
+    
     const updatedItems = items.map(item => 
       item.id === id ? {
         ...item,
@@ -155,10 +135,14 @@ export const TmpQuoteAddRow: React.FC<TmpQuoteAddRowProps> = ({ showValidationEr
     
     // 스토어 업데이트 시 productId 포함하여 업데이트
     const storeProducts = updatedItems.map(item => {
+      // 기존 products에서 해당 아이템의 productId 찾기
+      const existingProduct = products.find(p => p.id === item.id);
+      
       return {
         id: item.id,
         // 현재 선택한 품목인 경우 product.id를 productId로 설정
-        productId: item.id === id ? product.id : null,
+        // 그렇지 않은 경우 기존 productId 유지
+        productId: item.id === id ? product.id : (existingProduct?.productId || null),
         productName: item.name,
         standard: item.spec,
         price: parseInt(item.price.replace(/,/g, '')) || 0,
@@ -166,6 +150,11 @@ export const TmpQuoteAddRow: React.FC<TmpQuoteAddRowProps> = ({ showValidationEr
         maxStock: item.id === id ? product.stock : item.maxStock
       };
     });
+
+    console.log('--------------------------------');
+    console.log('updatedItems', updatedItems);
+    console.log('storeProducts', storeProducts);
+    console.log('--------------------------------');
     
     setProducts(storeProducts);
   };
@@ -198,7 +187,7 @@ export const TmpQuoteAddRow: React.FC<TmpQuoteAddRowProps> = ({ showValidationEr
     // 재고 수량 초과 시 최대값으로 제한
     if (maxStock !== undefined && numValue > maxStock) {
       value = maxStock.toString();
-      toast.error(`최대 주문 가능 수량은 ${maxStock}개입니다.`);
+      showToast(`최대 주문 가능 수량은 ${maxStock}개입니다.`, 'error');
     }
   
     // 가격 문자열에서 숫자로 변환 (콤마 제거)
@@ -288,9 +277,9 @@ export const TmpQuoteAddRow: React.FC<TmpQuoteAddRowProps> = ({ showValidationEr
           <thead>
             <tr className="bg-gray-100">
               <th className="border-t border-b border-gray-300 p-2 w-12 text-center">
-                <button 
+              <button 
                   onClick={addItem}
-                  className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center"
+                  className="w-6 h-6 pb-1  text-[#4885F9] rounded-md  flex items-center justify-center hover:text-gray-500"
                 >
                   +
                 </button>
@@ -322,9 +311,9 @@ export const TmpQuoteAddRow: React.FC<TmpQuoteAddRowProps> = ({ showValidationEr
             {items.map((item) => (
               <tr key={item.id}>
                 <td className="border-b border-gray-300 p-2 text-center">
-                  <button 
+                <button 
                     onClick={() => removeItem(item.id)}
-                    className="w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center"
+                    className="w-6 h-6 pb-0.5 bg-[#FAFAFA] text-gray-500 rounded-md flex items-center justify-center"
                   >
                     -
                   </button>
@@ -333,7 +322,7 @@ export const TmpQuoteAddRow: React.FC<TmpQuoteAddRowProps> = ({ showValidationEr
                   <Typography variant="body">{item.id}</Typography>
                 </td>
                 <td className="border-b border-x border-gray-300 p-2">
-                  <CustomProductInput item={item} />
+                <Typography variant="body"> <CustomProductInput item={item} /></Typography>
                 </td>
                 <td className="border-b border-x border-gray-300 p-2">
                   <Input

@@ -2,8 +2,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { homeService } from '../services/homeService';
 import { homeQueryKeys } from '../constants/queryKeys';
 import { AssistantsParams, AssistantType, RegisterClientRequest, UpdateTemporaryClientRequest, UpdateTemporaryPurchaseOrderRequest, UpdateTemporaryQuoteRequest } from '../types/home';
-import { toast } from 'react-toastify';
 import { useUser } from '@/features/auth/hooks/useUser';
+import { showToast } from '@/shared/components/atoms/toast';
 
 export const useHome = () => {
   const queryClient = useQueryClient();
@@ -45,10 +45,10 @@ export const useHome = () => {
         queryClient.invalidateQueries({ 
           queryKey: homeQueryKeys.temporarySchedule(data.temporaryScheduleId) 
         });
-        toast.success('일정이 임시저장되었습니다.');
+        showToast('일정이 임시저장되었습니다.', 'success');
       },
       onError: () => {
-        toast.error('일정 임시저장에 실패했습니다.');
+        showToast('일정 임시저장에 실패했습니다.', 'error');
       }
     });
   };
@@ -69,10 +69,10 @@ export const useHome = () => {
         queryClient.invalidateQueries({ 
           queryKey: homeQueryKeys.assistants
         });
-        toast.success('일정이 등록되었습니다.');
+        showToast('일정이 등록되었습니다.', 'success');
       },
       onError: () => {
-        toast.error('일정 등록에 실패했습니다.');
+        showToast('일정 등록에 실패했습니다.', 'error');
       }
     });
   };
@@ -87,10 +87,10 @@ export const useHome = () => {
           queryClient.invalidateQueries({ 
             queryKey: homeQueryKeys.assistants
           });
-          toast.success('항목이 삭제되었습니다.');
+          showToast('항목이 삭제되었습니다.', 'success');
         },
         onError: () => {
-          toast.error('항목 삭제에 실패했습니다.');
+          showToast('항목 삭제에 실패했습니다.', 'error');
         }
       });
     };  
@@ -144,10 +144,10 @@ export const useHome = () => {
         queryClient.invalidateQueries({ 
           queryKey: homeQueryKeys.temporaryPurchaseOrder(data.id) 
         });
-        toast.success('발주서가 임시저장되었습니다.');
+        showToast('발주서가 임시저장되었습니다.', 'success');
       },
       onError: () => {
-        toast.error('발주서 임시저장에 실패했습니다.');
+        showToast('발주서 임시저장에 실패했습니다.', 'error');
       }
     });
   };
@@ -173,10 +173,10 @@ export const useHome = () => {
         queryClient.invalidateQueries({ 
           queryKey: homeQueryKeys.assistants
         });
-        toast.success('발주서가 등록되었습니다.');
+        showToast('발주서가 등록되었습니다.', 'success');
       },
       onError: () => {
-        toast.error('발주서 등록에 실패했습니다.');
+        showToast('발주서 등록에 실패했습니다.', 'error');
       }
     });
   };
@@ -206,10 +206,10 @@ export const useHome = () => {
           queryClient.invalidateQueries({ 
             queryKey: homeQueryKeys.temporaryQuote(data.id) 
           });
-          toast.success('견적서가 임시저장되었습니다.');
+          showToast('견적서가 임시저장되었습니다.', 'success');
         },
         onError: () => {
-          toast.error('견적서 임시저장에 실패했습니다.');
+          showToast('견적서 임시저장에 실패했습니다.', 'error');
         }
       });
     };
@@ -234,10 +234,10 @@ export const useHome = () => {
           queryClient.invalidateQueries({ 
             queryKey: homeQueryKeys.assistants
           });
-          toast.success('견적서가 등록되었습니다.');
+          showToast('견적서가 등록되었습니다.', 'success');
         },
         onError: () => {
-          toast.error('견적서 등록에 실패했습니다.');
+          showToast('견적서 등록에 실패했습니다.', 'error');
         }
       });
     };
@@ -267,10 +267,10 @@ export const useHome = () => {
           queryClient.invalidateQueries({ 
             queryKey: homeQueryKeys.temporaryClient(data.id) 
           });
-          toast.success('거래처가 임시저장되었습니다.');
+          showToast('거래처가 임시저장되었습니다.', 'success');
         },
         onError: () => {
-          toast.error('거래처 임시저장에 실패했습니다.');
+          showToast('거래처 임시저장에 실패했습니다.', 'error');
         }
       });
     };
@@ -284,10 +284,10 @@ export const useHome = () => {
           queryClient.invalidateQueries({ 
             queryKey: homeQueryKeys.assistants
           });
-          toast.success('거래처가 등록되었습니다.');
+          showToast('거래처가 등록되었습니다.', 'success');
         },
         onError: () => {
-          toast.error('거래처 등록에 실패했습니다.');
+          showToast('거래처 등록에 실패했습니다.', 'error');
         }
       });
     };

@@ -8,7 +8,7 @@ import { Input } from '@/shared/components/atoms/input';
 import { Typography } from '@/shared/components/atoms/Typography';
 import { useUserInfo } from '@/shared/hooks/useUserInfo';
 import AddressInput from '@/shared/components/atoms/addressInput';
-import { toast } from 'react-toastify';
+import { showToast } from '@/shared/components/atoms/toast';
 
 interface ClientDetailTemplateProps {
   onSave?: (data: ClientDetail) => void;
@@ -23,12 +23,68 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
   const { id } = useParams();
   const queryClient = useQueryClient();
   const { data: userInfo } = useUserInfo();
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+  const [uploadSuccess, setUploadSuccess] = useState('');
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const { data: clientData } = useQuery({
     queryKey: ['client', id],
     queryFn: () => clientService.getClient(id!),
     enabled: !!id && id !== 'new',
   });
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!clientService.validateBusinessLicense(file)) {
+      setUploadError('사업자등록증은 PDF, JPG, JPEG 또는 PNG 형식만 업로드 가능합니다.');
+      return;
+    }
+
+    try {
+      setIsUploading(true);
+      setUploadError('');
+      setUploadSuccess('');
+
+      // 1. S3 업로드 먼저
+      const s3Result = await clientService.uploadBusinessLicense(file);
+
+      // 2. S3 업로드 성공 시 form에 URL/이름 저장
+      setForm(prev => ({
+        ...prev,
+        businessLicenseUrl: s3Result.s3Key, // 실제로는 s3Key가 전체 URL이어야 함
+        businessLicenseName: file.name
+      }));
+
+      // 3. OCR 요청
+      const ocrResult = await clientService.uploadBusinessLicenseOCR(file);
+
+      if (ocrResult.success) {
+        setForm(prev => ({
+          ...prev,
+          licenseNum: ocrResult.licenseNum || prev.licenseNum,
+          corpName: ocrResult.corpName || prev.corpName,
+          representative: ocrResult.representative || prev.representative,
+          address: ocrResult.address || prev.address,
+          businessType: ocrResult.businessType || prev.businessType,
+          businessItem: ocrResult.businessItem || prev.businessItem,
+          // 파일 자체는 별도로 저장할 필요가 있다면 여기에 추가
+          businessLicense: file.name // 파일 이름이나 다른 식별자 저장
+        }));
+        setUploadSuccess('사업자등록증이 성공적으로 인식되었습니다.');
+      } else {
+        setUploadError('사업자등록증을 인식하지 못했습니다. 수동으로 정보를 입력해주세요.');
+      }
+
+    } catch (error) {
+      // API 호출 실패 등 모든 오류에 대해 동일한 메시지 사용
+      setUploadError('사업자등록증을 인식하지 못했습니다. 수동으로 정보를 입력해주세요.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const [form, setForm] = useState<ClientDetail>({
     id: clientData?.id || 1,
@@ -40,7 +96,8 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
     address: clientData?.address || '',
     businessType: clientData?.businessType || '',
     businessItem: clientData?.businessItem || '',
-    businessLicense: clientData?.businessLicense || '',
+    businessLicenseUrl: clientData?.businessLicenseUrl || '',
+    businessLicenseName: clientData?.businessLicenseName || '',
     createdAt: new Date().toISOString(),
     updatedAt: null
   });
@@ -59,7 +116,8 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
         address: clientData.address,
         businessType: clientData.businessType,
         businessItem: clientData.businessItem,
-        businessLicense: clientData.businessLicense,
+        businessLicenseUrl: clientData.businessLicenseUrl,
+        businessLicenseName: clientData.businessLicenseName,
         createdAt: clientData.createdAt,
         updatedAt: clientData.updatedAt
       });
@@ -79,12 +137,12 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
       navigate('/work/clients', { replace: true });
     },
     onError: () => {
-      alert('저장에 실패했습니다.');
+      showToast('저장에 실패했습니다.', 'error');
     }
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: ClientDetail }) => 
+    mutationFn: ({ id, data }: { id: string; data: ClientDetail }) =>
       clientService.updateClient(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clients'] });
@@ -92,9 +150,28 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
       navigate('/work/clients', { replace: true });
     },
     onError: () => {
-      alert('수정에 실패했습니다.');
+      showToast('수정에 실패했습니다.', 'error');
     }
   });
+
+
+  const handleDownloadBusinessLicense = async () => {
+    if (!clientData?.businessLicenseUrl) {
+      showToast('다운로드할 사업자등록증 파일이 없습니다.', 'error');
+      return;
+    }
+
+    try {
+      setIsDownloading(true);
+      await clientService.downloadBusinessLicense(clientData.businessLicenseUrl);
+      setIsDownloading(false);
+    } catch  {
+      showToast('파일 다운로드에 실패했습니다.', 'error');
+      setIsDownloading(false);
+    }
+  };
+
+
 
   const formatBusinessLicense = (value: string) => {
     const onlyNums = value.replace(/\D/g, '').slice(0, 10); // 숫자만, 최대 10자리
@@ -144,11 +221,8 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
     if (name === 'licenseNum') {
       const formatted = formatBusinessLicense(value);
       setForm((prev) => ({ ...prev, licenseNum: formatted }));
-      // const onlyNumbers = value.replace(/\D/g, '').slice(0, 10);
-      // setForm((prev: ClientDetail) => ({ ...prev, [name]: onlyNumbers }));
-
       return;
-    } 
+    }
 
     if (name === 'phoneNum') {
       const formatted = formatPhoneNumber(value);
@@ -157,6 +231,7 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
     }
 
     setForm((prev: ClientDetail) => ({ ...prev, [name]: value }));
+    
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -164,19 +239,19 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
     setIsSubmitted(true);
     // 필수 입력값 체크
     if (!form.corpName.trim()) {
-      toast.error('거래처명을 입력해 주세요.');
+      showToast('거래처명을 입력해 주세요.', 'error');
       return;
     } else if (!form.representative.trim()) {
-      toast.error('대표자명을 입력해 주세요.');
+      showToast('대표자명을 입력해 주세요.', 'error');
       return;
     } else if (!form.licenseNum.trim()) {
-      toast.error('사업자번호를 입력해 주세요.');
+      showToast('사업자번호를 입력해 주세요.', 'error');
       return;
     } else if (!form.businessItem.trim()) {
-      toast.error('종목을 입력해 주세요.');
+      showToast('종목을 입력해 주세요.', 'error');
       return;
     } else if (!form.businessType.trim()) {
-      toast.error('업태를 입력해 주세요.');
+      showToast('업태를 입력해 주세요.', 'error');
       return;
     }
 
@@ -193,31 +268,72 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
 
     if (id && id !== 'new') {
       updateMutation.mutate({ id, data: form });
+      showToast('거래처가 수정되었습니다.', 'success');
     } else {
       createMutation.mutate(form);
+      showToast('거래처가 등록되었습니다.', 'success');
     }
   };
 
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <form onSubmit={handleSubmit} className="p-8 bg-white rounded shadow max-w-5xl mx-auto">
-      <Typography variant="titleLarge" bold className="mb-6">
+    <form onSubmit={handleSubmit} className="p-8 bg-white max-w-5xl mx-auto">
+      <Typography variant="titleMedium" bold className="mb-6">
         거래처 {id && id !== 'new' ? '수정' : '등록'}
       </Typography>
 
       <div className="grid grid-cols-[180px_1fr] gap-y-2 w-full">
         {/* 사업자등록증 첨부 */}
-        <div className="bg-[#E6F4FB] flex items-center justify-end px-4 h-[40px] border-b border-white">
-          <Typography variant="body" bold>사업자등록증 첨부</Typography>
+        <div className=" flex items-center justify-end px-4 h-[40px] border-b border-white">
+          <Typography variant="body">사업자등록증 첨부</Typography>
         </div>
         <div className="flex items-center h-[40px] border-b">
-          <Button variant="ghost" size="small">첨부파일</Button>
+          <input
+            type="file"
+            accept=".pdf,.jpg,.jpeg,.png"
+            onChange={handleFileChange}
+            disabled={isUploading}
+            className="hidden"
+            id="businessLicenseFile"
+          />
+          <label htmlFor="businessLicenseFile" className="cursor-pointer mr-2">
+            {isUploading ? (
+              <span className="px-4 py-2 text-sm bg-gray-200 text-gray-600 rounded">업로드 중...</span>
+            ) : (
+              <span className="px-4 py-2 text-sm bg-blue-50 text-blue-600 hover:bg-blue-100 rounded cursor-pointer">첨부파일</span>
+            )}
+          </label>
+          
+          {/* 다운로드 버튼 - 수정 모드에서만 표시 */}
+          {id && id !== 'new' && clientData?.businessLicenseUrl && (
+            <button
+              type="button"
+              onClick={handleDownloadBusinessLicense}
+              disabled={isDownloading}
+              className="ml-2 px-4 py-2 text-sm bg-green-50 text-green-600 hover:bg-green-100 rounded cursor-pointer"
+            >
+              {isDownloading ? '다운로드 중...' : '파일 다운로드'}
+            </button>
+          )}
+          
+          {uploadError && <span className="text-red-500 text-xs ml-2">{uploadError}</span>}
+          {uploadSuccess && <span className="text-green-500 text-xs ml-2">{uploadSuccess}</span>}
+          
+          {/* 파일명 표시 - 클릭 시 다운로드 */}
+          {form.businessLicenseUrl && (
+            <span
+              className="text-blue-500 text-xs ml-2 cursor-pointer hover:underline"
+              onClick={() => clientService.downloadBusinessLicense(form.businessLicenseUrl)}
+            >
+              파일: {form.businessLicenseName}
+            </span>
+          )}
         </div>
 
         {/* 거래처명 */}
-        <div className="bg-[#E6F4FB] flex items-center justify-end px-4 h-[40px] border-b border-white">
-          <Typography variant="body" bold>거래처명 <span className="text-red-500">*</span></Typography>
+        <div className=" flex items-center justify-end px-4 h-[40px] border-b border-white">
+          <Typography variant="body">거래처명 <span className="text-red-500">*</span></Typography>
         </div>
         <div className="h-[40px] border-b w-auto">
           <Input
@@ -225,7 +341,7 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
             value={form.corpName}
             onChange={handleChange}
             placeholder="거래처명을 입력하세요."
-            size="large"
+            size="medium"
             className="!w-[400px]"
             maxLength={50}
           />
@@ -241,8 +357,8 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
         </div>
 
         {/* 대표자명 */}
-        <div className="bg-[#E6F4FB] flex items-center justify-end px-4 h-[40px] border-b border-white">
-          <Typography variant="body" bold>대표자명 <span className="text-red-500">*</span></Typography>
+        <div className="flex items-center justify-end px-4 h-[40px] border-b border-white">
+          <Typography variant="body">대표자명 <span className="text-red-500">*</span></Typography>
         </div>
         <div className="h-[40px] border-b w-auto">
           <Input
@@ -250,7 +366,7 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
             value={form.representative}
             onChange={handleChange}
             placeholder="대표자명을 입력하세요."
-            size="large"
+            size="medium"
             className="!w-[400px]"
             maxLength={10}
           />
@@ -266,8 +382,8 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
         </div>
 
         {/* 사업자 번호 */}
-        <div className="bg-[#E6F4FB] flex items-center justify-end px-4 h-[40px] border-b border-white">
-          <Typography variant="body" bold>사업자 번호 <span className="text-red-500">*</span></Typography>
+        <div className=" flex items-center justify-end px-4 h-[40px] border-b border-white">
+          <Typography variant="body">사업자 번호 <span className="text-red-500">*</span></Typography>
         </div>
         <div className="h-[40px] border-b w-auto">
           <Input
@@ -275,7 +391,7 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
             value={form.licenseNum}
             onChange={handleChange}
             placeholder="사업자 번호를 입력하세요."
-            size="large"
+            size="medium"
             className="!w-[400px]"
             inputMode='numeric'
             maxLength={12}
@@ -292,8 +408,8 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
         </div>
 
         {/* 종목 */}
-        <div className="bg-[#E6F4FB] flex items-center justify-end px-4 h-[40px] border-b border-white">
-          <Typography variant="body" bold>종목 <span className="text-red-500">*</span></Typography>
+        <div className="flex items-center justify-end px-4 h-[40px] border-b border-white">
+          <Typography variant="body">종목 <span className="text-red-500">*</span></Typography>
         </div>
         <div className="h-[40px] border-b w-auto">
           <Input
@@ -301,7 +417,7 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
             value={form.businessItem}
             onChange={handleChange}
             placeholder="종목을 입력하세요."
-            size="large"
+            size="medium"
             className="!w-[400px]"
             maxLength={100}
           />
@@ -317,8 +433,8 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
         </div>
 
         {/* 업태 */}
-        <div className="bg-[#E6F4FB] flex items-center justify-end px-4 h-[40px] border-b border-white">
-          <Typography variant="body" bold>업태 <span className="text-red-500">*</span></Typography>
+        <div className="flex items-center justify-end px-4 h-[40px] border-b border-white">
+          <Typography variant="body">업태 <span className="text-red-500">*</span></Typography>
         </div>
         <div className="h-[40px] border-b w-auto">
           <Input
@@ -326,7 +442,7 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
             value={form.businessType}
             onChange={handleChange}
             placeholder="업태를 입력하세요."
-            size="large"
+            size="medium"
             className="!w-[400px]"
             maxLength={100}
           />
@@ -342,8 +458,8 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
         </div>
 
         {/* 담당자 전화번호 */}
-        <div className="bg-[#E6F4FB] flex items-center justify-end px-4 h-[40px] border-b border-white">
-          <Typography variant="body" bold>담당자 전화번호</Typography>
+        <div className="flex items-center justify-end px-4 h-[40px] border-b border-white">
+          <Typography variant="body">담당자 전화번호</Typography>
         </div>
         <div className="h-[40px] border-b w-auto">
           <Input
@@ -353,7 +469,7 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
             maxLength={13}
             inputMode='numeric'
             placeholder="전화번호"
-            size="large"
+            size="medium"
             className="!w-[400px]"
           />
           {form.phoneNum && !isValidPhoneNumber(form.phoneNum) && (
@@ -365,8 +481,8 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
         </div>
 
         {/* 담당자 Email */}
-        <div className="bg-[#E6F4FB] flex items-center justify-end px-4 h-[40px] border-b border-white">
-          <Typography variant="body" bold>담당자 Email</Typography>
+        <div className="flex items-center justify-end px-4 h-[40px] border-b border-white">
+          <Typography variant="body">담당자 Email</Typography>
         </div>
         <div className="h-[40px] border-b w-auto">
           <Input
@@ -374,7 +490,7 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
             value={form.email}
             onChange={handleChange}
             placeholder="Email"
-            size="large"
+            size="medium"
             className="!w-[400px]"
             maxLength={128}
           />
@@ -390,8 +506,8 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
         </div>
 
         {/* 주소 */}
-        <div className="bg-[#E6F4FB] flex items-center justify-end px-4 h-[40px] border-b border-white">
-          <Typography variant="body" bold>주소</Typography>
+        <div className="flex items-center justify-end px-4 h-[40px] border-b border-white">
+          <Typography variant="body" >주소</Typography>
         </div>
         <div className="flex flex-col gap-2 h-[40px] border-b justify-center w-auto">
           <div className="flex gap-2">
@@ -411,7 +527,7 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
           variant="primary"
           size="large"
           disabled={isSubmitting}
-          className="w-[110px] h-[40px]"
+          className="w-[80px] h-[30px]"
         >
           {isSubmitting ? '처리중...' : (id && id !== 'new' ? '수정' : '등록')}
         </Button>
@@ -421,7 +537,7 @@ export const ClientDetailTemplate: React.FC<ClientDetailTemplateProps> = ({
           size="large"
           onClick={onCancel}
           disabled={isSubmitting}
-          className="w-[110px] h-[40px]"
+          className="w-[80px] h-[30px]"
         >
           취소
         </Button>

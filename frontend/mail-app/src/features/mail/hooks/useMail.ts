@@ -2,8 +2,8 @@ import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tansta
 import { mailService } from '../services/mailService';
 import { MAIL_QUERY_KEYS } from '../constants/queryKeys';
 import { FolderResponse, SendMailRequest } from '../types/mail';
-import { toast } from 'react-toastify';
 import { useUser } from '@/features/auth/hooks/useUser';
+import { showToast } from '@/shared/components/atoms/toast';
 
   export const useMail = () => {
     const queryClient = useQueryClient();
@@ -79,11 +79,11 @@ import { useUser } from '@/features/auth/hooks/useUser';
       onSuccess: () => {
         // 성공 시 메일 목록 쿼리 무효화 (모든 폴더)
         queryClient.invalidateQueries({ queryKey: ['mails'], refetchType: 'all' });
-        toast.success('메일이 휴지통으로 이동되었습니다.');
+        showToast('메일이 휴지통으로 이동되었습니다.', 'success');
       },
       onError: (error) => {
         console.error('메일 삭제 오류:', error);
-        toast.error('메일을 휴지통으로 이동하는 중 오류가 발생했습니다.');
+        showToast('메일을 휴지통으로 이동하는 중 오류가 발생했습니다.', 'error');
       }
     });
 
@@ -94,11 +94,11 @@ import { useUser } from '@/features/auth/hooks/useUser';
       onSuccess: () => {
         // 성공 시 메일 목록 쿼리 무효화
         queryClient.invalidateQueries({ queryKey: ['mails'], refetchType: 'all' });
-        toast.success('메일이 휴지통으로 이동되었습니다.');
+        showToast('메일이 휴지통으로 이동되었습니다.', 'success');
       },
       onError: (error) => {
         console.error('메일 삭제 오류:', error);
-        toast.error('메일을 휴지통으로 이동하는 중 오류가 발생했습니다.');
+        showToast('메일을 휴지통으로 이동하는 중 오류가 발생했습니다.', 'error');
       }
     });
       
@@ -117,11 +117,11 @@ import { useUser } from '@/features/auth/hooks/useUser';
         mailService.emptyTrash({ mailIds }),
       onSuccess: (data) => {
         queryClient.invalidateQueries({ queryKey: ['mails'], refetchType: 'all' });
-        toast.success(`${data.deletedCount}개의 메일이 영구 삭제되었습니다.`);
+        showToast(`${data.deletedCount}개의 메일이 영구 삭제되었습니다.`, 'success');
       },
       onError: (error) => {
         console.error('메일 영구 삭제 오류:', error);
-        toast.error('메일을 영구 삭제하는 중 오류가 발생했습니다.');
+        showToast('메일을 영구 삭제하는 중 오류가 발생했습니다.', 'error');
       }
     });
 
@@ -140,11 +140,9 @@ import { useUser } from '@/features/auth/hooks/useUser';
         queryKey: MAIL_QUERY_KEYS.mailList(1, 2),  
         refetchType: 'all'
       });
-      toast.success('메일이 성공적으로 전송되었습니다.');
     },
     onError: (error) => {
       console.error('메일 전송 오류:', error);
-      toast.error('메일 전송 중 오류가 발생했습니다.');
     }
   });
   
@@ -191,7 +189,7 @@ import { useUser } from '@/features/auth/hooks/useUser';
     },
     onError: (error) => {
       console.error('첨부파일 다운로드 오류:', error);
-      toast.error('첨부파일 다운로드 중 오류가 발생했습니다.');
+      showToast('첨부파일 다운로드 중 오류가 발생했습니다.', 'error');
     }
   });
 
@@ -201,11 +199,11 @@ import { useUser } from '@/features/auth/hooks/useUser';
     onSuccess: () => {
       // 성공 시 메일 목록 쿼리 무효화 (모든 폴더)
       queryClient.invalidateQueries({ queryKey: ['mails'], refetchType: 'all' });
-      toast.success('메일이 원래 폴더로 복원되었습니다.');
+      showToast('메일이 원래 폴더로 복원되었습니다.', 'success');
     },
     onError: (error) => {
       console.error('메일 복원 오류:', error);
-      toast.error('메일을 복원하는 중 오류가 발생했습니다.');
+      showToast('메일을 복원하는 중 오류가 발생했습니다.', 'error');
     }
   });
 

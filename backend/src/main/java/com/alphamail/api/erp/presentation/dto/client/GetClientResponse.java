@@ -16,7 +16,7 @@ public record GetClientResponse(
 	String address,
 	String businessType,
 	String businessItem,
-	String businessLicense,
+	String businessLicenseUrl,
 	String businessLicenseName,
 	LocalDateTime createdAt,
 	LocalDateTime updatedAt

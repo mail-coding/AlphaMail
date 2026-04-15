@@ -172,7 +172,7 @@ export const PdfButton: React.FC<PdfButtonProps> = ({ quoteDetail }) => {
   return (
     <PDFDownloadLink
       document={<MyPDFDocument data={quoteDetail} />}
-      fileName={`${quoteDetail.quoteNo}_견적서.pdf`}
+      fileName={`${quoteDetail.clientName}_견적서.pdf`}
       className="inline-block"
     >
       {({ loading, error }) => {

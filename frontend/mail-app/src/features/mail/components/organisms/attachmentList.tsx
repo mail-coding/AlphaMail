@@ -17,7 +17,7 @@ export const AttachmentList: React.FC<AttachmentListProps> = ({
   }
   
   return (
-    <div className="px-4 mb-4 border-b pb-4">
+    <div className="px-4 mb-4 pb-4">
       <Typography variant="body" className="text-gray-600 mb-2">첨부 파일:</Typography>
       <div className="flex flex-wrap gap-2">
         {attachments.map((attachment) => (

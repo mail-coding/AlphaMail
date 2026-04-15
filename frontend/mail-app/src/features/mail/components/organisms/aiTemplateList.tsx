@@ -19,7 +19,6 @@ const AiTemplateList: React.FC<AiTemplateListProps> = ({ onApplyTemplate, onClos
     selectedTemplateId, 
     selectTemplate, 
     clearSelectedTemplate, 
-    isAddingNewTemplate,
     setAddingNewTemplate,
     isEditing,
     setIsEditing
@@ -58,6 +57,14 @@ const AiTemplateList: React.FC<AiTemplateListProps> = ({ onApplyTemplate, onClos
     deleteTemplateMutation.mutate(id);
   };
 
+  // 템플릿 편집 핸들러
+  const handleEditTemplate = (id: number) => {
+    console.log(`템플릿 편집: ${id}`);
+    selectTemplate(id.toString());
+    setAddingNewTemplate(false);
+    setIsEditing(true); // 편집 모드로 설정
+  };
+  
   // 템플릿 편집 화면에서 뒤로가기 핸들러
   const handleBackToList = () => {
     clearSelectedTemplate();
@@ -67,16 +74,7 @@ const AiTemplateList: React.FC<AiTemplateListProps> = ({ onApplyTemplate, onClos
 
   // 상단 버튼 클릭 핸들러 - 새 템플릿 생성 시 목록으로 바로 이동하도록 수정
   const handleBackButtonClick = () => {
-    if (isEditing && isAddingNewTemplate) {
-      // 새 템플릿 생성 중이면 목록으로 바로 이동
       handleBackToList();
-    } else if (isEditing) {
-      // 기존 템플릿 편집 중이면 상세 화면으로 이동
-      setIsEditing(false);
-    } else {
-      // 상세 화면에서는 목록으로 이동
-      handleBackToList();
-    }
   };
 
   // 로딩 화면 표시
@@ -101,9 +99,9 @@ const AiTemplateList: React.FC<AiTemplateListProps> = ({ onApplyTemplate, onClos
               <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
             </svg>
             <Typography variant="body" className="text-[#2D95CE]">
-              {isEditing ? 
-                (isAddingNewTemplate ? "템플릿 목록으로 돌아가기" : "템플릿 상세로 돌아가기") : 
-                "템플릿 목록으로 돌아가기"}
+              {
+                 "템플릿 목록으로 돌아가기" 
+              }
             </Typography>
           </button>
         </div>
@@ -158,6 +156,7 @@ const AiTemplateList: React.FC<AiTemplateListProps> = ({ onApplyTemplate, onClos
                 title={template.title}
                 onClick={() => handleSelectTemplate(template.id)}
                 onDelete={() => handleDeleteTemplate(template.id)}
+                onEdit={() => handleEditTemplate(template.id)}
               />
             ))}
           </div>

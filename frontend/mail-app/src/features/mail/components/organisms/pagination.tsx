@@ -12,6 +12,7 @@ export const Pagination: React.FC<PaginationProps> = ({
   totalPages,
   onPageChange
 }) => {
+  
   const renderPageButtons = () => {
     const buttons = [];
     

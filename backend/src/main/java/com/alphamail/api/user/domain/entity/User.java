@@ -23,7 +23,7 @@ import lombok.Getter;
 public class User {
 
 	private static final String DEFAULT_USER_IMAGE =
-		"https://your-s3-bucket.com/default-user-image.jpg";
+		"https://alphamailemailbucket.s3.ap-northeast-2.amazonaws.com/sendAttachments/default_profile.png";
 
 	private static final String[] DEFAULT_EMAIL_FOLDERS =
 		{"INBOX", "SENT", "TRASH"};

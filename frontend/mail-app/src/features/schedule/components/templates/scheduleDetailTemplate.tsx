@@ -4,10 +4,10 @@ import { Schedule } from '@/features/schedule/types/schedule';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { scheduleService } from '@/features/schedule/services/scheduleService';
 import { useScheduleStore } from '@/features/schedule/stores/useScheduleStore';
-import { toast } from 'react-toastify';
 import { Input } from '@/shared/components/atoms/input';
 import { Button } from '@/shared/components/atoms/button';
 import { Typography } from '@/shared/components/atoms/Typography';
+import { showToast } from '@/shared/components/atoms/toast';
 
 interface ValidationErrors {
   name?: string;
@@ -98,11 +98,11 @@ export const ScheduleDetailTemplate: React.FC<ScheduleDetailTemplateProps> = ({
         refetchType: 'all'
       });
       setIsEdit(false);
-      toast.success('일정이 성공적으로 등록되었습니다.');
+      showToast('일정이 성공적으로 등록되었습니다.', 'success');
       onClose();
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || '일정 등록 중 오류가 발생했습니다.');
+      showToast(error.response?.data?.message || '일정 등록 중 오류가 발생했습니다.', 'error');
     }
   });
 
@@ -122,11 +122,11 @@ export const ScheduleDetailTemplate: React.FC<ScheduleDetailTemplateProps> = ({
         refetchType: 'all'
       });
       setIsEdit(false);
-      toast.success('일정이 성공적으로 수정되었습니다.');
+      showToast('일정이 성공적으로 수정되었습니다.', 'success');
       onClose();
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || '일정 수정 중 오류가 발생했습니다.');
+      showToast(error.response?.data?.message || '일정 수정 중 오류가 발생했습니다.', 'error');
     }
   });
 
@@ -146,11 +146,11 @@ export const ScheduleDetailTemplate: React.FC<ScheduleDetailTemplateProps> = ({
         refetchType: 'all'
       });
       setIsEdit(false);
-      toast.success('일정이 성공적으로 삭제되었습니다.');
+      showToast('일정이 성공적으로 삭제되었습니다.', 'success');
       onClose();
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || '일정 삭제 중 오류가 발생했습니다.');
+      showToast(error.response?.data?.message || '일정 삭제 중 오류가 발생했습니다.', 'error');
     }
   });
 
@@ -195,7 +195,7 @@ export const ScheduleDetailTemplate: React.FC<ScheduleDetailTemplateProps> = ({
         setIsButtonClicked(false);
       }
     } else {
-      toast.error('입력한 내용을 확인해주세요.');
+      showToast('입력한 내용을 확인해주세요.', 'error');
       setIsButtonClicked(false);
     }
   };
@@ -207,7 +207,7 @@ export const ScheduleDetailTemplate: React.FC<ScheduleDetailTemplateProps> = ({
         await deleteMutation.mutateAsync(schedule.id);
       } catch (error) {
         console.error('일정 삭제 중 오류 발생:', error);
-        toast.error('일정 삭제 중 오류가 발생했습니다.');
+        showToast('일정 삭제 중 오류가 발생했습니다.', 'error');
       }
     }
   };
@@ -298,7 +298,7 @@ export const ScheduleDetailTemplate: React.FC<ScheduleDetailTemplateProps> = ({
                             start_time: newStartTime,
                             end_time: newEndTime
                           });
-                          toast.info('종료 시간이 시작 시간 이후로 자동 조정되었습니다.');
+                          showToast('종료 시간이 시작 시간 이후로 자동 조정되었습니다.', 'info');
                         } else {
                           setSchedule({ ...schedule, start_time: newStartTime });
                         }
@@ -328,7 +328,7 @@ export const ScheduleDetailTemplate: React.FC<ScheduleDetailTemplateProps> = ({
                           // 시작 시간 이후로 종료 시간 자동 조정 (시작 시간 + 1시간)
                           const adjustedEndTime = new Date(schedule.start_time.getTime() + 60 * 60 * 1000);
                           setSchedule({ ...schedule, end_time: adjustedEndTime });
-                          toast.info('종료 시간이 시작 시간 이후로 자동 조정되었습니다.');
+                          showToast('종료 시간이 시작 시간 이후로 자동 조정되었습니다.', 'info');
                         } else {
                           setSchedule({ ...schedule, end_time: newEndTime });
                         }
@@ -358,10 +358,10 @@ export const ScheduleDetailTemplate: React.FC<ScheduleDetailTemplateProps> = ({
                     rows={3}
                     maxLength={50}
                     placeholder="설명을 입력하세요 (최대 50자)"
-                    style={{ paddingBottom: '1.5rem' }}
+                    style={{ paddingBottom: '1.5rem', fontSize: '14px'}}
                   />
                   <div className="absolute bottom-2 right-2 text-xs text-gray-500">
-                    {schedule.description.length}/50
+                    {schedule.description?.length ?? 0}/50
                   </div>
                 </div>
                 {errors.description && (

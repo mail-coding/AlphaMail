@@ -33,7 +33,7 @@ const LoginPage = () => {
       navigate('/');
     } catch (error) {
       console.error('로그인 실패:', error);
-      setError('로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.');
+      setError('아이디 또는 비밀번호를 확인해주세요.');
     } finally {
       setIsLoading(false);
     }
@@ -43,6 +43,7 @@ const LoginPage = () => {
     <PageContainer>
       {/* 배경 영역 */}
       <BackgroundContainer>
+        <BlueCircle /> {/* 추가된 파란 원 */}
         <HeaderSection>
           <Title>ALPHAMAIL</Title>
           <Subtitle>비즈니스 이메일 자동화 솔루션</Subtitle>
@@ -62,7 +63,7 @@ const LoginPage = () => {
               type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="이메일"
+              placeholder="아이디 또는 이메일 주소"
               required
             />
             
@@ -117,6 +118,19 @@ const BackgroundContainer = styled.div`
 }
 `;
 
+const BlueCircle = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 80%;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background:rgba(71, 133, 249, 0.82);
+  transform: translate(0%, -50%);
+  z-index: 1;
+  pointer-events: none;
+`;
+
 const HeaderSection = styled.div`
   position: absolute;
   top: 2rem;
@@ -144,7 +158,7 @@ const LoginCardSection = styled.div`
   left: 20%;
   transform: translateY(-50%);
   width: 100%;
-  max-width: 380px;
+  max-width: 500px;
   z-index: 2;
 `;
 

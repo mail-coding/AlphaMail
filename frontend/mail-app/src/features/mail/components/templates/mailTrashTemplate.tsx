@@ -9,7 +9,10 @@ import { Mail, MailListRow } from '../../types/mail';
 import { useHeaderStore } from '@/shared/stores/useHeaderStore';
 import { useNavigate } from 'react-router-dom';
 import { useFolders } from '../../hooks/useFolders';
-import { toast } from 'react-toastify';
+import { showToast } from '@/shared/components/atoms/toast';
+import { WarningModal } from "@/shared/components/warningModal";
+import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
+import { Button } from "@/shared/components/atoms/button";
 
 const MailTrashTemplate: React.FC = () => {
   // 휴지통은 folderId가 3
@@ -18,6 +21,7 @@ const MailTrashTemplate: React.FC = () => {
     sortOrder,
     searchKeyword,
     selectedMails, 
+    currentFolder,
     setCurrentPage, 
     selectMail, 
     unselectMail, 
@@ -27,7 +31,9 @@ const MailTrashTemplate: React.FC = () => {
     getFolderIdByType,
     folderLoading
   } = useMailStore();
-  
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
   // 폴더 정보 로드
   const { isLoading: isFoldersLoading } = useFolders();
   
@@ -36,11 +42,12 @@ const MailTrashTemplate: React.FC = () => {
   
   // 컴포넌트 마운트 시 현재 폴더를 휴지통으로 설정
   useEffect(() => {
-    if (trashFolderId) {
+    // 현재 폴더가 설정되어 있지 않은 경우에만 설정
+    if (trashFolderId && !currentFolder) {
       setCurrentFolder(trashFolderId);
     }
-  }, [trashFolderId, setCurrentFolder]);
-  
+  }, [trashFolderId, currentFolder, setCurrentFolder]);
+
   const { useMailList, emptyTrash, restoreMailsToOrigin } = useMail();
   const { data, isLoading, error, refetch } = useMailList(trashFolderId, currentPage, sortOrder, searchKeyword);
   const { setMailStats } = useHeaderStore();
@@ -77,28 +84,33 @@ const MailTrashTemplate: React.FC = () => {
   };
   
   const handleMailClick = (id: string) => {
-    navigate(`/mail/trash/${id}`);
-  };
-  
+    navigate(`/mail/trash/${id}?page=${currentPage}`);
+  };  
+
   // 휴지통 비우기 (모든 메일 영구 삭제)
   const handleEmptyTrash = () => {
     if (selectedMails.length === 0) {
-      toast.warning('삭제할 메일을 선택해주세요.');
+      showToast('삭제할 메일을 선택해주세요.', 'warning');
       return;
     }
     
-    // 확인 대화상자 표시
-    if (window.confirm('선택한 메일을 영구적으로 삭제하시겠습니까?')) {
-      emptyTrash.mutate({ mailIds: selectedMails }, {
-        onSuccess: () => {
-          // 삭제 성공 후 메일 목록 다시 가져오기
-          refetch();
-          // 선택 상태 초기화
-          clearSelection();
-          setAllSelected(false);
-        }
-      });
-    }
+    // 모달 열기
+    setIsDeleteModalOpen(true);
+  };
+
+  // 실제 삭제 처리 함수
+  const confirmDelete = () => {
+    emptyTrash.mutate({ mailIds: selectedMails }, {
+      onSuccess: () => {
+        // 삭제 성공 후 메일 목록 다시 가져오기
+        refetch();
+        // 선택 상태 초기화
+        clearSelection();
+        setAllSelected(false);
+        // 모달 닫기
+        setIsDeleteModalOpen(false);
+      }
+    });
   };
 
   const handleRestore = () => {
@@ -114,7 +126,7 @@ const MailTrashTemplate: React.FC = () => {
         }
       });
     } else {
-      toast.warning('복원할 메일을 선택해주세요.');
+      showToast('복원할 메일을 선택해주세요.', 'warning');
     }
   };
 
@@ -182,6 +194,33 @@ const transformMailsData = (emails: MailListRow[] = []): Mail[] => {
           />
         </>
       )}
+      <WarningModal
+        open={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        icon={<ExclamationTriangleIcon className="h-6 w-6 text-red-500" />}
+        title={<Typography variant="titleMedium">메일 영구 삭제</Typography>}
+        description={
+          <Typography variant="body">
+            선택한 {selectedMails.length}개의 메일을 영구적으로 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+          </Typography>
+        }
+        actions={
+          <>
+            <Button
+              variant="text"
+              onClick={() => setIsDeleteModalOpen(false)}
+            >
+              취소
+            </Button>
+            <Button
+              variant="danger"
+              onClick={confirmDelete}
+            >
+              영구 삭제
+            </Button>
+          </>
+        }
+      />
     </div>
   );
 };

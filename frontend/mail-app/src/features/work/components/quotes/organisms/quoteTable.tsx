@@ -1,36 +1,44 @@
 import React from 'react';
 import { Quote } from '../../../types/quote';
 import { QuoteTableRow } from '../molecules/quoteTableRow';
-import { useQuoteStore } from '../../../stores/quoteStore';
 import { Typography } from '@/shared/components/atoms/Typography';
 import { Button } from '@/shared/components/atoms/button';
+import { Spinner } from '@/shared/components/atoms/spinner';
 
 interface QuoteTableProps {
-  companyId?: number;
   quotes: Quote[];
+  currentPage: number;
+  pageCount: number;
+  onPageChange: (page: number) => void;
+  pageSize: number;
+  onSizeChange: (size: number) => void;
+  sortOption: number;
+  onSortChange: (option: number) => void;
+  totalCount: number;
   onQuoteClick?: (quote: Quote) => void;
   onSelectQuote?: (id: number) => void;
   selectedQuoteIds?: Set<number>;
+  isLoading: boolean;
 }
 
 export const QuoteTable: React.FC<QuoteTableProps> = ({
   quotes,
+  currentPage,
+  pageCount,
+  onPageChange,
+  totalCount,
   onQuoteClick,
   onSelectQuote,
   selectedQuoteIds = new Set(),
+  isLoading,
 }) => {
-  const {
-    currentPage,
-    pageSize,
-    setCurrentPage,
-  } = useQuoteStore();
-
-  const totalCount = quotes.length;
-  const pageCount = Math.ceil(totalCount / pageSize);
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-[400px]">
+        <Spinner size="large" />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -91,7 +99,7 @@ export const QuoteTable: React.FC<QuoteTableProps> = ({
             ))
           ) : (
             <tr>
-              <td colSpan={6} className="p-4 text-center">
+              <td colSpan={8} className="p-4 text-center">
                 <Typography variant="body" color="text-gray-500">
                   견적서가 없습니다.
                 </Typography>
@@ -101,31 +109,33 @@ export const QuoteTable: React.FC<QuoteTableProps> = ({
         </tbody>
       </table>
       {/* Pagination */}
-      <div className="flex justify-center items-center mt-4">
+      <div className="flex justify-center items-center mt-4 gap-1">
         <Button
           variant="ghost"
           size="small"
-          disabled={currentPage === 1}
-          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage <= 1}
+          onClick={() => onPageChange(currentPage - 1)}
+          className="min-w-[32px]"
         >
           &lt;
         </Button>
-        {[...Array(pageCount)].map((_, i) => (
+        {Array.from({ length: pageCount }, (_, i) => i + 1).map((pageNum) => (
           <Button
-            key={i}
+            key={pageNum}
             variant="ghost"
             size="small"
-            onClick={() => handlePageChange(i + 1)}
-            className={currentPage === i + 1 ? 'font-bold underline' : ''}
+            onClick={() => onPageChange(pageNum)}
+            className={`${currentPage === pageNum ? 'font-bold underline' : ''} min-w-[32px]`}
           >
-            {i + 1}
+            {pageNum}
           </Button>
         ))}
         <Button
           variant="ghost"
           size="small"
-          disabled={currentPage === pageCount}
-          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage >= pageCount}
+          onClick={() => onPageChange(currentPage + 1)}
+          className="min-w-[32px]"
         >
           &gt;
         </Button>

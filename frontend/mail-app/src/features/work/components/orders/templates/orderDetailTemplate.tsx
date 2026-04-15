@@ -11,9 +11,9 @@ import { PdfButton } from './orderDocumentTemplate';
 import { Button } from '@/shared/components/atoms/button';
 import { Typography } from '@/shared/components/atoms/Typography';
 import { TooltipPortal } from '@/shared/components/atoms/TooltipPortal';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { showToast } from '@/shared/components/atoms/toast';
 import { useQueryClient } from '@tanstack/react-query';
+import { AxiosError } from 'axios';
 
 const OrderDetailTemplate: React.FC = () => {
   const navigate = useNavigate();
@@ -66,7 +66,7 @@ const OrderDetailTemplate: React.FC = () => {
   }, [id, orderDetail, setFormData, userInfo]);
 
   useEffect(() => {
-    if ((error as any)?.response?.status === 404) {
+    if ((error as AxiosError)?.response?.status === 404) {
       navigate('/404', { replace: true });
     }
   }, [error, navigate]);
@@ -85,12 +85,12 @@ const OrderDetailTemplate: React.FC = () => {
 
     // ====== 품목 유효성 검사 ======
     if (!formData.products || formData.products.length === 0) {
-      toast.error('최소 1개의 품목을 추가해야 합니다.');
+      showToast('최소 1개의 품목을 추가해야 합니다.', 'error');
       return;
     }
     for (let i = 0; i < formData.products.length; i++) {
       if (!formData.products[i].name || formData.products[i].name.trim() === '') {
-        toast.error(`품목 ${i + 1}의 품목명을 입력해주세요.`);
+        showToast(`품목 ${i + 1}의 품목명을 입력해주세요.`, 'error');
         return;
       }
     }
@@ -166,21 +166,21 @@ const OrderDetailTemplate: React.FC = () => {
 
       // 수량 유효성 검사
       if (typeof product.count !== 'number' || product.count < 0) {
-        toast.error(`${productNameForAlert}의 수량은 0 이상의 숫자로 입력해주세요.`);
+        showToast(`${productNameForAlert}의 수량은 0 이상의 숫자로 입력해주세요.`, 'error');
         return;
       }
       if (product.count > MAX_PRODUCT_COUNT) {
-        toast.error(`${productNameForAlert}의 수량은 ${MAX_PRODUCT_COUNT.toLocaleString()}을 초과할 수 없습니다.`);
+        showToast(`${productNameForAlert}의 수량은 ${MAX_PRODUCT_COUNT.toLocaleString()}을 초과할 수 없습니다.`, 'error');
         return;
       }
 
       // 단가 유효성 검사
       if (typeof product.price !== 'number' || product.price < 0) {
-        toast.error(`${productNameForAlert}의 단가는 0 이상의 숫자로 입력해주세요.`);
+        showToast(`${productNameForAlert}의 단가는 0 이상의 숫자로 입력해주세요.`, 'error');
         return;
       }
       if (product.price > MAX_PRODUCT_PRICE) {
-        toast.error(`${productNameForAlert}의 단가는 ${MAX_PRODUCT_PRICE.toLocaleString()}을 초과할 수 없습니다.`);
+        showToast(`${productNameForAlert}의 단가는 ${MAX_PRODUCT_PRICE.toLocaleString()}을 초과할 수 없습니다.`, 'error');
         return;
       }
     }
@@ -189,11 +189,11 @@ const OrderDetailTemplate: React.FC = () => {
       await orderService.updateOrder(formData, userInfo.id, userInfo.companyId, userInfo.groupId);
       await queryClient.invalidateQueries({ queryKey: ['orders'] });
       await queryClient.invalidateQueries({ queryKey: ['orderDetail', formData.id] });
-      toast.success('발주서가 수정되었습니다.');
+      showToast('발주서가 수정되었습니다.', 'success');
     } else {
       await orderService.createOrder(formData, userInfo.id, userInfo.companyId, userInfo.groupId);
       await queryClient.invalidateQueries({ queryKey: ['orders'] });
-      toast.success('발주서가 등록되었습니다.');
+      showToast('발주서가 등록되었습니다.', 'success');
     }
     navigate('/work/orders');
   };
@@ -213,9 +213,9 @@ const OrderDetailTemplate: React.FC = () => {
   const showPdfButton = id && id !== 'new';
 
   return (
-    <div className="p-8 bg-white rounded shadow max-w-5xl mx-auto">
+    <div className="p-8 bg-white rounded max-w-5xl mx-auto">
       <div className="mb-6 flex justify-between items-center">
-        <Typography variant="titleSmall">
+        <Typography variant="titleMedium" bold>
           발주서 {id && id !== 'new' ? '수정' : '등록'}
         </Typography>
         <div className="flex space-x-2">

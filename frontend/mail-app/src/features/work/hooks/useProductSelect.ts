@@ -1,10 +1,9 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useProductSelectStore } from '../stores/productSelectStore';
 import { productService } from '../services/productService';
 import { useUserInfo } from '@/shared/hooks/useUserInfo';
 
 export const useProductSelect = () => {
-  const { data: userInfo } = useUserInfo();
   const {
     products,
     searchKeyword,
@@ -18,6 +17,12 @@ export const useProductSelect = () => {
     setError,
   } = useProductSelectStore();
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
+
+  const { data: userInfo } = useUserInfo();
+
   const fetchProducts = useCallback(async () => {
     if (!userInfo?.companyId) {
       setProducts([]);
@@ -26,14 +31,19 @@ export const useProductSelect = () => {
     
     try {
       setLoading(true);
-      const response = await productService.searchProducts(userInfo.companyId, searchKeyword);
+      const response = await productService.getProducts({
+        query: searchKeyword,
+        page: currentPage - 1,
+        size: pageSize,
+      }, userInfo.companyId);
       setProducts(response.contents);
+      setTotalCount(response.totalCount);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to fetch products');
     } finally {
       setLoading(false);
     }
-  }, [userInfo?.companyId, searchKeyword, setProducts, setLoading, setError]);
+  }, [userInfo?.companyId, searchKeyword, currentPage, pageSize, setProducts, setLoading, setError]);
 
   useEffect(() => {
     if (userInfo?.companyId) {
@@ -43,10 +53,17 @@ export const useProductSelect = () => {
 
   const handleSearch = useCallback((keyword: string) => {
     setSearchKeyword(keyword);
-  }, [setSearchKeyword]);
+    setCurrentPage(1);
+    setSelectedId(null);
+  }, [setSearchKeyword, setSelectedId]);
 
   const handleSelect = useCallback((id: number | null) => {
     setSelectedId(id);
+  }, [setSelectedId]);
+
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+    setSelectedId(null);
   }, [setSelectedId]);
 
   const getSelectedProduct = useCallback(() => {
@@ -59,8 +76,11 @@ export const useProductSelect = () => {
     selectedId,
     isLoading,
     error,
+    currentPage,
+    pageCount: Math.ceil(totalCount / pageSize),
     handleSearch,
     handleSelect,
+    handlePageChange,
     getSelectedProduct,
   };
 }; 

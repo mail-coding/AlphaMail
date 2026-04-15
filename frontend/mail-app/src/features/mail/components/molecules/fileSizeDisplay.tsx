@@ -11,7 +11,7 @@ export const FileSizeDisplay: React.FC<FileSizeDisplayProps> = ({
   isRead = true
 }) => {
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0B';
+    if (bytes === 0) return '';
     
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(1024));

@@ -60,11 +60,6 @@ const OrderTableRow: React.FC<OrderTableRowProps> = ({
           {order.price ? `${order.price.toLocaleString()}원` : '0원'}
         </Typography>
       </td>
-      <td className="p-2 text-center">
-        <Typography variant="body">
-          {order.status}
-        </Typography>
-      </td>
     </tr>
   );
 };

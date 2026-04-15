@@ -27,6 +27,7 @@ export const ClientSearchBar: React.FC<ClientSearchBarProps> = ({ onSearch }) =>
         }}
       />
       <Button
+        
         type="button"
         onClick={() => onSearch(keyword)}
         className="w-[110px] h-[30px] bg-[#3E99C6] text-white rounded-lg font-semibold flex items-center justify-center gap-2"

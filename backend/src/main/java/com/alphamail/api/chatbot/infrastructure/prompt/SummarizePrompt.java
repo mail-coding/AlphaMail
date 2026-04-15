@@ -23,7 +23,9 @@ public class SummarizePrompt {
 		String input = String.valueOf(matchedSchedules);
 		String prompt = """
 			다음은 %s 목록입니다. 사용자의 질문에 해당하는 항목만 골라서 전체 요약을 해주세요.
-			또한, 어떤 항목이 요약에 사용됐는지도 함께 알려주세요.
+			그리고 요약에 실제로 사용된 항목의 `id`만 추려서 함께 표시하세요.
+			
+			**요약문(`reply`)에 등장한 항목만 `ids` 배열에 포함해야 합니다.**
 			
 			형식은 반드시 아래 JSON 구조를 따르세요:
 			

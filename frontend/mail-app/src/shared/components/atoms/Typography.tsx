@@ -25,7 +25,7 @@ export const Typography = ({
     titleMedium: 'text-[17px]',
     titleSmall: 'text-[14px]',
     body: 'text-[12px]',
-    caption: 'text-[11px] text-[#ADADAD]',
+    caption: 'text-[13px] text-[#ADADAD]',
   }[variant];
 
   const fontWeightStyle = bold ? 'font-bold' : 'font-light';

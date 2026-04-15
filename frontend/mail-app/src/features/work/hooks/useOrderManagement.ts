@@ -24,10 +24,9 @@ export const useOrderManagement = () => {
       if (!userInfo?.companyId) {
         throw new Error('Company ID is not available');
       }
-      console.log(userInfo.companyId);
-      console.log(currentPage)
+
       const params: any = {
-        page: currentPage - 1,
+        page: currentPage - 1, // API는 0-based index를 사용하므로 1을 빼줍니다
         size: pageSize,
         ...searchParams,
       };
@@ -39,19 +38,17 @@ export const useOrderManagement = () => {
         params.endDate = new Date(searchParams.endDate).toISOString();
       }
 
-      const response = await orderService.getOrders(userInfo.companyId, params); 
-
-      console.log(response);
+      const response = await orderService.getOrders(userInfo.companyId, params);
 
       // isSelected 상태 업데이트
-      const ordersWithSelection = response.content.map(order => ({
+      const ordersWithSelection = response.contents.map(order => ({
         ...order,
         isSelected: selectedOrderIds.has(order.id),
       }));
 
       return {
         ...response,
-        content: ordersWithSelection,
+        contents: ordersWithSelection,
       };
     },
     enabled: isAuthenticated,
@@ -84,9 +81,10 @@ export const useOrderManagement = () => {
   };
 
   return {
-    orders: ordersData?.content || [],
-    totalPages: ordersData?.totalPages || 0,
-    totalElements: ordersData?.totalElements || 0,
+    orders: ordersData?.contents || [],
+    totalPages: ordersData?.pageCount || 0,
+    totalElements: ordersData?.totalCount || 0,
+    currentPage: ordersData?.currentPage || 1,
     isLoading,
     error,
     handleDeleteOrders,

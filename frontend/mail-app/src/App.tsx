@@ -10,7 +10,7 @@ import { useLocation } from 'react-router-dom';
 import { SideBar } from './shared/Layout/sideBar';
 import { useSidebarStore } from './shared/stores/useSidebarStore';
 import { HeaderContent } from './shared/Layout/headerContent';
-import { ToastContainer } from 'react-toastify';
+import { ToastProvider } from './shared/components/atoms/toast';
 import { AuthProvider } from './features/auth/providers/AuthProvider';
 import { useAuthGuard } from './shared/hooks/useAuthGuard';
 import ChatBot from './shared/components/ChatBot';
@@ -59,17 +59,7 @@ const AppLayout = () => {
           <Router />
         </div>
       </main>
-      <ToastContainer 
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
+      <ToastProvider />
       <div className="fixed bottom-6 right-6 z-50">
         <ChatBot />
       </div>

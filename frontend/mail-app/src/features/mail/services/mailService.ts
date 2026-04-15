@@ -206,11 +206,11 @@ export const mailService = {
     
     // recipients 배열 처리
     if (mailData.recipients && mailData.recipients.length > 0) {
-      mailData.recipients.forEach((recipient, index) => {
-        formData.append(`recipients[${index}]`, recipient);
+      mailData.recipients.forEach(recipient => {
+        formData.append('recipients', recipient); // 인덱스 없이 같은 이름으로 추가
       });
     }
-    
+
     formData.append('subject', mailData.subject || '');
     formData.append('bodyText', mailData.bodyText || '');
     formData.append('bodyHtml', mailData.bodyHtml || '');

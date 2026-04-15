@@ -19,7 +19,7 @@ export const AttachmentFileIndicator: React.FC<AttachmentFileIndicatorProps> = (
     if (sizeInKB < 1024) {
       return `${sizeInKB} KB`;
     } else {
-      return `${(sizeInKB / 1024).toFixed(1)} MB`;
+      return `${(sizeInKB / 1024).toFixed(1)} KB`;
     }
   };
 

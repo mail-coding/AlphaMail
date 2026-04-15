@@ -24,6 +24,16 @@ export const QuoteSearchBar: React.FC<QuoteSearchBarProps> = ({ onSearch }) => {
   const endDateRef = useRef<HTMLInputElement>(null);
   const [isProductSelectOpen, setIsProductSelectOpen] = useState(false);
 
+  // 검색 후 입력값 초기화
+  const resetForm = () => {
+    if (clientRef.current) clientRef.current.value = '';
+    if (quoteNoRef.current) quoteNoRef.current.value = '';
+    if (managerRef.current) managerRef.current.value = '';
+    if (itemRef.current) itemRef.current.value = '';
+    if (startDateRef.current) startDateRef.current.value = '';
+    if (endDateRef.current) endDateRef.current.value = '';
+  };
+
   const handleSearch = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     let startDateValue = startDateRef.current?.value || '';
@@ -40,9 +50,9 @@ export const QuoteSearchBar: React.FC<QuoteSearchBarProps> = ({ onSearch }) => {
       productName: itemRef.current?.value || '',
     };
     onSearch(params);
+    resetForm();
   };
 
-  // 품목 선택 후 값 세팅 함수 (실제 구현 시 product name 등으로 변경)
   const handleProductSelect = (product: { name: string }) => {
     if (itemRef.current) {
       itemRef.current.value = product.name;
@@ -50,34 +60,37 @@ export const QuoteSearchBar: React.FC<QuoteSearchBarProps> = ({ onSearch }) => {
     setIsProductSelectOpen(false);
   };
 
+  // 모든 입력 필드에 공통으로 적용할 클래스
+  const inputClassCommon = "font-pretendard text-[14px] placeholder:text-[14px] placeholder:font-pretendard";
+
   return (
     <form
       onSubmit={handleSearch}
-      className="w-full bg-white p-4 border border-gray-200 rounded mb-4"
+      className="w-full bg-white rounded mb-4 font-pretendard"
     >
       {/* 1st row: 거래처, 견적번호, 담당자 */}
       <div className="flex flex-wrap gap-x-6 gap-y-2 items-center mb-2">
         <div className="flex items-center gap-2">
-          <label className="text-sm text-gray-600 min-w-[56px] text-right">거래처</label>
+          <Typography variant="body" className="min-w-[56px] text-right text-gray-600 text-[14px]">거래처</Typography>
           <input
             ref={clientRef}
-            className="w-[240px] h-[30px] px-2 bg-white text-base placeholder-gray-400 border border-gray-300 focus:outline-none pr-8 rounded-none"
+            className={`w-[240px] h-[30px] px-2 bg-white border border-gray-300 focus:outline-none pr-8 rounded-none ${inputClassCommon}`}
             placeholder="거래처명"
           />
         </div>
         <div className="flex items-center gap-2">
-          <label className="text-sm text-gray-600 min-w-[56px] text-right">견적번호</label>
+          <Typography variant="body" className="min-w-[56px] text-right text-gray-600 text-[14px]">견적번호</Typography>
           <input
             ref={quoteNoRef}
-            className="w-[140px] h-[30px] px-2 bg-white text-base placeholder-gray-400 border border-gray-300 focus:outline-none pr-8 rounded-none"
+            className={`w-[140px] h-[30px] px-2 bg-white border border-gray-300 focus:outline-none pr-8 rounded-none ${inputClassCommon}`}
             placeholder="견적번호"
           />
         </div>
         <div className="flex items-center gap-2">
-          <label className="text-sm text-gray-600 min-w-[56px] text-right">담당자</label>
+          <Typography variant="body" className="min-w-[56px] text-right text-gray-600 text-[14px]">담당자</Typography>
           <input
             ref={managerRef}
-            className="w-[140px] h-[30px] px-2 bg-white text-base placeholder-gray-400 border border-gray-300 focus:outline-none pr-8 rounded-none"
+            className={`w-[140px] h-[30px] px-2 bg-white border border-gray-300 focus:outline-none pr-8 rounded-none ${inputClassCommon}`}
             placeholder="담당자"
           />
         </div>
@@ -85,39 +98,39 @@ export const QuoteSearchBar: React.FC<QuoteSearchBarProps> = ({ onSearch }) => {
       {/* 2nd row: 견적일자, 품목, 검색버튼 */}
       <div className="flex flex-wrap gap-x-6 gap-y-2 items-center mt-2">
         <div className="flex items-center gap-2">
-          <label className="text-sm text-gray-600 min-w-[56px] text-right">견적일자</label>
+          <Typography variant="body" className="min-w-[56px] text-right text-gray-600 text-[14px]">견적일자</Typography>
           <input
             ref={startDateRef}
             type="date"
-            className="w-[140px] h-[30px] px-2 bg-white text-base border border-gray-300 focus:outline-none rounded-none"
+            className={`w-[140px] h-[30px] px-2 bg-white border border-gray-300 focus:outline-none rounded-none ${inputClassCommon}`}
           />
-          <span className="mx-1 text-gray-400">-</span>
+          <Typography variant="body" className="mx-1 text-gray-400">-</Typography>
           <input
             ref={endDateRef}
             type="date"
-            className="w-[140px] h-[30px] px-2 bg-white text-base border border-gray-300 focus:outline-none rounded-none"
+            className={`w-[140px] h-[30px] px-2 bg-white border border-gray-300 focus:outline-none rounded-none ${inputClassCommon}`}
           />
         </div>
         <div className="flex items-center gap-2 relative">
-          <label className="text-sm text-gray-600 min-w-[40px] text-right">품목</label>
+          <Typography variant="body" className="min-w-[40px] text-right text-gray-600 text-[14px]">품목</Typography>
           <input
             ref={itemRef}
-            className="w-[140px] h-[30px] px-2 bg-white text-base placeholder-gray-400 border border-gray-300 focus:outline-none pr-8 rounded-none cursor-pointer"
+            className={`w-[140px] h-[30px] px-2 bg-white border border-gray-300 focus:outline-none pr-8 rounded-none cursor-pointer ${inputClassCommon}`}
             placeholder="품목"
             readOnly
             onClick={() => setIsProductSelectOpen(true)}
           />
         </div>
         <button
-          type="submit"
-          className="w-[110px] h-[40px] bg-[#3E99C6] text-white rounded-lg font-semibold flex items-center justify-center gap-2 ml-2"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-            <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" fill="none" />
-            <line x1="16.5" y1="16.5" x2="21" y2="21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-          </svg>
-          <Typography variant="titleSmall" className="text-white">검색</Typography>
-        </button>
+        type="submit"
+        className="w-[80px] h-[30px] bg-[#4885F9] text-white rounded-sm font-semibold flex items-center justify-center gap-2"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+          <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" fill="none" />
+          <line x1="16.5" y1="16.5" x2="21" y2="21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+        <Typography variant="titleSmall" className="text-white">검색</Typography>
+      </button>
       </div>
       <ProductSelectTemplate
         isOpen={isProductSelectOpen}

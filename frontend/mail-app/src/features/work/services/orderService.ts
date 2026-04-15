@@ -1,4 +1,4 @@
-import { OrderDetail, Order, OrderProduct } from '../types/order';
+import { OrderDetail, OrderProduct, OrderListResponse } from '../types/order';
 import { api } from '../../../shared/lib/axiosInstance';
 import { useUserInfo } from '@/shared/hooks/useUserInfo';
 
@@ -12,13 +12,7 @@ interface OrderService {
     startDate?:string;
     endDate?:string;
     productName?:string;
-  }) => Promise<{
-    content: Order[];
-    totalElements: number;
-    totalPages: number;
-    size: number;
-    number: number;
-  }>;
+  }) => Promise<OrderListResponse>;
   getOrderDetail: (orderId: number) => Promise<any>;
   createOrder: (orderData: OrderDetail, userId: number, companyId: number, groupId: number) => Promise<any>;
   updateOrder: (orderData: OrderDetail, userId: number, companyId: number, groupId: number) => Promise<any>;
@@ -44,12 +38,9 @@ export const orderService: OrderService = {
       return acc;
     }, {} as Record<string, any>);
 
-    console.log(filteredParams);
     const response = await api.get(`/api/erp/companies/${companyId}/purchase-orders`, { params: filteredParams });
-
-    console.log(response);
     
-    const orders: Order[] = (response.data?.contents || []).map((order:any) => ({
+    const orders = (response.data?.contents || []).map((order:any) => ({
       id: order.id,
       orderNo: order.orderNo,
       createdAt: new Date(order.createdAt + "Z"),
@@ -59,17 +50,16 @@ export const orderService: OrderService = {
       productName: order.productName,
       productCount: order.productCount,
       price: order.price,
+      totalAmount: order.price * order.productCount,
+      status: order.status || 'PENDING',
       isSelected: false,
     }));
 
-    console.log(orders);
-
     return {
-      content: orders,
-      totalElements: response.data.totalElements,
-      totalPages: response.data.totalPages,
-      size: response.data.size,
-      number: response.data.number,
+      contents: orders,
+      totalCount: response.data.totalCount,
+      pageCount: response.data.pageCount,
+      currentPage: response.data.currentPage + 1, 
     };
   },
 
@@ -118,8 +108,10 @@ export const orderService: OrderService = {
       companyId,
       groupId,
       clientId: orderData.clientId,
-      orderNo: orderData.orderNo,
-      deliverAt: orderData.deliverAt.toISOString(),
+      //orderNo: orderData.orderNo, 
+      deliverAt: orderData.deliverAt instanceof Date 
+      ? orderData.deliverAt.toISOString()
+      : new Date(orderData.deliverAt).toISOString(),
       shippingAddress: orderData.shippingAddress,
       manager: orderData.manager,
       managerNumber: orderData.managerNumber,

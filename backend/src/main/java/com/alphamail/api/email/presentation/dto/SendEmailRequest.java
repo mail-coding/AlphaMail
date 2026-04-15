@@ -8,10 +8,10 @@ public record SendEmailRequest(
 	String subject,
 	String bodyText,
 	String bodyHtml,
-	List<Attachment> attachments,
 	String inReplyTo,
-	String references
-) {
+	String references,
+	List<Attachment> attachments
+	) {
 
 	public record Attachment(
 		String name,

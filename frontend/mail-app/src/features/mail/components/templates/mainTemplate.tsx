@@ -7,10 +7,15 @@ import { useMail } from '../../hooks/useMail';
 import { useMailStore } from '../../stores/useMailStore';
 import { Mail, MailListRow } from '../../types/mail';
 import { useHeaderStore } from '@/shared/stores/useHeaderStore';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useFolders } from '../../hooks/useFolders';
 
 const MainTemplate: React.FC = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const searchParams = new URLSearchParams(location.search);
+  const pageFromUrl = parseInt(searchParams.get('page') || '1', 10);
+
   const { 
     currentPage, 
     sortOrder,
@@ -19,13 +24,29 @@ const MainTemplate: React.FC = () => {
     setCurrentPage, 
     selectMail, 
     unselectMail, 
-    selectAllMails, 
+    selectAllMails,
+    currentFolder,
     clearSelection,
     setCurrentFolder,
     getFolderIdByType,
     folderLoading
   } = useMailStore();
   
+    useEffect(() => {
+      if (pageFromUrl !== currentPage) {
+        setCurrentPage(pageFromUrl);
+      }
+    }, [pageFromUrl, setCurrentPage]);
+    
+    // 페이지 변경 시 URL 업데이트
+    useEffect(() => {
+      const newSearchParams = new URLSearchParams(location.search);
+      newSearchParams.set('page', currentPage.toString());
+      
+      // URL 업데이트 (페이지 이동 없이)
+      navigate(`${location.pathname}?${newSearchParams.toString()}`, { replace: true });
+    }, [currentPage, location.pathname, location.search, navigate]);
+
     // 폴더 정보 로드
     const { isLoading: isFoldersLoading } = useFolders();
   
@@ -34,15 +55,15 @@ const MainTemplate: React.FC = () => {
     
     // 컴포넌트 마운트 시 현재 폴더를 받은 메일함으로 설정
     useEffect(() => {
-      if (inboxFolderId) {
+      // 현재 폴더가 설정되어 있지 않은 경우에만 설정
+      if (inboxFolderId && !currentFolder) {
         setCurrentFolder(inboxFolderId);
       }
-    }, [inboxFolderId, setCurrentFolder]);
-  
+    }, [inboxFolderId, currentFolder, setCurrentFolder]);
+
   const { useMailList, moveToTrash } = useMail();
   const { data, isLoading, error, refetch } = useMailList( inboxFolderId, currentPage, sortOrder, searchKeyword);
   const { setMailStats } = useHeaderStore();
-  const navigate = useNavigate();
   const [allSelected, setAllSelected] = useState(false);
   
   useEffect(() => {
@@ -57,6 +78,11 @@ const MainTemplate: React.FC = () => {
     // 페이지 변경 시 선택 초기화
     clearSelection();
   }, [currentPage, clearSelection]);
+
+  useEffect(() => {
+    console.log('메인 템플릿 렌더링 - URL 페이지:', pageFromUrl);
+    console.log('메인 템플릿 렌더링 - 스토어 페이지:', currentPage);
+  }, [pageFromUrl, currentPage]);
   
   const handleSelectAll = (selected: boolean) => {
     if (selected) {
@@ -76,9 +102,9 @@ const MainTemplate: React.FC = () => {
   };
   
   const handleMailClick = (id: string) => {
-    navigate(`/mail/${id}`);
+    navigate(`/mail/${id}?page=${currentPage}`);
   };
-  
+
   const handleDelete = () => {
     if (selectedMails.length > 0) {
       moveToTrash.mutate({ mailIds: selectedMails }, {

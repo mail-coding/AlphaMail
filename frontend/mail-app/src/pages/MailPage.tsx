@@ -21,17 +21,26 @@ const MailPage: React.FC = () => {
       setActiveItem("받은 메일함");
       setTitle("받은 메일함");
       const inboxId = getFolderIdByType('inbox');
-      if (inboxId) setCurrentFolder(inboxId);
+      const searchParams = new URLSearchParams(location.search);
+      const hasPageParam = searchParams.has('page');
+    
+      if (inboxId) setCurrentFolder(inboxId, !hasPageParam);
+
     } else if (path === '/mail/sent') {
       setActiveItem("보낸 메일함");
       setTitle("보낸 메일함");
       const sentId = getFolderIdByType('sent');
-      if (sentId) setCurrentFolder(sentId);
+      const searchParams = new URLSearchParams(location.search);
+      const hasPageParam = searchParams.has('page');
+      if (sentId) setCurrentFolder(sentId, !hasPageParam);
+
     } else if (path === '/mail/trash') {
       setActiveItem("휴지통");
       setTitle("휴지통");
       const trashId = getFolderIdByType('trash');
-      if (trashId) setCurrentFolder(trashId);
+      const searchParams = new URLSearchParams(location.search);
+      const hasPageParam = searchParams.has('page');
+      if (trashId) setCurrentFolder(trashId, !hasPageParam);
     }
   }, [path, setActiveItem, setCurrentFolder, setTitle]);
   

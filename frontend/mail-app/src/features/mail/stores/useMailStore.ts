@@ -32,7 +32,7 @@ interface MailState {
   folderLoading: boolean;
   
   // 기존 액션
-  setCurrentFolder: (folderId?: number) => void;
+  setCurrentFolder: (folderId?: number, resetPage?: boolean) => void;
   setCurrentPage: (page: number) => void;
   setSortOrder: (order: number) => void;
   setSearchKeyword: (keyword: string) => void;
@@ -54,7 +54,8 @@ interface MailState {
   setReferences: (references: string[]) => void;
   setIsLoading: (isLoading: boolean) => void;
   resetComposeState: () => void;
-
+  resetMailCompose: () => void;
+  
   setFolders: (folders: FolderResponse[]) => void;
   setFolderLoading: (loading: boolean) => void;
   getFolderIdByType: (type: 'inbox' | 'sent' | 'trash') => number | undefined;
@@ -83,13 +84,13 @@ export const useMailStore = create<MailState>((set, get) => ({
   folderLoading: false,
 
   // 기존 액션
-  setCurrentFolder: (folderId) => set({ 
+  setCurrentFolder: (folderId, resetPage = true) => set((state) => ({ 
     currentFolder: folderId,
-    currentPage: 1,
+    currentPage: resetPage ? 1 : state.currentPage,
     searchKeyword: '',
     selectedMails: []
-  }),
-  
+  })),
+
   setCurrentPage: (page) => set({ currentPage: page }),
   
   setSortOrder: (order) => set({ 
@@ -148,15 +149,7 @@ export const useMailStore = create<MailState>((set, get) => ({
   setSubject: (subject) => set({ subject }),
   
   setContent: (content) => {
-    console.log('메일 스토어 - 콘텐츠 설정:', content);
     set({ content });
-    
-    // 상태 변경 후 확인
-    setTimeout(() => {
-      const currentContent = get().content;
-      console.log('메일 스토어 - 콘텐츠 설정 후 상태:', 
-        currentContent ? currentContent : '빈 콘텐츠');
-    }, 0);
   },
   
   setThreadId: (threadId) => set({ threadId }),
@@ -176,6 +169,10 @@ export const useMailStore = create<MailState>((set, get) => ({
     references: [],
     attachments: []
   }),
+
+  resetMailCompose() {
+  this.resetComposeState();
+  },
 
   resetFolderState: () => set({ 
     folders: [],

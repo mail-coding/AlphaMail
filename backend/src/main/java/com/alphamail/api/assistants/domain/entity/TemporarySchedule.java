@@ -4,6 +4,7 @@ import com.alphamail.api.assistants.domain.util.ScheduleTimeParser;
 import com.alphamail.api.assistants.presentation.dto.schedule.CreateTemporaryScheduleRequest;
 import com.alphamail.api.assistants.presentation.dto.schedule.UpdateTemporaryScheduleRequest;
 import com.alphamail.api.email.domain.entity.Email;
+import com.alphamail.api.email.domain.entity.EmailAttachment;
 import com.alphamail.common.exception.BadRequestException;
 import com.alphamail.common.exception.ErrorMessage;
 import lombok.AllArgsConstructor;
@@ -13,6 +14,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
@@ -22,6 +24,7 @@ public class TemporarySchedule {
 	private Integer temporaryScheduleId;
 	private String title;
 	private Email email;
+	private List<EmailAttachment> emailAttachments;
 	private Integer userId; // UserEntity가 아닌 userId
 	private String name;
 	private String description;

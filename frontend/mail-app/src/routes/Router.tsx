@@ -30,8 +30,8 @@ export const Router = () => {
       } />
 
       {/* Not Found Route */}
-      <Route path="/404" element={<NotFound />} />
-      
+      <Route path="*" element={<NotFound />} />
+
       {/* Mail Routes */}
       <Route path="/mail/*" element={
         <ProtectedRoute>
@@ -78,6 +78,7 @@ export const Router = () => {
 
       {/* Fallback Route */}
       <Route path="*" element={<Navigate to="/404" replace />} />
+      <Route path="/404" element={<NotFound />} />
     </Routes>
   );
 };

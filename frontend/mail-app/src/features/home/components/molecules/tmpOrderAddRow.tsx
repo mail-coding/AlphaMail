@@ -4,8 +4,8 @@ import { Input } from '@/shared/components/atoms/input';
 import { useTmpOrderStore } from '../../stores/useTmpOrderStore';
 import ProductInput from '@/shared/components/atoms/productInput';
 import { Product } from '@/features/work/types/product';
-import { toast } from 'react-toastify';
 import { FaSearch } from 'react-icons/fa';
+import { showToast } from '@/shared/components/atoms/toast';
 
 interface TmpOrderAddRowProps {
   showValidationErrors?: boolean;
@@ -123,6 +123,11 @@ export const TmpOrderAddRow: React.FC<TmpOrderAddRowProps> = ({ showValidationEr
       const filtered = prev.filter(p => 
         !items.some(item => item.id === id && item.name === p.name)
       );
+
+      console.log("--------------------------------");
+      console.log('filtered', filtered);
+      console.log('product', product);
+      console.log("--------------------------------");
       return [...filtered, product];
     });
     
@@ -137,7 +142,7 @@ export const TmpOrderAddRow: React.FC<TmpOrderAddRowProps> = ({ showValidationEr
     
     // 세액 계산 (공급가액의 10%)
     const taxAmount = Math.round(supplyAmount * 0.1);
-        
+    
     const updatedItems = items.map(item => 
       item.id === id ? {
         ...item,
@@ -155,10 +160,14 @@ export const TmpOrderAddRow: React.FC<TmpOrderAddRowProps> = ({ showValidationEr
     
     // 스토어 업데이트 시 productId 포함하여 업데이트
     const storeProducts = updatedItems.map(item => {
+      // 기존 products에서 해당 아이템의 productId 찾기
+      const existingProduct = products.find(p => p.id === item.id);
+      
       return {
         id: item.id,
         // 현재 선택한 품목인 경우 product.id를 productId로 설정
-        productId: item.id === id ? product.id : null,
+        // 그렇지 않은 경우 기존 productId 유지
+        productId: item.id === id ? product.id : (existingProduct?.productId || null),
         productName: item.name,
         standard: item.spec,
         price: parseInt(item.price.replace(/,/g, '')) || 0,
@@ -166,7 +175,7 @@ export const TmpOrderAddRow: React.FC<TmpOrderAddRowProps> = ({ showValidationEr
         maxStock: item.id === id ? product.stock : item.maxStock
       };
     });
-    
+
     setProducts(storeProducts);
   };
 
@@ -198,7 +207,7 @@ export const TmpOrderAddRow: React.FC<TmpOrderAddRowProps> = ({ showValidationEr
     // 재고 수량 초과 시 최대값으로 제한
     if (maxStock !== undefined && numValue > maxStock) {
       value = maxStock.toString();
-      toast.error(`최대 주문 가능 수량은 ${maxStock}개입니다.`);
+      showToast(`최대 주문 가능 수량은 ${maxStock}개입니다.`, 'error');
     }
   
     // 가격 문자열에서 숫자로 변환 (콤마 제거)
@@ -287,10 +296,10 @@ export const TmpOrderAddRow: React.FC<TmpOrderAddRowProps> = ({ showValidationEr
         <table className="min-w-full border-collapse border-y border-gray-300">
           <thead>
             <tr className="bg-gray-100">
-              <th className="border-t border-b border-gray-300 p-2 w-12 text-center">
+              <th className="border-t border-b border-gray-300 p-2 text-center">
                 <button 
                   onClick={addItem}
-                  className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center"
+                  className="w-6 h-6 pb-1  text-[#4885F9] rounded-md  flex items-center justify-center hover:text-gray-500"
                 >
                   +
                 </button>
@@ -324,7 +333,7 @@ export const TmpOrderAddRow: React.FC<TmpOrderAddRowProps> = ({ showValidationEr
                 <td className="border-b border-gray-300 p-2 text-center">
                   <button 
                     onClick={() => removeItem(item.id)}
-                    className="w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center"
+                    className="w-6 h-6 pb-0.5 bg-[#FAFAFA] text-gray-500 rounded-md flex items-center justify-center"
                   >
                     -
                   </button>
@@ -333,7 +342,7 @@ export const TmpOrderAddRow: React.FC<TmpOrderAddRowProps> = ({ showValidationEr
                   <Typography variant="body">{item.id}</Typography>
                 </td>
                 <td className="border-b border-x border-gray-300 p-2">
-                  <CustomProductInput item={item} />
+                <Typography variant="body"> <CustomProductInput item={item} /> </Typography>
                 </td>
                 <td className="border-b border-x border-gray-300 p-2">
                   <Input

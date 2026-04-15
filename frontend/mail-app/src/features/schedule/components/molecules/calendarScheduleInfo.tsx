@@ -45,7 +45,7 @@ export const CalendarScheduleInfo: React.FC<CalendarScheduleInfoProps> = ({ sche
           e.stopPropagation(); // 체크박스 클릭 시 이벤트 버블링 방지
           handleToggleComplete(e as unknown as React.MouseEvent);
         }}
-        className="w-4 h-4 accent-blue-400"
+        className="w-4 h-4 accent-blue-400 custom-checkbox"
         disabled={updateMutation.isPending}
       />
       <span className="text-gray-400 text-xs w-[90px] text-right whitespace-nowrap">

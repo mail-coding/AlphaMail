@@ -8,7 +8,7 @@ import OrderTableRow from '../molecules/orderTableRow';
 interface OrderTableProps {
   orders: Order[];
   currentPage: number;
-  totalPages: number;
+  pageCount: number;
   onPageChange: (page: number) => void;
   pageSize: number;
   onSizeChange: (size: number) => void;
@@ -18,20 +18,23 @@ interface OrderTableProps {
   onOrderClick: (order: Order) => void;
   isLoading: boolean;
   selectedOrderIds: Set<number>;
-  onSelectOrder: (id: number) => void;
+  onSelectOrder: (ids: Set<number>) => void;
 }
 
 const OrderTable: React.FC<OrderTableProps> = ({
   orders,
   currentPage,
-  totalPages,
   onPageChange,
+  pageSize,
   totalCount,
   onOrderClick,
   isLoading,
   selectedOrderIds,
   onSelectOrder,
 }) => {
+  // 전체 페이지 수 계산
+  const totalPages = Math.ceil(totalCount / pageSize);
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-[400px]">
@@ -51,13 +54,17 @@ const OrderTable: React.FC<OrderTableProps> = ({
                 checked={orders.length > 0 && orders.every((order) => selectedOrderIds.has(order.id))}
                 onChange={(e) => {
                   const isChecked = e.target.checked;
-                  const currentPageOrderIds = orders.map(order => order.id);
+                  const newSelectedIds = new Set(selectedOrderIds);
                   
-                  currentPageOrderIds.forEach(orderId => {
-                    if (selectedOrderIds.has(orderId) !== isChecked) {
-                      onSelectOrder(orderId);
+                  orders.forEach(order => {
+                    if (isChecked) {
+                      newSelectedIds.add(order.id);
+                    } else {
+                      newSelectedIds.delete(order.id);
                     }
                   });
+                  
+                  onSelectOrder(newSelectedIds);
                 }}
                 className="rounded border-gray-300"
               />
@@ -88,7 +95,15 @@ const OrderTable: React.FC<OrderTableProps> = ({
               <OrderTableRow
                 key={order.id}
                 order={order}
-                onSelect={onSelectOrder}
+                onSelect={(id) => {
+                  const newSelectedIds = new Set(selectedOrderIds);
+                  if (newSelectedIds.has(id)) {
+                    newSelectedIds.delete(id);
+                  } else {
+                    newSelectedIds.add(id);
+                  }
+                  onSelectOrder(newSelectedIds);
+                }}
                 onOrderClick={onOrderClick}
                 isSelected={selectedOrderIds.has(order.id)}
               />
@@ -105,31 +120,33 @@ const OrderTable: React.FC<OrderTableProps> = ({
         </tbody>
       </table>
       {/* Pagination */}
-      <div className="flex justify-center items-center mt-4">
+      <div className="flex justify-center items-center mt-4 gap-1">
         <Button
           variant="ghost"
           size="small"
-          disabled={currentPage === 1}
+          disabled={currentPage <= 1}
           onClick={() => onPageChange(currentPage - 1)}
+          className="min-w-[32px]"
         >
           &lt;
         </Button>
-        {[...Array(totalPages)].map((_, i) => (
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
           <Button
-            key={i}
+            key={pageNum}
             variant="ghost"
             size="small"
-            onClick={() => onPageChange(i + 1)}
-            className={currentPage === i + 1 ? 'font-bold underline' : ''}
+            onClick={() => onPageChange(pageNum)}
+            className={`${currentPage === pageNum ? 'font-bold underline' : ''} min-w-[32px]`}
           >
-            {i + 1}
+            {pageNum}
           </Button>
         ))}
         <Button
           variant="ghost"
           size="small"
-          disabled={currentPage === totalPages}
+          disabled={currentPage >= totalPages}
           onClick={() => onPageChange(currentPage + 1)}
+          className="min-w-[32px]"
         >
           &gt;
         </Button>

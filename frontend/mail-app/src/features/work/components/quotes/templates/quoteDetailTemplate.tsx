@@ -13,8 +13,7 @@ import { useQuoteDetail } from '../../../hooks/useQuoteDetail';
 import QuoteBasicInfoForm from '../organisms/quoteBasicInfoForm';
 import { TooltipPortal } from '@/shared/components/atoms/TooltipPortal';
 import { useQueryClient } from '@tanstack/react-query';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { showToast } from '@/shared/components/atoms/toast';
 
 export const QuoteDetailTemplate = () => {
   const navigate = useNavigate();
@@ -92,10 +91,10 @@ export const QuoteDetailTemplate = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      if (!userInfo) return toast.error('사용자 정보를 찾을 수 없습니다.');
-      if (!formData) return toast.error('견적서 데이터가 없습니다.');
+      if (!userInfo) return showToast('사용자 정보를 찾을 수 없습니다.', 'error');
+      if (!formData) return showToast('견적서 데이터가 없습니다.', 'error');
       if (!formData.products || formData.products.length === 0)
-        return toast.error('최소 1개의 품목을 추가해야 합니다.');
+        return showToast('최소 1개의 품목을 추가해야 합니다.', 'error');
 
       if (!formData.clientName || formData.clientName.trim() === '') {
         const rect = clientNameRef.current?.getBoundingClientRect();
@@ -123,32 +122,32 @@ export const QuoteDetailTemplate = () => {
         const product = formData.products[i];
         const productNameForAlert = product.name || `품목 ${i + 1}`;
 
-        if (!product.name) return toast.error(`품목 ${i + 1}의 이름을 입력해주세요.`);
+        if (!product.name) return showToast(`품목 ${i + 1}의 이름을 입력해주세요.`, 'error');
         if (typeof product.count !== 'number' || product.count < 0)
-          return toast.error(`${productNameForAlert}의 수량은 0 이상의 숫자로 입력해주세요.`);
+          return showToast(`${productNameForAlert}의 수량은 0 이상의 숫자로 입력해주세요.`, 'error');
         if (product.count > MAX_PRODUCT_COUNT)
-          return toast.error(`${productNameForAlert}의 수량은 ${MAX_PRODUCT_COUNT.toLocaleString()}을 초과할 수 없습니다.`);
+          return showToast(`${productNameForAlert}의 수량은 ${MAX_PRODUCT_COUNT.toLocaleString()}을 초과할 수 없습니다.`, 'error');
 
         if (typeof product.price !== 'number' || product.price < 0)
-          return toast.error(`${productNameForAlert}의 단가는 0 이상의 숫자로 입력해주세요.`);
+          return showToast(`${productNameForAlert}의 단가는 0 이상의 숫자로 입력해주세요.`, 'error');
         if (product.price > MAX_PRODUCT_PRICE)
-          return toast.error(`${productNameForAlert}의 단가는 ${MAX_PRODUCT_PRICE.toLocaleString()}을 초과할 수 없습니다.`);
+          return showToast(`${productNameForAlert}의 단가는 ${MAX_PRODUCT_PRICE.toLocaleString()}을 초과할 수 없습니다.`, 'error');
       }
 
       if (id && id !== 'new') {
         await handleUpdateQuote(formData);
         await queryClient.invalidateQueries({ queryKey: ['quotes'] });
         await queryClient.invalidateQueries({ queryKey: ['quoteDetail', formData.id] });
-        toast.success('견적서가 성공적으로 수정되었습니다.');
+        showToast('견적서가 성공적으로 수정되었습니다.', 'success');
       } else {
         await handleCreateQuote(formData);
         await queryClient.invalidateQueries({ queryKey: ['quotes'] });
-        toast.success('견적서가 성공적으로 등록되었습니다.');
+        showToast('견적서가 성공적으로 등록되었습니다.', 'success');
       }
       navigate('/work/quotes', { replace: true });
     } catch (error) {
       console.error('Failed to save quote:', error);
-      toast.error('견적서 저장에 실패했습니다.');
+      showToast('견적서 저장에 실패했습니다.', 'error');
     }
   };
 
@@ -165,7 +164,7 @@ export const QuoteDetailTemplate = () => {
   return (
     <div className="p-8 bg-white rounded shadow max-w-5xl mx-auto">
       <div className="mb-6 flex justify-between items-center">
-        <Typography variant="titleSmall">
+        <Typography variant="titleMedium" bold>
           견적서 {id && id !== 'new' ? '수정' : '등록'}
         </Typography>
         <div className="flex space-x-2">
@@ -259,7 +258,7 @@ export const QuoteDetailTemplate = () => {
         <button
           type="button"
           onClick={() => navigate('/work/quotes')}
-          className="text-gray-500 hover:text-gray-700 text-sm flex items-center"
+          className="text-gray-500 hover:text-gray-700 text-sm flex items-center font-pretendard text-sm "
         >
           ← 목록으로
         </button>

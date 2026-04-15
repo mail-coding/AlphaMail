@@ -19,9 +19,9 @@ export const MailDetailAiButton: React.FC<MailDetailAiButtonProps> = ({
       {/* AI 어시스턴트 버튼 */}
       <button
         onClick={onAiAssistant}
-        className="flex items-center justify-center px-4 py-2 rounded-md text-white font-medium transition-colors duration-200 hover:opacity-80"
+        className="flex items-center font-pretendard justify-center px-1 py-2 rounded-md text-white font-medium transition-colors duration-200 hover:opacity-80"
         style={{
-          background: 'linear-gradient(90deg, #62DDFF 0%, #9D44CA 100%)',
+          background: 'linear-gradient(90deg, #62DDFF 0%,rgb(79, 88, 210) 100%)',
           width: aiButtonWidth,
           height: aiButtonHeight,
           fontSize: aiFontSize
@@ -41,7 +41,7 @@ export const MailDetailAiButton: React.FC<MailDetailAiButtonProps> = ({
             fill="white"
           />
         </svg>
-        AI 요약
+        AI 스레드 요약
       </button>
       
     </div>

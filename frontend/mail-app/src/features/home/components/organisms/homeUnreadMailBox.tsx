@@ -6,8 +6,8 @@ import { ko } from 'date-fns/locale';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { queryClient } from '@/shared/lib/queryClient';
 import { ArrowPathIcon as RefreshIcon } from '@heroicons/react/24/outline';
-import { toast } from 'react-toastify';
 import { AnimatePresence, motion } from "framer-motion";
+import { showToast } from '@/shared/components/atoms/toast';
 
 export const HomeUnreadMailBox: React.FC = () => {
   const { data: unreadMailsData, isLoading, error, refetch } = useUnreadMails(10);
@@ -43,7 +43,7 @@ export const HomeUnreadMailBox: React.FC = () => {
   
   // 날짜 포맷팅 함수
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+    const date = new Date(dateString + 'Z');
     return format(date, 'yy-MM-dd HH:mm', { locale: ko });
   };
 
@@ -77,6 +77,15 @@ export const HomeUnreadMailBox: React.FC = () => {
   }, [location.pathname, refetch]);
 
 
+  // useEffect(() => {
+  //   const intervalId = setInterval(() => {
+  //     console.log('안읽은 메일 데이터 갱신');
+  //     refetch();
+  //   }, 10000); // 10초마다 갱신
+    
+  //   return () => clearInterval(intervalId);
+  // }, [refetch]);
+  
   // 메일 읽음 상태 변경 감지
   useEffect(() => {
     // 메일 읽음 상태 변경 이벤트 구독
@@ -95,14 +104,7 @@ export const HomeUnreadMailBox: React.FC = () => {
 
   const refreshData = () => {
     // 토스트 알림 표시
-    toast.info('안읽은 메일 목록을 새로고침합니다.', {
-      position: 'bottom-right',
-      autoClose: 2000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
+    showToast('안읽은 메일 목록을 새로고침합니다.', 'info');
     
     // 쿼리 무효화 및 새로고침
     queryClient.invalidateQueries({ 
@@ -137,7 +139,7 @@ export const HomeUnreadMailBox: React.FC = () => {
           <Typography variant="body">안읽은 메일이 없습니다.</Typography>
         </div>
       ) : (
-        <div className="space-y-3 max-h-[400px] border border-gray-200 p-3 rounded-md overflow-y-auto">
+        <div className="space-y-1 max-h-[400px] border border-gray-200 p-3 rounded-md overflow-y-auto">
           <AnimatePresence initial={false}>
             {unreadMails.map((mail) => {
               const isNewMail = newMailIds.includes(mail.id.toString());
@@ -155,7 +157,7 @@ export const HomeUnreadMailBox: React.FC = () => {
                     mass: 1,
                   }}
                   layout
-                  className="border-b border-gray-100 pb-3 cursor-pointer hover:bg-gray-50"
+                  className="border border-gray-100 p-3 rounded-md cursor-pointer bg-gray-50 hover:bg-gray-100"
                   onClick={() => handleMailClick(mail.id.toString())}
                 >
                   <Typography variant="body" className="font-medium">

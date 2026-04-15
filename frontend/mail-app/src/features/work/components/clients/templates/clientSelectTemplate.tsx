@@ -5,6 +5,7 @@ import { ClientSelectTable } from '../organisms/clientSelectTable';
 import { useClientsSelectQuery } from '../../../hooks/useClientsSelectQuery';
 import { Typography } from '@/shared/components/atoms/Typography';
 import { Button } from '@/shared/components/atoms/button';
+import { useUserInfo } from '@/shared/hooks/useUserInfo';
 
 interface ClientSelectTemplateProps {
   isOpen: boolean;
@@ -19,9 +20,10 @@ export const ClientSelectTemplate: React.FC<ClientSelectTemplateProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(10);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const { data: userInfo } = useUserInfo();
 
   const { data } = useClientsSelectQuery({
-    companyId: 1, // TODO : 회사 아이디 받아오기
+    companyId: userInfo?.companyId || 0,
     query: searchKeyword,
     page: currentPage,
     size: pageSize,
@@ -57,14 +59,21 @@ export const ClientSelectTemplate: React.FC<ClientSelectTemplateProps> = ({
               onSelect={setSelectedId}
               page={currentPage}
               pageCount={data ? Math.ceil(data.totalCount / pageSize) : 1}
-              onPageChange={setCurrentPage}
+              onPageChange={(page) => {
+                setCurrentPage(page);
+                setSelectedId(null);
+              }}
             />
           </div>
           <div className="flex justify-end mt-4">
             <Button
+              type="button"
               variant="primary"
               disabled={selectedId === null}
-              onClick={handleSelect}
+              onClick={(e) => {
+                e.preventDefault();
+                handleSelect();
+              }}
             >
               선택
             </Button>

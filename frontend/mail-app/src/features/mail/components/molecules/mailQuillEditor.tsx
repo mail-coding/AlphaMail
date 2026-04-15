@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css'; // Quill 스타일시트
-import { toast } from 'react-toastify';
+import { showToast } from '@/shared/components/atoms/toast';
 
 // 커스텀 스타일 추가
 const customStyles = {
@@ -86,14 +86,13 @@ export const MailQuillEditor: React.FC<MailQuillEditorProps> = ({
       setContentSize(newSize);
 
       if (originalHtmlRef.current) {
-        console.log('원본 HTML 사용:', originalHtmlRef.current.substring(0, 50) + '...');
         onChange(originalHtmlRef.current);
         originalHtmlRef.current = null; // 원본 사용 후 초기화
       } else {
         onChange(newContent);
       }
     } else {
-      toast.error('메일 본문이 최대 용량(1MB)을 초과했습니다.'); // 토스트 알림 추가
+      showToast('메일 본문이 최대 용량(1MB)을 초과했습니다.', 'error'); // 토스트 알림 추가
     }
   };
 
@@ -119,8 +118,7 @@ export const MailQuillEditor: React.FC<MailQuillEditorProps> = ({
           `;
 
           setValue(processedContent); // HTML을 Quill 에디터에 반영
-        } catch (error) {
-          console.error('HTML 파싱 오류:', error);
+        } catch {
           setValue(content);
         }
       } else {
@@ -154,7 +152,6 @@ export const MailQuillEditor: React.FC<MailQuillEditorProps> = ({
     toolbar: {
       container: [
         [{ 'header': [1, 2, 3, false] }],
-        [{ 'font': fontOptions?.map(option => option.value) }],
         ['bold', 'italic', 'underline', 'strike'],
         [{ 'list': 'ordered' }, { 'list': 'bullet' }],
         [{ 'color': [] }, { 'background': [] }],
@@ -226,7 +223,7 @@ export const MailQuillEditor: React.FC<MailQuillEditorProps> = ({
         onChange={handleChange}
         modules={modules}
         formats={formats}
-        placeholder="내용을 입력하세요..."
+        placeholder=""
         style={customStyles.editor}
       />
     </div>

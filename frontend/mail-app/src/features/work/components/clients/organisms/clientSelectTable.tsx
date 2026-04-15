@@ -52,6 +52,7 @@ export const ClientSelectTable: React.FC<ClientSelectTableProps> = ({
     {/* Pagination */}
     <div className="flex justify-center items-center mt-2 mb-1">
       <Button
+        type="button"
         variant="ghost"
         size="small"
         disabled={page === 1}
@@ -62,6 +63,7 @@ export const ClientSelectTable: React.FC<ClientSelectTableProps> = ({
       {[...Array(pageCount)].map((_, i) => (
         <Button
           key={i}
+          type="button"
           variant="ghost"
           size="small"
           onClick={() => onPageChange(i + 1)}
@@ -71,6 +73,7 @@ export const ClientSelectTable: React.FC<ClientSelectTableProps> = ({
         </Button>
       ))}
       <Button
+        type="button"
         variant="ghost"
         size="small"
         disabled={page === pageCount}

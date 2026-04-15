@@ -45,6 +45,10 @@ public class ChatBotController {
 
 		ClaudeClassification task = classifyIntentPrompt.determineTask(message, timezone, userTime);
 
+		if(task == null) {
+			return ResponseEntity.ok(ChatBotResponse.defaultResponse());
+		}
+
 		if (task.type().startsWith("1")) {
 			return ResponseEntity.ok(registScheduleService.execute(userId, message, timezone, userTime));
 		} else if (task.type().startsWith("2")) {

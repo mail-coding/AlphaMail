@@ -4,7 +4,7 @@ import { Typography } from '@/shared/components/atoms/Typography';
 import { useNavbarStore } from '../stores/useNavbarStore';
 import { useUserStore } from '../stores/useUserStore';
 import { useState, useEffect } from 'react';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { api } from '@/shared/lib/axiosInstance';
 
@@ -57,7 +57,7 @@ export const NavBar = () => {
                 pauseOnHover: true,
                 draggable: true
             });
-        } catch (error) {
+        } catch {
             setShowLogoutModal(false);
             toast.error('로그아웃 중 오류가 발생했습니다.', {
                 position: "top-right",
@@ -80,14 +80,14 @@ export const NavBar = () => {
 
     return (
         <div className={cn(
-            "h-screen bg-[#66BAE4] flex flex-col transition-all duration-300",
+            "h-screen bg-gradient-to-b from-[#3A77F5] to-[#6EABFF] flex flex-col transition-all duration-300",
             isCollapsed ? "w-[70px]" : "w-[190px]"
         )}>
             {/* 햄버거 버튼 영역 */}
             <div className="p-4 flex justify-start">
                 <button
                     onClick={toggleCollapse}
-                    className="p-1 hover:bg-[#3E99C6] rounded text-white"
+                    className="p-1 hover:bg-[#5B98FB] rounded text-white"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -108,14 +108,14 @@ export const NavBar = () => {
                     {/* 로고 크기를 NavBar의 isCollapsed 상태에 따라 조정 */}
                     <div className={cn(
                         "flex-shrink-0 transition-all duration-300",
-                        isCollapsed ? "w-10 h-10" : "w-16 h-16"
+                        isCollapsed ? "w-13 h-13" : "w-20 h-20"
                     )}>
                         <img src="/logo.png" alt="ALPHAMAIL 로고" className="w-full h-full" />
                     </div>
                 </div>
                 {!isCollapsed && contentVisible && (
                     <div className={cn(
-                        "absolute left-1/2 transform -translate-x-1/2 top-[70px] text-white font-light whitespace-nowrap cursor-pointer transition-all duration-300",
+                        "absolute left-1/2 transform -translate-x-1/2 top-[75px] text-white font-light whitespace-nowrap cursor-pointer transition-all duration-300",
                         isCollapsed ? "text-lg" : "text-xl"
                     )}
                         onClick={navigateToHome}
@@ -134,7 +134,7 @@ export const NavBar = () => {
                         <Link to="/">
                             <div className={cn(
                                 "flex items-center h-[40px] px-4 text-white rounded-md transition-colors",
-                                path === '/' ? "bg-[#3E99C6]" : "hover:bg-[#3E99C6]"
+                                path === '/' ? "bg-[#5B98FB]" : "hover:bg-[#5B98FB]"
                             )}>
                                 <div className="w-5 h-5 flex-shrink-0 flex items-center justify-center">
                                     <img src="/home.png" alt="홈" className="w-5 h-5" />
@@ -149,7 +149,7 @@ export const NavBar = () => {
                         <Link to="/mail">
                             <div className={cn(
                                 "flex items-center h-[40px] px-4 text-white rounded-md transition-colors",
-                                isMailActive ? "bg-[#3E99C6]" : "hover:bg-[#3E99C6]"
+                                isMailActive ? "bg-[#5B98FB]" : "hover:bg-[#5B98FB]"
                             )}>
                                 <div className="w-5 h-5 flex-shrink-0 flex items-center justify-center">
                                     <img src="/mail_outline.png" alt="메일" className="w-5 h-5" />
@@ -164,7 +164,7 @@ export const NavBar = () => {
                         <Link to="/schedule">
                             <div className={cn(
                                 "flex items-center h-[40px] px-4 text-white rounded-md transition-colors",
-                                isScheduleActive ? "bg-[#3E99C6]" : "hover:bg-[#3E99C6]"
+                                isScheduleActive ? "bg-[#5B98FB]" : "hover:bg-[#5B98FB]"
                             )}>
                                 <div className="w-5 h-5 flex-shrink-0 flex items-center justify-center">
                                     <img src="/date_range.png" alt="일정" className="w-5 h-5" />
@@ -179,7 +179,7 @@ export const NavBar = () => {
                         <Link to="/work/clients">
                             <div className={cn(
                                 "flex items-center h-[40px] px-4 text-white rounded-md transition-colors",
-                                isWorkActive ? "bg-[#3E99C6]" : "hover:bg-[#3E99C6]"
+                                isWorkActive ? "bg-[#5B98FB]" : "hover:bg-[#5B98FB]"
                             )}>
                                 <div className="w-5 h-5 flex-shrink-0 flex items-center justify-center">
                                     <img src="/business_center.png" alt="work+" className="w-5 h-5" />
@@ -200,14 +200,14 @@ export const NavBar = () => {
                     !isCollapsed && contentVisible ? (
                         <button
                             onClick={handleLogin}
-                            className="w-full py-3 text-white border border-white rounded-md hover:bg-[#3E99C6] transition-colors"
+                            className="w-full py-3 text-white border border-white rounded-md hover:bg-[#5B98FB] transition-colors"
                         >
                             <Typography variant="titleSmall" color="text-white">로그인</Typography>
                         </button>
                     ) : (
                         <button
                             onClick={handleLogin}
-                            className="w-full flex justify-center py-3 text-white border border-white rounded-md hover:bg-[#3E99C6] transition-colors"
+                            className="w-full flex justify-center py-3 text-white border border-white rounded-md hover:bg-[#5B98FB] transition-colors"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
@@ -221,14 +221,14 @@ export const NavBar = () => {
                     !isCollapsed && contentVisible ? (
                         <button
                             onClick={handleLogoutClick}
-                            className="w-full py-3 text-white border border-white rounded-md hover:bg-[#3E99C6] transition-colors"
+                            className="w-full py-3 text-white border border-white rounded-md hover:bg-[#5B98FB] transition-colors"
                         >
                             <Typography variant="titleSmall" color="text-white">로그아웃</Typography>
                         </button>
                     ) : (
                         <button
                             onClick={handleLogoutClick}
-                            className="w-full flex justify-center py-3 text-white border border-white rounded-md hover:bg-[#3E99C6] transition-colors"
+                            className="w-full flex justify-center py-3 text-white border border-white rounded-md hover:bg-[#5B98FB] transition-colors"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -284,7 +284,7 @@ export const NavBar = () => {
             )}
             
             {/* 토스트 컨테이너 */}
-            <ToastContainer />
+            {/* <ToastContainer /> */}
         </div>
     );
 };

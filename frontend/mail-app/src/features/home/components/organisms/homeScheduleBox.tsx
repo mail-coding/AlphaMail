@@ -47,21 +47,29 @@ export const HomeScheduleBox: React.FC = () => {
           <Typography variant="body">오늘의 일정이 없습니다.</Typography>
         </div>
       ) : (
-        <div className="space-y-3 border border-gray-200 p-3 rounded-md">
+        <div className="space-y-3 border border-gray-200 p-3 pl-5 rounded-md">
           {schedules.map((schedule: Schedule) => (
-            <div key={schedule.id} className="flex items-center">
+            <div 
+              key={schedule.id} 
+              className={`flex items-center `}
+            >
               <input 
                 type="checkbox" 
-                className="mr-2" 
+                className={`mr-2 ${schedule.is_done ? 'text-gray-400' : ''}`}
                 checked={schedule.is_done}
                 onChange={() => handleToggleComplete(schedule.id, schedule.is_done)}
               />
               <div className="flex items-center">
-                <div className="text-sm text-blue-500 pr-2">
+                <div className={`text-sm ${schedule.is_done ? 'text-blue-200' : 'text-blue-500'} pr-2`}>
                   {formatTime(schedule.start_time)}
                 </div>
-                <Typography variant="titleSmall">
+                <Typography 
+                  variant="titleSmall" 
+                  className={schedule.is_done ? 'text-[#9C9C9C]' : 'text-black-400'}
+                >
+                   <div className={`text-sm ${schedule.is_done ? 'text-[#9C9C9C]' : 'text-black-400'} pr-2`}>
                   {schedule.name}
+                  </div>
                 </Typography>
               </div>
             </div>

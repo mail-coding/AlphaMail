@@ -34,7 +34,7 @@ export const MailAttachmentInput: React.FC<MailAttachmentInputProps> = ({
         <Button 
           variant="secondary" 
           onClick={() => fileInputRef.current?.click()}
-          className="mb-2 py-3 h-7"
+          className="mb-2 mt-1 py-3 h-7"
           disabled={isUploading}
         >
           {isUploading ? '업로드 중...' : '파일 선택'}

@@ -30,7 +30,9 @@ const MailDetailTemplate: React.FC<MailDetailTemplateProps> = ({ source }) => {
 
   // 메일 상세 정보 조회
   const { data, isLoading, isError, error } = useMailDetail(id || '');
-  
+  const searchParams = new URLSearchParams(location.search);
+  const page = searchParams.get('page') || '1';
+
   // URL 경로에서 source 결정 (props가 없는 경우)
   const determineSource = (): 'inbox' | 'sent' | 'trash' => {
     if (source) return source;
@@ -62,15 +64,17 @@ const MailDetailTemplate: React.FC<MailDetailTemplateProps> = ({ source }) => {
     
   // 뒤로 가기 처리 - 출처에 따라 다른 경로로 이동
   const handleBack = () => {
+    console.log('뒤로가기: 현재 페이지 정보', page); // 디버깅용
+
     switch (currentSource) {
       case 'sent':
-        navigate('/mail/sent');
+        navigate(`/mail/sent?page=${page}`);
         break;
       case 'trash':
-        navigate('/mail/trash');
+        navigate(`/mail/trash?page=${page}`);
         break;
       default:
-        navigate('/mail');
+        navigate(`/mail?page=${page}`);
     }
   };
   
@@ -88,16 +92,16 @@ const MailDetailTemplate: React.FC<MailDetailTemplateProps> = ({ source }) => {
         mailId: id 
       }, {
         onSuccess: () => {
-          // 출처에 따라 다른 경로로 이동
+          // 출처에 따라 다른 경로로 이동하되 페이지 정보 유지
           switch (currentSource) {
             case 'sent':
-              navigate('/mail/sent');
+              navigate(`/mail/sent?page=${page}`);
               break;
             case 'trash':
-              navigate('/mail/trash');
+              navigate(`/mail/trash?page=${page}`);
               break;
             default:
-              navigate('/mail');
+              navigate(`/mail?page=${page}`);
           }
         }
       });

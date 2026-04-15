@@ -7,9 +7,9 @@ import KakaoAddressTemplate from '../../../../../shared/components/template/kaka
 import { api } from '../../../../../shared/lib/axiosInstance';
 import { useOrderStore } from '../../../stores/orderStore';
 import { Typography } from '@/shared/components/atoms/Typography';
-import { useParams } from 'react-router-dom';
 import { useUserInfo } from '@/shared/hooks/useUserInfo';
 import { PhoneInput } from '@/shared/components/atoms/phoneInput';
+import { showToast } from '@/shared/components/atoms/toast';
 
 const MAX_LENGTHS = {
   orderNo: 255,
@@ -41,7 +41,6 @@ const OrderBasicInfoForm: React.FC<OrderBasicInfoFormProps> = ({
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { formData, updateFormField } = useOrderStore();
-  const { id } = useParams();
   const { data: userInfo } = useUserInfo();
 
   if (!formData) {
@@ -129,13 +128,13 @@ const OrderBasicInfoForm: React.FC<OrderBasicInfoFormProps> = ({
       }
     } catch (error) {
       console.error('거래처 정보 조회 실패:', error);
-      alert('거래처 정보를 불러오는데 실패했습니다.');
+      showToast('거래처 정보를 불러오는데 실패했습니다.', 'error');
     }
   };
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full border-separate border-spacing-0">
+      <table className="w-full  border-spacing-0">
         <colgroup>
           <col style={{ width: '140px' }} />
           <col style={{ width: '260px' }} />
@@ -146,20 +145,20 @@ const OrderBasicInfoForm: React.FC<OrderBasicInfoFormProps> = ({
         </colgroup>
         <tbody>
           <tr>
-            {id !== 'new' && (
+            
               <>
-                <td className="bg-[#F9F9F9] h-[44px] border border-[#E5E5E5] text-center align-middle font-medium">
+                <td className="bg-[#F9F9F9] h-[44px] border text-center align-middle font-medium">
                   <Typography variant="body">발주등록번호</Typography>
                 </td>
-                <td className="bg-white border border-[#E5E5E5] px-2">
+                <td className="bg-white border px-2">
                   <span className="text-sm"><Typography variant="body">{formData.orderNo || '-'}</Typography></span>
                 </td>
               </>
-            )}
-            <td className="bg-[#F9F9F9] h-[44px] border border-[#E5E5E5] text-center align-middle font-medium">
+            
+            <td className="bg-[#F9F9F9] h-[44px] border  text-center align-middle font-medium">
               <Typography variant="body">일자</Typography>
             </td>
-            <td className="bg-white border border-[#E5E5E5] px-2">
+            <td className="bg-white border px-2">
               <span className="text-sm">
                 <Typography variant="body">{(() => {
                   const date = formData.createdAt ? new Date(formData.createdAt) : new Date();
@@ -186,6 +185,7 @@ const OrderBasicInfoForm: React.FC<OrderBasicInfoFormProps> = ({
                 className="w-full h-[32px]"
                 onFocus={onInputFocus}
                 onClick={onInputFocus}
+                preventFormSubmit={true}
               />
               {errors.clientName && <p className="mt-1 text-xs text-red-500">{errors.clientName}</p>}
             </td>

@@ -20,7 +20,7 @@ export const MailSubjectInput: React.FC<MailSubjectInputProps> = ({
         value={subject}
         onChange={(e) => onChange(e.target.value)}
         placeholder="제목을 입력하세요"
-        className="flex-1 outline-none border-b border-gray-300 py-1 text-sm h-5"
+        className="flex-1 outline-none border-b border-gray-300 py-3 text-sm h-5"
       />
     </div>
   );

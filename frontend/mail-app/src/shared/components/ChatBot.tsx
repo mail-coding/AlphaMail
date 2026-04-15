@@ -265,8 +265,10 @@ const TmpScheduleMessage = ({ content }: { reply: string; content?: { name?: str
     try {
       const response = await scheduleService.createSchedule({
         name: scheduleForm.name,
-        start_time: new Date(ensureZ(scheduleForm.startTime)),
-        end_time: scheduleForm.endTime ? new Date(ensureZ(scheduleForm.endTime)) : new Date(ensureZ(scheduleForm.startTime)),
+        start_time: new Date(new Date(scheduleForm.startTime).getTime() + 9 * 60 * 60 * 1000),
+        end_time: scheduleForm.endTime 
+          ? new Date(new Date(scheduleForm.endTime).getTime() + 9 * 60 * 60 * 1000) 
+          : new Date(new Date(scheduleForm.startTime).getTime() + 9 * 60 * 60 * 1000),
         description: scheduleForm.description || '',
         is_done: false,
         created_at: new Date()
@@ -337,7 +339,7 @@ const TmpScheduleMessage = ({ content }: { reply: string; content?: { name?: str
           <Input
             type="datetime-local"
             value={formatUTCToKSTLocalInputString(scheduleForm.startTime)}
-            onChange={(e) => setScheduleForm(prev => ({ ...prev, startTime: e.target.value }))}
+            onChange={(e) => setScheduleForm(prev => ({ ...prev, startTime: new Date(new Date(e.target.value).getTime() - 9 * 60 * 60 * 1000).toISOString() }))}
          
             className={`w-full text-black${errors.startTime ? 'border-red-500' : ''}`}
           />
@@ -350,7 +352,7 @@ const TmpScheduleMessage = ({ content }: { reply: string; content?: { name?: str
           <Input
             type="datetime-local"
             value={formatUTCToKSTLocalInputString(scheduleForm.endTime)}
-            onChange={(e) => setScheduleForm(prev => ({ ...prev, endTime: e.target.value }))}
+            onChange={(e) => setScheduleForm(prev => ({ ...prev, endTime: new Date(new Date(e.target.value).getTime() - 9 * 60 * 60 * 1000).toISOString() }))}
            
             className={`w-full text-black ${errors.endTime ? 'border-red-500' : ''}`}
           />

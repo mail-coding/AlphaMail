@@ -8,3 +8,9 @@
   font-weight: normal;
   font-style: normal;
 }
+
+@layer base {
+  html, body, #root {
+    font-family: 'Pretendard', font-pretendard;
+  }
+}
