@@ -77,15 +77,6 @@ export const HomeUnreadMailBox: React.FC = () => {
   }, [location.pathname, refetch]);
 
 
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      console.log('안읽은 메일 데이터 갱신');
-      refetch();
-    }, 10000); // 10초마다 갱신
-    
-    return () => clearInterval(intervalId);
-  }, [refetch]);
-  
   // 메일 읽음 상태 변경 감지
   useEffect(() => {
     // 메일 읽음 상태 변경 이벤트 구독
